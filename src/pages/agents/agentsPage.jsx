@@ -5,13 +5,18 @@ import AgentCard from "../../components/agents/AgentCard";
 import AgentFormModal from "../../components/agents/AgentFormModal";
 import "../../assets/css/AgentsPage.css";
 
-export default function AgentsPage() {
+export default function AgentsPage({ showToast }) {
   const { getAgents, createAgent, updateAgent, deleteAgent } = useAgent();
 
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    agent: null,
+    loading: false,
+  });
 
   const fetchAgents = async () => {
     try {
@@ -40,17 +45,41 @@ export default function AgentsPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Voulez-vous vraiment supprimer cet agent ?");
-    if (!confirmDelete) return;
+  const handleDelete = (agent) => {
+    setDeleteModal({
+      open: true,
+      agent,
+      loading: false,
+    });
+  };
 
+  const confirmDelete = async () => {
     try {
-      await deleteAgent(id);
+      setDeleteModal((prev) => ({ ...prev, loading: true }));
+      await deleteAgent(deleteModal.agent);
+      showToast("Agent supprimé avec succès", "success");
+      setDeleteModal({ open: false, agent: null, loading: false });
       fetchAgents();
     } catch (error) {
       console.error("Erreur suppression :", error);
+      showToast("Erreur lors de la suppression", "danger");
+      setDeleteModal((prev) => ({ ...prev, loading: false }));
     }
   };
+
+  // const handleDelete = async (id) => {
+  //   const confirmDelete = window.confirm(
+  //     "Voulez-vous vraiment supprimer cet agent ?",
+  //   );
+  //   if (!confirmDelete) return;
+
+  //   try {
+  //     await deleteAgent(id);
+  //     fetchAgents();
+  //   } catch (error) {
+  //     console.error("Erreur suppression :", error);
+  //   }
+  // };
 
   const handleSubmit = async (payload) => {
     try {
@@ -59,12 +88,18 @@ export default function AgentsPage() {
       } else {
         await createAgent(payload);
       }
-
       setModalOpen(false);
       setSelectedAgent(null);
       fetchAgents();
+      showToast(
+        selectedAgent?._id
+          ? "Agent mis à jour avec succès"
+          : "Agent créé avec succès",
+        "success",
+      );
     } catch (error) {
       console.error("Erreur enregistrement agent :", error);
+      showToast("Erreur lors de l'enregistrement de l'agent", "danger");
     }
   };
 
@@ -77,11 +112,16 @@ export default function AgentsPage() {
           <div>
             <h1>Gestion des agents IA</h1>
             <p>
-              Administrez les profils vocaux, les numéros liés et les scripts de vos assistants.
+              Administrez les profils vocaux, les numéros liés et les scripts de
+              vos assistants.
             </p>
           </div>
 
-          <button type="button" className="btnPrimary" onClick={handleCreateClick}>
+          <button
+            type="button"
+            className="btnPrimary"
+            onClick={handleCreateClick}
+          >
             <i className="bi bi-plus-lg" /> Nouvel agent
           </button>
         </div>
@@ -114,6 +154,36 @@ export default function AgentsPage() {
         onSubmit={handleSubmit}
         selectedAgent={selectedAgent}
       />
+
+      {deleteModal.open && (
+        <div className="deleteModalOverlay">
+          <div className="deleteModal">
+            <h3>Supprimer l’agent</h3>
+            <p>
+              Voulez-vous vraiment supprimer{" "}
+              <strong>{deleteModal.agent?.nomAgent}</strong> ?
+            </p>
+
+            <div className="deleteActions">
+              <button
+                className="btnGhost"
+                onClick={() => setDeleteModal({ open: false, agent: null })}
+                disabled={deleteModal.loading}
+              >
+                Annuler
+              </button>
+
+              <button
+                className="btnDanger"
+                onClick={confirmDelete}
+                disabled={deleteModal.loading}
+              >
+                {deleteModal.loading ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

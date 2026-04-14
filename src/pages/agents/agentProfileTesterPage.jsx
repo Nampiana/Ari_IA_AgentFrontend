@@ -3,23 +3,43 @@ import useAgent from "../../hooks/useAgent";
 import HeaderBar from "../../components/agents/HeaderBar";
 import "../../assets/css/AgentProfileTesterPage.css";
 
-export default function AgentProfileTesterPage() {
+export default function AgentProfileTesterPage({ showToast }) {
   const { getAgentProfileByNumber } = useAgent();
-
+  const [error, setError] = useState(null);
   const [calledNumber, setCalledNumber] = useState("");
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleTest = async () => {
-    if (!calledNumber.trim()) return;
+    if (!calledNumber.trim()) {
+      showToast("Veuillez entrer un numéro", "danger");
+      return;
+    }
 
     try {
       setLoading(true);
+      setError(null);
+
       const res = await getAgentProfileByNumber(calledNumber);
-      setProfile(res?.data?.data || null);
+
+      const data = res?.data?.data || null;
+
+      if (!data) {
+        setProfile(null);
+        setError("Aucun profil trouvé pour ce numéro");
+        showToast("Aucun profil trouvé", "warning");
+        return;
+      }
+
+      setProfile(data);
+      showToast("Profil récupéré avec succès", "success");
     } catch (error) {
       console.error("Erreur récupération profil :", error);
+
       setProfile(null);
+      setError("Erreur lors de la récupération du profil");
+
+      showToast(error?.response?.data?.message || "Erreur serveur", "danger");
     } finally {
       setLoading(false);
     }
@@ -44,12 +64,23 @@ export default function AgentProfileTesterPage() {
               value={calledNumber}
               onChange={(e) => setCalledNumber(e.target.value)}
             />
-            <button type="button" className="btnPrimary" onClick={handleTest}>
-              Tester
+            <button
+              type="button"
+              className="btnPrimary"
+              onClick={handleTest}
+              disabled={loading}
+            >
+              {loading ? "Test en cours..." : "Tester"}
             </button>
           </div>
 
           {loading && <div className="loadingBox">Chargement du profil...</div>}
+          {error && !loading && (
+            <div className="errorBox">
+              <i className="bi bi-exclamation-triangle-fill"></i>
+              <span>{error}</span>
+            </div>
+          )}
 
           {profile && !loading && (
             <div className="profileResultCard">
@@ -59,8 +90,12 @@ export default function AgentProfileTesterPage() {
                   <p>{profile.companyName}</p>
                 </div>
                 <div className="profileBadges">
-                  <span className="badge success">{profile.active === 1 ? "Actif" : "Inactif"}</span>
-                  {profile.isDefault === 1 && <span className="badge default">Par défaut</span>}
+                  <span className="badge success">
+                    {profile.active === 1 ? "Actif" : "Inactif"}
+                  </span>
+                  {profile.isDefault === 1 && (
+                    <span className="badge default">Par défaut</span>
+                  )}
                 </div>
               </div>
 
@@ -77,10 +112,10 @@ export default function AgentProfileTesterPage() {
                   <span className="label">Vitesse</span>
                   <div>{profile.speed}</div>
                 </div>
-                <div>
+                {/* <div>
                   <span className="label">Numéros</span>
                   <div>{profile.calledNumbers?.join(", ") || "Aucun"}</div>
-                </div>
+                </div> */}
               </div>
 
               <div className="instructionsBox">

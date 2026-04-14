@@ -1,4 +1,4 @@
-import CompagneServices, { api } from "../services/compagneServices";
+import CompagneServices, { api } from "../services/compagneServices.js";
 
 export default function useCompagne() {
   const service = new CompagneServices(api);

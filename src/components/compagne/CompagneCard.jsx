@@ -7,12 +7,34 @@ export default function CompagneCard({ compagne, onEdit, onDelete }) {
         <div>
           <h3 className="compagneName">{compagne.nomCompagne}</h3>
           <div className="compagneNumero">{compagne.numero}</div>
+          <span
+            className={`badge ${compagne.active === 1 ? "success" : "danger"}`}
+          >
+            {compagne.active === 1 ? "Actif" : "Inactif"}
+          </span>
         </div>
 
         <div className="compagneStatusWrap">
-          <span className={`badge ${compagne.active === 1 ? "success" : "danger"}`}>
-            {compagne.active === 1 ? "Actif" : "Inactif"}
-          </span>
+          <button
+            type="button"
+            className="btnLancer"
+          >
+            Lancer
+          </button>
+          <button
+            type="button"
+            className="btnEdit"
+            onClick={() => onEdit(compagne)}
+          >
+            Modifier
+          </button>
+          <button
+            type="button"
+            className="btnDelete"
+            onClick={() => onDelete(compagne._id)}
+          >
+            Supprimer
+          </button>
         </div>
       </div>
 
@@ -33,14 +55,22 @@ export default function CompagneCard({ compagne, onEdit, onDelete }) {
         <p>{compagne.scriptFinal || compagne.script}</p>
       </div>
 
-      <div className="compagneActions">
-        <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
+      {/* <div className="compagneActions">
+        <button
+          type="button"
+          className="btnEdit"
+          onClick={() => onEdit(compagne)}
+        >
           Modifier
         </button>
-        <button type="button" className="btnDelete" onClick={() => onDelete(compagne._id)}>
+        <button
+          type="button"
+          className="btnDelete"
+          onClick={() => onDelete(compagne._id)}
+        >
           Supprimer
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

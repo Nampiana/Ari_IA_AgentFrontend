@@ -30,16 +30,16 @@ export default function AgentCard({ agent, onEdit, onDelete }) {
           <span className="label">Vitesse</span>
           <div>{agent.speed}</div>
         </div>
-        <div>
+        {/* <div>
           <span className="label">Numéros</span>
           <div>{agent.calledNumbers?.length ? agent.calledNumbers.join(", ") : "Aucun"}</div>
-        </div>
+        </div> */}
       </div>
 
-      <div className="agentScriptBlock">
+      {/* <div className="agentScriptBlock">
         <span className="label">Script d’ouverture</span>
         <p>{agent.openingScript}</p>
-      </div>
+      </div> */}
 
       <div className="agentActions">
         <button type="button" className="btnEdit" onClick={() => onEdit(agent)}>

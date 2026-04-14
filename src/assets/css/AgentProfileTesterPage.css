@@ -92,6 +92,7 @@
 }
 
 @media (max-width: 768px) {
+
   .testerInputRow,
   .profileTop {
     flex-direction: column;
@@ -100,4 +101,17 @@
   .profileGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.errorBox {
+  background: #ffe8e8;
+  color: #c0392b;
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  border: 1px solid #ffb3b3;
 }

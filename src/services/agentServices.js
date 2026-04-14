@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ApiUrl } from "../utils/modules";
+import { ApiUrl } from "../utils/modules.js";
 
 class AgentServices {
   constructor(api) {

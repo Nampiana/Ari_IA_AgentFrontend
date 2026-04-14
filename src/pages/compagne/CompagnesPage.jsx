@@ -6,8 +6,9 @@ import CompagneCard from "../../components/compagne/CompagneCard";
 import CompagneFormModal from "../../components/compagne/CompagneFormModal";
 import "../../assets/css/CompagnesPage.css";
 
-export default function CompagnesPage() {
-  const { getCompagnes, createCompagne, updateCompagne, deleteCompagne } = useCompagne();
+export default function CompagnesPage({ showToast }) {
+  const { getCompagnes, createCompagne, updateCompagne, deleteCompagne } =
+    useCompagne();
   const { getAgents } = useAgent();
 
   const [compagnes, setCompagnes] = useState([]);
@@ -15,6 +16,11 @@ export default function CompagnesPage() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCompagne, setSelectedCompagne] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    compagne: null,
+    loading: false,
+  });
 
   const fetchCompagnes = async () => {
     try {
@@ -56,15 +62,31 @@ export default function CompagnesPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Voulez-vous vraiment supprimer cette campagne ?");
-    if (!confirmDelete) return;
+  const handleDelete = (compagne) => {
+    setDeleteModal({
+      open: true,
+      compagne,
+      loading: false,
+    });
+  };
 
+  const confirmDelete = async () => {
     try {
-      await deleteCompagne(id);
+      setDeleteModal((prev) => ({ ...prev, loading: true }));
+
+      await deleteCompagne(deleteModal.compagne);
+
+      showToast("Campagne supprimée avec succès", "success");
+
+      setDeleteModal({ open: false, compagne: null, loading: false });
+
       fetchCompagnes();
     } catch (error) {
-      console.error("Erreur suppression campagne :", error);
+      console.error("Erreur suppression :", error);
+
+      showToast("Erreur lors de la suppression", "danger");
+
+      setDeleteModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -72,8 +94,10 @@ export default function CompagnesPage() {
     try {
       if (selectedCompagne?._id) {
         await updateCompagne(selectedCompagne._id, payload);
+        showToast("Campagne mise à jour avec succès", "success");
       } else {
         await createCompagne(payload);
+        showToast("Campagne créée avec succès", "success");
       }
 
       setModalOpen(false);
@@ -81,6 +105,7 @@ export default function CompagnesPage() {
       fetchCompagnes();
     } catch (error) {
       console.error("Erreur enregistrement campagne :", error);
+      showToast("Erreur lors de l'enregistrement", "danger");
     }
   };
 
@@ -93,11 +118,16 @@ export default function CompagnesPage() {
           <div>
             <h1>Gestion des campagnes</h1>
             <p>
-              Gérez les campagnes, les numéros, les scripts et les agents IA associés.
+              Gérez les campagnes, les numéros, les scripts et les agents IA
+              associés.
             </p>
           </div>
 
-          <button type="button" className="btnPrimary" onClick={handleCreateClick}>
+          <button
+            type="button"
+            className="btnPrimary"
+            onClick={handleCreateClick}
+          >
             <i className="bi bi-plus-lg" /> Nouvelle campagne
           </button>
         </div>
@@ -131,6 +161,43 @@ export default function CompagnesPage() {
         selectedCompagne={selectedCompagne}
         agents={agents}
       />
+
+      {deleteModal.open && (
+        <div className="deleteModalOverlay">
+          <div className="deleteModal">
+            <h3>Supprimer la campagne</h3>
+
+            <p>
+              Voulez-vous vraiment supprimer{" "}
+              <strong>{deleteModal.compagne?.nom || "cette campagne"}</strong> ?
+            </p>
+
+            <div className="deleteActions">
+              <button
+                className="btnGhost"
+                onClick={() =>
+                  setDeleteModal({
+                    open: false,
+                    compagne: null,
+                    loading: false,
+                  })
+                }
+                disabled={deleteModal.loading}
+              >
+                Annuler
+              </button>
+
+              <button
+                className="btnDanger"
+                onClick={confirmDelete}
+                disabled={deleteModal.loading}
+              >
+                {deleteModal.loading ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

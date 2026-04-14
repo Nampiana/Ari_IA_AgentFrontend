@@ -69,6 +69,7 @@ body {
 /* BUTTONS */
 .btnPrimary,
 .btnEdit,
+.btnLancer,
 .btnDelete,
 .btnGhost {
   border: none;
@@ -209,7 +210,7 @@ body {
   margin-bottom: 18px;
 }
 
-.compagneMetaGrid > div {
+.compagneMetaGrid>div {
   background: var(--surface-soft);
   border: 1px solid #eef2f6;
   border-radius: 14px;
@@ -232,6 +233,8 @@ body {
   border-radius: 16px;
   padding: 15px;
   margin-bottom: 18px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .compagneScriptBlock p {
@@ -353,13 +356,15 @@ body {
 
 .agentModalActions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
   margin-top: 24px;
+  flex-direction: row;
 }
 
 /* RESPONSIVE */
 @media (max-width: 860px) {
+
   .compagnesTopBar,
   .compagneCardTop,
   .agentForm .formGrid {
@@ -375,5 +380,84 @@ body {
 
   .compagnesContainer {
     padding: 20px 14px 30px;
+  }
+}
+
+.deleteModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.deleteModal {
+  background: #fff;
+  width: 420px;
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+  animation: pop 0.2s ease;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.deleteModal h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.deleteModal p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.deleteActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btnDanger {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.btnDanger:hover {
+  background: #c0392b;
+}
+
+.btnPrimary {  
+  flex: 1;
+}
+
+.btnGhost {
+  background: #f1f1f1;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.btnGhost:hover {
+  background: #e0e0e0;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }

@@ -1,4 +1,4 @@
-import AgentServices, { api } from "../services/agentServices";
+import AgentServices, { api } from "../services/agentServices.js";
 
 export default function useAgent() {
   const service = new AgentServices(api);

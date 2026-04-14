@@ -116,7 +116,7 @@ export default function CompagneFormModal({
                         <button type="button" className="btnGhost" onClick={onClose}>
                             Annuler
                         </button>
-                        <button type="submit" className="btnPrimary">
+                        <button type="button" className="btnPrimary">
                             {selectedCompagne ? "Mettre à jour" : "Créer"}
                         </button>
                     </div>
