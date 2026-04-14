@@ -19,6 +19,13 @@ export default function HeaderBar() {
         </Link>
 
         <Link
+          to="/campagnes"
+          className={`headerLink ${location.pathname === "/campagnes" ? "active" : ""}`}
+        >
+          Campagnes
+        </Link>
+
+        <Link
           to="/tester"
           className={`headerLink ${location.pathname === "/tester" ? "active" : ""}`}
         >
