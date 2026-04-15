@@ -353,9 +353,12 @@ export default function ListsPage({ showToast }) {
     <div className="listsPage">
       <HeaderBar />
 
-      <div className="listsContainer">
-        <div className="topBar">
-          <h1>Gestion des listes</h1>
+      <div className="agentsContainer">
+        <div className="agentsTopBar">
+          <div>
+            <h1>Gestion des listes</h1>
+            <p>Liste des fiches clients</p>
+          </div>
 
           <button className="btnPrimary" onClick={openImportModal}>
             Import CSV
@@ -370,6 +373,8 @@ export default function ListsPage({ showToast }) {
               <tr>
                 <th>Nom</th>
                 <th>Total fiches</th>
+                <th>Date instertion</th>
+                <th>Dernière modification</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -378,6 +383,8 @@ export default function ListsPage({ showToast }) {
                 <tr key={list._id}>
                   <td>{list.nomFiche}</td>
                   <td>{list.infoFiche?.length}</td>
+                  <td>{list.createdAt?.split("T")[0]}</td>
+                  <td>{list.updatedAt?.split("T")[0]}</td>
                   <td>
                     <button
                       className="btn btn-primary"

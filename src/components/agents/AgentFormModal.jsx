@@ -43,7 +43,7 @@ export default function AgentFormModal({
   const handleSubmit = () => {
     try {
       const payload = {
-        ...formData,        
+        ...formData,
       };
 
       onSubmit(payload);
@@ -73,6 +73,7 @@ export default function AgentFormModal({
             <div className="formGroup">
               <label>Nom agent</label>
               <input
+                className="form-control"
                 name="nomAgent"
                 value={formData.nomAgent}
                 onChange={handleChange}

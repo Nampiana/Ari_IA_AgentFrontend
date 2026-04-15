@@ -8,104 +8,305 @@
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --shadow-primary: 0 10px 30px rgba(15, 23, 42, 0.07);
+  --primary: #4caf50;
+  --primary-dark: #3f9443;
+  --primary-soft: #e8f7ea;
+  --principale-border: #7ac77c;
+  --danger: #e25555;
+  --danger-soft: #fdeeee;
+  --info: #3b82f6;
+  --info-soft: #eaf2ff;
+  --border-radius-btn: 12px;
+  --border-radius-card: 12px;
+  --surface-soft: #f9fbfd;
+  --surface: #fff;
+
+  --dark-principale: #000000;
+  --white-principale: #ffffff;
+  --white-secondaire: #f8fbf8;
+  --white-soft: #fcfdfd;
+  --white-border: #eef2f6;
+  --white-bg-principale: #fcfdff;
+  --white-bg-soft: linear-gradient(180deg, #f8fafc 0%, #f4f8fa 100%);
+
+  --gray-principale: #475467;
+  --gray-box-shadow: rgba(76, 175, 80, 0.12);
+  --gray-box-shadow-primary: rgba(15, 23, 42, 0.09);
+
+  --background-principale: rgba(15, 23, 42, 0.45);
+  --background-secondaire: rgba(230, 235, 241, 0.9);
+  --background-tertiaire: rgba(15, 23, 42, 0.18);
+
+  --muted: #6b6375;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
+  /* ===== GRADIENTS ===== */
+  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, #63c267 100%);
+  --gradient-primary-hover: linear-gradient(135deg, var(--primary-dark) 0%, #55b95b 100%);
+  --gradient-body: linear-gradient(180deg, #f9fbfd 0%, #f4f7fb 100%);
+  --gradient-card: linear-gradient(180deg, #ffffff 0%, #f8fbf8 100%);
+
+  /* ===== BUTTONS ===== */
+  --btn-shadow-primary: 0 10px 22px rgba(76, 175, 80, 0.24);
+  --btn-radius: 14px;
+
+  /* ===== COLORS (missing ones) ===== */
+  --ghost-bg: #eef2f6;
+  --ghost-bg-hover: #e6ebf0;
+  --ghost-text: #4a5563;
+
+  --close-bg: #f1f4f7;
+  --close-bg-hover: #e8edf2;
+  --close-text: #42505d;
+
+  /* ===== FORM ===== */
+  --input-border: #dce3ea;
+  --input-bg: #fcfdff;
+  --input-bg-focus: #ffffff;
+  --label-color: #3b4754;
+
+  /* ===== MODAL ===== */
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --modal-bg: #ffffff;
+  --modal-text: #555;
+
+  /* ===== BADGE ===== */
+  --badge-success-bg: #e9f8ec;
+  --badge-success-text: #1f8b39;
+
+  --badge-danger-bg: #fdecec;
+  --badge-danger-text: #c54141;
+
+  --badge-default-bg: #edf4ff;
+  --badge-default-text: #356dc2;
+
+  --rgb-dark-principale: rgba(0, 0, 0, 0.2);
+  --rgb-primary: rgba(0, 0, 0, 0.55);
+
+  --border-input: #d7dde4;
+
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
     font-size: 16px;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
 body {
   margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: var(--gradient-body);
+  color: var(--text);
+  font-size: 15px;
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+/* BUTTONS */
+.btnPrimary,
+.btnEdit,
+.btnLancer,
+.btnDelete,
+.btnGhost {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnPrimary {
+  background: var(--gradient-primary);
+  color: var(--white-principale);
+  box-shadow: var(--btn-shadow-primary);
+  width: 160px;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  background: var(--gradient-primary-hover);
+}
+
+.btnEdit {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.btnEdit:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.btnDelete {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btnDelete:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.btnGhost {
+  background: var(--ghost-bg);
+  color: var(--ghost-text);
+}
+
+.btnGhost:hover {
+  background: var(--ghost-bg-hover);
+}
+
+.closeBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: var(--close-bg);
+  color: var(--close-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: var(--close-bg-hover);
+}
+
+/* FORMULAIRE */
+
+.formGroup {
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  gap: 8px;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+.formGroup.full {
+  margin-top: 16px;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+.formGroup label {
+  font-weight: 700;
+  color: var(--label-color);
+  font-size: 14px;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  border-color: 1px solid var(--border-input);
+  background: var(--input-bg-focus);
+  border-radius: 14px;
+  padding: 13px 14px;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: 1px solid var(--border-input);
+  /* box-shadow: 0 0 1px 1px var(--primary); */
+  background: var(--white-principale);
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* MODAL DELETE */
+
+.deleteModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--modal-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.deleteModal {
+  background: var(--modal-bg);
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
+  text-align: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.deleteModal h3 {
+  margin-bottom: 10px;
+  color: var(--dark-principale);
+}
+
+.deleteModal p {
+  color: var(--modal-text);
+  margin-bottom: 20px;
+}
+
+.deleteActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  color: var(--label-color);
+  margin-bottom: 5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* BADGE */
+.badge {
   display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
-code {
+.badge.success {
+  background: var(--badge-success-bg);
+  color: var(--badge-success-text);
+}
+
+.badge.danger {
+  background: var(--badge-danger-bg);
+  color: var(--badge-danger-text);
+}
+
+.badge.default {
+  background: var(--badge-default-bg);
+  color: var(--badge-default-text);
+}
+
+/* STATES */
+.loadingBox,
+.emptyBox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 34px;
+  text-align: center;
+  color: var(--muted);
+  box-shadow: var(--shadow);
   font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }

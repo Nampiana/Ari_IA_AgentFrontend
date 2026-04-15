@@ -10,15 +10,16 @@
 }
 
 .testerCard {
-  background: white;
+  background: var(--white-principale);
   border-radius: 24px;
   padding: 26px;
-  box-shadow: 0 8px 25px rgba(26, 34, 44, 0.06);
+  box-shadow: 0 8px 25px var(--rgb-dark-principale);
 }
 
 .testerCard h1 {
   margin: 0 0 10px;
   font-size: 28px;
+  color: var(--dark-principale);
 }
 
 .testerCard p {

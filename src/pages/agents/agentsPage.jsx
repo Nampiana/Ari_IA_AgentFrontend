@@ -160,7 +160,7 @@ export default function AgentsPage({ showToast }) {
               </button>
 
               <button
-                className="btnDanger"
+                className="btnDelete"
                 onClick={confirmDelete}
                 disabled={deleteModal.loading}
               >
