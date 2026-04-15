@@ -45,6 +45,11 @@ export default function CompagneCard({ compagne, onEdit, onDelete }) {
         </div>
 
         <div>
+          <span className="label">Fiche</span>
+          <div>{compagne.fiche?.nomFiche || "Non définie"}</div>
+        </div>
+
+        <div>
           <span className="label">Agent IA</span>
           <div>{compagne.id_ia?.nomAgent || "Non défini"}</div>
         </div>

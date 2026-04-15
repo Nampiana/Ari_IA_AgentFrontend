@@ -67,7 +67,7 @@ body {
 }
 
 /* BUTTONS */
-.btnPrimary,
+/* .btnPrimary,
 .btnEdit,
 .btnLancer,
 .btnDelete,
@@ -90,7 +90,7 @@ body {
 .btnPrimary:hover {
   transform: translateY(-1px);
   background: linear-gradient(135deg, var(--primary-dark) 0%, #55b95b 100%);
-}
+} */
 
 .btnEdit {
   background: var(--info-soft);
@@ -137,7 +137,8 @@ body {
 /* GRID */
 .compagnesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
+  /* grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); */
   gap: 20px;
 }
 
@@ -431,10 +432,6 @@ body {
 
 .btnDanger:hover {
   background: #c0392b;
-}
-
-.btnPrimary {  
-  flex: 1;
 }
 
 .btnGhost {

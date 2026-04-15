@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AgentsPage from "./pages/agents/agentsPage.jsx";
 import AgentProfileTesterPage from "./pages/agents/agentProfileTesterPage.jsx";
 import CompagnesPage from "./pages/compagne/CompagnesPage.jsx";
+import ListsPage from "./pages/lists/listsPage.jsx";
 import ToastMessage from "./components/alert/toastMessage.js";
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<AgentsPage showToast={showToast} />} />
           <Route path="/campagnes" element={<CompagnesPage showToast={showToast} />} />
+          <Route path="/lists" element={<ListsPage showToast={showToast} />} />
           <Route path="/tester" element={<AgentProfileTesterPage showToast={showToast} />} />
         </Routes>
       </BrowserRouter>

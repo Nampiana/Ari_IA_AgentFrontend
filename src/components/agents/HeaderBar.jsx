@@ -26,6 +26,13 @@ export default function HeaderBar() {
         </Link>
 
         <Link
+          to="/lists"
+          className={`headerLink ${location.pathname === "/lists" ? "active" : ""}`}
+        >
+          Listes
+        </Link>
+
+        <Link
           to="/tester"
           className={`headerLink ${location.pathname === "/tester" ? "active" : ""}`}
         >

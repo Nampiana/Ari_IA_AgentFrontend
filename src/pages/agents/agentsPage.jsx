@@ -67,20 +67,6 @@ export default function AgentsPage({ showToast }) {
     }
   };
 
-  // const handleDelete = async (id) => {
-  //   const confirmDelete = window.confirm(
-  //     "Voulez-vous vraiment supprimer cet agent ?",
-  //   );
-  //   if (!confirmDelete) return;
-
-  //   try {
-  //     await deleteAgent(id);
-  //     fetchAgents();
-  //   } catch (error) {
-  //     console.error("Erreur suppression :", error);
-  //   }
-  // };
-
   const handleSubmit = async (payload) => {
     try {
       if (selectedAgent?._id) {

@@ -5,6 +5,7 @@ const getInitialFormData = (selectedCompagne) => ({
     numero: selectedCompagne?.numero || "",
     script: selectedCompagne?.script || "",
     id_ia: selectedCompagne?.id_ia?._id || selectedCompagne?.id_ia || "",
+    fiche: selectedCompagne?.fiche?._id || selectedCompagne?.fiche || "",
     active: selectedCompagne?.active ?? 1,
 });
 
@@ -14,6 +15,7 @@ export default function CompagneFormModal({
     onSubmit,
     selectedCompagne,
     agents = [],
+    lists = [],
 }) {
     const [formData, setFormData] = useState(() => getInitialFormData(selectedCompagne));
 
@@ -70,6 +72,20 @@ export default function CompagneFormModal({
                         </div>
 
                         <div className="formGroup">
+                        <label>Fiche (liste CSV)</label>
+
+                        <select name="fiche" value={formData.fiche} onChange={handleChange}>
+                            <option value="">Sélectionner une fiche</option>
+
+                            {lists.map((list) => (
+                            <option key={list._id} value={list._id}>
+                                {list.nomFiche}
+                            </option>
+                            ))}
+                        </select>
+                        </div>
+
+                        <div className="formGroup">
                             <label>Agent IA associé</label>
                             <select name="id_ia" value={formData.id_ia} onChange={handleChange}>
                                 <option value="">Sélectionner un agent</option>
@@ -116,7 +132,7 @@ export default function CompagneFormModal({
                         <button type="button" className="btnGhost" onClick={onClose}>
                             Annuler
                         </button>
-                        <button type="button" className="btnPrimary">
+                        <button type="submit" className="btnPrimary">
                             {selectedCompagne ? "Mettre à jour" : "Créer"}
                         </button>
                     </div>

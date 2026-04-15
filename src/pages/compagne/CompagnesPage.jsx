@@ -5,6 +5,7 @@ import HeaderBar from "../../components/agents/HeaderBar";
 import CompagneCard from "../../components/compagne/CompagneCard";
 import CompagneFormModal from "../../components/compagne/CompagneFormModal";
 import "../../assets/css/CompagnesPage.css";
+import useLists from "../../hooks/useLists";
 
 export default function CompagnesPage({ showToast }) {
   const { getCompagnes, createCompagne, updateCompagne, deleteCompagne } =
@@ -21,6 +22,18 @@ export default function CompagnesPage({ showToast }) {
     compagne: null,
     loading: false,
   });
+  const { getLists } = useLists();
+  const [lists, setLists] = useState([]);
+
+  const fetchLists = async () => {
+  try {
+    const res = await getLists();
+    const data = res?.data?.data || [];
+    setLists(data);
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   const fetchCompagnes = async () => {
     try {
@@ -50,6 +63,7 @@ export default function CompagnesPage({ showToast }) {
   useEffect(() => {
     fetchCompagnes();
     fetchAgents();
+    fetchLists();
   }, []);
 
   const handleCreateClick = () => {
@@ -160,6 +174,7 @@ export default function CompagnesPage({ showToast }) {
         onSubmit={handleSubmit}
         selectedCompagne={selectedCompagne}
         agents={agents}
+        lists={lists}
       />
 
       {deleteModal.open && (
