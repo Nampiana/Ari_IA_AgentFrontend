@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useLists from "../../hooks/useLists";
 import HeaderBar from "../../components/agents/HeaderBar";
-import Papa from "papaparse"; // npm install papaparse
+import Papa from "papaparse";
 import "../../assets/css/ListsPage.css";
 
 export default function ListsPage({ showToast }) {
@@ -12,16 +12,30 @@ export default function ListsPage({ showToast }) {
   const [loading, setLoading] = useState(false);
   const [editList, setEditList] = useState(null);
   const [newName, setNewName] = useState("");
+  const [listName, setListName] = useState("");
   const [csvData, setCsvData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [mapping, setMapping] = useState({
     nom: "",
     telephone: "",
+    adresse: "",
+    habitation: "",
+    ville: "",
+    age: "",
+    codePostale: "",
+    email: "",
+    entreprise: "",
+    pays: "",
+    commentaire: "",
   });
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    list: null,
+    loading: false,
+  });
 
-  // 📌 FETCH
   const fetchLists = async () => {
     try {
       setLoading(true);
@@ -38,16 +52,19 @@ export default function ListsPage({ showToast }) {
     fetchLists();
   }, []);
 
-  // 📁 CSV IMPORT
   const handleFile = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        setCsvData(results.data);
-        setColumns(Object.keys(results.data[0] || {}));
+        setCsvData(results.data || []);
+        setColumns(Object.keys(results.data?.[0] || {}));
+      },
+      error: () => {
+        showToast("Erreur lecture du fichier CSV", "danger");
       },
     });
   };
@@ -59,14 +76,12 @@ export default function ListsPage({ showToast }) {
 
     try {
       await updateList(editList._id, {
-        nomFiche: newName,
+        nomFiche: newName.trim(),
       });
 
       showToast("Nom modifié avec succès", "success");
-
       setEditList(null);
       setNewName("");
-
       fetchLists();
     } catch (err) {
       console.error(err);
@@ -74,30 +89,58 @@ export default function ListsPage({ showToast }) {
     }
   };
 
-  // ✅ CREATE LIST
   const handleCreate = async () => {
+    if (!listName.trim()) {
+      return showToast("Le nom de la fiche est obligatoire", "warning");
+    }
+
     if (!mapping.nom || !mapping.telephone) {
-      return showToast("Mapping incomplet", "warning");
+      return showToast("Le nom et le téléphone sont obligatoires", "warning");
+    }
+
+    if (!csvData.length) {
+      return showToast("Veuillez importer un fichier CSV", "warning");
     }
 
     try {
-      // 🔥 TRANSFORMATION ICI (IMPORTANT)
       const formattedData = csvData.map((row) => ({
-        nom: row[mapping.nom],
-        telephone: row[mapping.telephone],
+        nom: mapping.nom ? row[mapping.nom] || "" : "",
+        telephone: mapping.telephone ? row[mapping.telephone] || "" : "",
+        adresse: mapping.adresse ? row[mapping.adresse] || "" : "",
+        habitation: mapping.habitation ? row[mapping.habitation] || "" : "",
+        ville: mapping.ville ? row[mapping.ville] || "" : "",
+        age: mapping.age ? row[mapping.age] || "" : "",
+        codePostale: mapping.codePostale ? row[mapping.codePostale] || "" : "",
+        email: mapping.email ? row[mapping.email] || "" : "",
+        entreprise: mapping.entreprise ? row[mapping.entreprise] || "" : "",
+        pays: mapping.pays ? row[mapping.pays] || "" : "",
+        commentaire: mapping.commentaire ? row[mapping.commentaire] || "" : "",
       }));
 
       await createList({
-        nomFiche: "Nouvelle liste",
+        nomFiche: listName.trim(),
         infoFiche: formattedData,
       });
 
       showToast("Liste créée avec succès", "success");
 
       setModalOpen(false);
+      setListName("");
       setCsvData([]);
       setColumns([]);
-      setMapping({ nom: "", telephone: "" });
+      setMapping({
+        nom: "",
+        telephone: "",
+        adresse: "",
+        habitation: "",
+        ville: "",
+        age: "",
+        codePostale: "",
+        email: "",
+        entreprise: "",
+        pays: "",
+        commentaire: "",
+      });
 
       fetchLists();
     } catch (err) {
@@ -106,17 +149,204 @@ export default function ListsPage({ showToast }) {
     }
   };
 
-  // ❌ DELETE
-  const handleDelete = async (id) => {
-    if (!window.confirm("Supprimer cette liste ?")) return;
+  const handleDeleteClick = (list) => {
+    setDeleteModal({
+      open: true,
+      list,
+      loading: false,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.list?._id) return;
 
     try {
-      await deleteList(id);
+      setDeleteModal((prev) => ({ ...prev, loading: true }));
+
+      await deleteList(deleteModal.list._id);
+
       showToast("Liste supprimée", "success");
+
+      setDeleteModal({
+        open: false,
+        list: null,
+        loading: false,
+      });
+
+      if (selectedList?._id === deleteModal.list._id) {
+        setSelectedList(null);
+      }
+
       fetchLists();
     } catch (err) {
+      console.error(err);
       showToast("Erreur suppression", "danger");
+      setDeleteModal((prev) => ({ ...prev, loading: false }));
     }
+  };
+
+  const openImportModal = () => {
+    setModalOpen(true);
+    setListName("");
+    setCsvData([]);
+    setColumns([]);
+    setMapping({
+      nom: "",
+      telephone: "",
+      adresse: "",
+      habitation: "",
+      ville: "",
+      age: "",
+      codePostale: "",
+      email: "",
+      entreprise: "",
+      pays: "",
+      commentaire: "",
+    });
+  };
+
+  const mappingFields = [
+    { key: "nom", label: "Nom *" },
+    { key: "telephone", label: "Téléphone *" },
+    { key: "adresse", label: "Adresse" },
+    { key: "habitation", label: "Habitation" },
+    { key: "ville", label: "Ville" },
+    { key: "age", label: "Âge" },
+    { key: "codePostale", label: "Code postal" },
+    { key: "email", label: "Email" },
+    { key: "entreprise", label: "Entreprise" },
+    { key: "pays", label: "Pays" },
+    { key: "commentaire", label: "Commentaire" },
+  ];
+
+  const compactStyles = {
+    overlay: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(15, 23, 42, 0.45)",
+      backdropFilter: "blur(4px)",
+      WebkitBackdropFilter: "blur(4px)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999,
+      padding: "20px",
+    },
+    modal: {
+      width: "100%",
+      maxWidth: "860px",
+      background: "#ffffff",
+      borderRadius: "16px",
+      boxShadow: "0 18px 45px rgba(15, 23, 42, 0.16)",
+      padding: "18px 20px 18px 20px",
+      position: "relative",
+      maxHeight: "88vh",
+      overflowY: "auto",
+    },
+    modalHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "12px",
+    },
+    modalTitle: {
+      margin: 0,
+      fontSize: "24px",
+      fontWeight: 700,
+      color: "#1f2937",
+    },
+    closeButton: {
+      width: "38px",
+      height: "38px",
+      borderRadius: "50%",
+      border: "none",
+      background: "#f3f4f6",
+      color: "#6b7280",
+      fontSize: "16px",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    fieldBlock: {
+      marginBottom: "14px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "6px",
+    },
+    label: {
+      fontSize: "13px",
+      fontWeight: 600,
+      color: "#374151",
+    },
+    textInput: {
+      height: "40px",
+      borderRadius: "10px",
+      border: "1px solid #d1d5db",
+      padding: "0 12px",
+      fontSize: "13px",
+      background: "#fff",
+      color: "#111827",
+      outline: "none",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+      width: "100%",
+    },
+    fileInput: {
+      padding: "8px 12px",
+      border: "1px solid #d1d5db",
+      borderRadius: "10px",
+      background: "#f9fafb",
+      color: "#374151",
+      fontSize: "13px",
+      width: "100%",
+    },
+    mappingTitle: {
+      textAlign: "center",
+      fontSize: "18px",
+      fontWeight: 700,
+      color: "#1f2937",
+      marginBottom: "14px",
+      marginTop: "4px",
+    },
+    mappingGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gap: "12px",
+      alignItems: "start",
+    },
+    mappingItem: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "6px",
+    },
+    select: {
+      height: "40px",
+      borderRadius: "10px",
+      border: "1px solid #d1d5db",
+      padding: "0 10px",
+      fontSize: "13px",
+      background: "#fff",
+      color: "#111827",
+      outline: "none",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+    },
+    actionRow: {
+      marginTop: "18px",
+      display: "flex",
+      justifyContent: "flex-end",
+    },
+    createButton: {
+      minWidth: "140px",
+      height: "42px",
+      border: "none",
+      borderRadius: "10px",
+      background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+      color: "#fff",
+      fontSize: "14px",
+      fontWeight: 700,
+      cursor: "pointer",
+      boxShadow: "0 8px 18px rgba(37, 99, 235, 0.22)",
+    },
   };
 
   return (
@@ -127,12 +357,11 @@ export default function ListsPage({ showToast }) {
         <div className="topBar">
           <h1>Gestion des listes</h1>
 
-          <button className="btnPrimary" onClick={() => setModalOpen(true)}>
+          <button className="btnPrimary" onClick={openImportModal}>
             Import CSV
           </button>
         </div>
 
-        {/* LIST TABLE */}
         {loading ? (
           <div className="loadingBox">Chargement...</div>
         ) : (
@@ -160,10 +389,11 @@ export default function ListsPage({ showToast }) {
                     <button
                       className="btn btn-danger"
                       style={{ marginLeft: "2px" }}
-                      onClick={() => handleDelete(list._id)}
+                      onClick={() => handleDeleteClick(list)}
                     >
                       Supprimer
                     </button>
+
                     <button
                       className="btn btn-warning"
                       style={{ marginLeft: "5px" }}
@@ -216,65 +446,83 @@ export default function ListsPage({ showToast }) {
         )}
       </div>
 
-      {/* MODAL CSV */}
       {modalOpen && (
-        <>
-          <div className="modalOverlay">
-            <div className="insertFicheModal">
-              <div className="modalInsertFicheHeader">
-                <h2>Importer CSV</h2>
-                <button
-                  type="button"
-                  className="closeBtn"
-                  onClick={() => setModalOpen(false)}
-                >
-                  <i className="bi bi-x-lg" />
-                </button>
-              </div>
+        <div style={compactStyles.overlay}>
+          <div style={compactStyles.modal}>
+            <div style={compactStyles.modalHeader}>
+              <h2 style={compactStyles.modalTitle}>Importer CSV</h2>
 
-              <input type="file" accept=".csv" onChange={handleFile} />
-
-              {columns.length > 0 && (
-                <>
-                  <h4>Mapping</h4>
-                  <div className="mappingContainer">
-                    <select
-                      className="form-select"
-                      onChange={(e) =>
-                        setMapping({ ...mapping, nom: e.target.value })
-                      }
-                    >
-                      <option>Nom</option>
-                      {columns.map((col) => (
-                        <option key={col}>{col}</option>
-                      ))}
-                    </select>
-
-                    <select
-                      className="form-select"
-                      onChange={(e) =>
-                        setMapping({ ...mapping, telephone: e.target.value })
-                      }
-                    >
-                      <option>Téléphone</option>
-                      {columns.map((col) => (
-                        <option key={col}>{col}</option>
-                      ))}
-                    </select>
-
-                    <button className="btn btn-primary" onClick={handleCreate}>
-                      Créer
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* <button className="btn btn-secondary mt-3" onClick={() => setModalOpen(false)}>
-                Fermer
-              </button> */}
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                style={compactStyles.closeButton}
+              >
+                <i className="bi bi-x-lg" />
+              </button>
             </div>
+
+            <div style={compactStyles.fieldBlock}>
+              <label style={compactStyles.label}>Nom de la fiche *</label>
+              <input
+                type="text"
+                value={listName}
+                onChange={(e) => setListName(e.target.value)}
+                placeholder="Ex: Prospects Paris Avril"
+                style={compactStyles.textInput}
+              />
+            </div>
+
+            <div style={compactStyles.fieldBlock}>
+              <label style={compactStyles.label}>Fichier CSV</label>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFile}
+                style={compactStyles.fileInput}
+              />
+            </div>
+
+            {columns.length > 0 && (
+              <>
+                <h4 style={compactStyles.mappingTitle}>Mapping des colonnes</h4>
+
+                <div style={compactStyles.mappingGrid}>
+                  {mappingFields.map((field) => (
+                    <div key={field.key} style={compactStyles.mappingItem}>
+                      <label style={compactStyles.label}>{field.label}</label>
+                      <select
+                        value={mapping[field.key]}
+                        onChange={(e) =>
+                          setMapping({
+                            ...mapping,
+                            [field.key]: e.target.value,
+                          })
+                        }
+                        style={compactStyles.select}
+                      >
+                        <option value="">Choisir une colonne</option>
+                        {columns.map((col) => (
+                          <option key={col} value={col}>
+                            {col}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={compactStyles.actionRow}>
+                  <button
+                    onClick={handleCreate}
+                    style={compactStyles.createButton}
+                  >
+                    Créer la liste
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </>
+        </div>
       )}
 
       {editList && (
@@ -305,6 +553,43 @@ export default function ListsPage({ showToast }) {
 
               <button className="btn btn-primary" onClick={handleUpdateName}>
                 Sauvegarder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteModal.open && (
+        <div className="deleteModalOverlay">
+          <div className="deleteModal">
+            <h3>Supprimer la liste</h3>
+
+            <p>
+              Voulez-vous vraiment supprimer{" "}
+              <strong>{deleteModal.list?.nomFiche || "cette liste"}</strong> ?
+            </p>
+
+            <div className="deleteActions">
+              <button
+                className="btnGhost"
+                onClick={() =>
+                  setDeleteModal({
+                    open: false,
+                    list: null,
+                    loading: false,
+                  })
+                }
+                disabled={deleteModal.loading}
+              >
+                Annuler
+              </button>
+
+              <button
+                className="btnDanger"
+                onClick={confirmDelete}
+                disabled={deleteModal.loading}
+              >
+                {deleteModal.loading ? "Suppression..." : "Supprimer"}
               </button>
             </div>
           </div>
