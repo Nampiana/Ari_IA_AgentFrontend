@@ -11,22 +11,22 @@
   gap: 18px;
   margin-bottom: 24px;
   padding: 24px 26px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fbf8 100%);
+  background: var(--gradient-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow);
 }
 
 .btnDangerSmall {
-  background: red;
-  color: white;
+  background: var(--danger);
+  color: var(--white-principale);
   margin-left: 10px;
 }
 
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--rgb-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,14 +34,14 @@
 }
 
 .insertFicheModal {
-  background: #fff;
-  width: 80%;
+  background: var(--white-principale);
+  width: 40%;
   height: auto;
   border-radius: 14px;
   padding: 24px;
   text-align: center;
   animation: pop 0.2s ease;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 50px var(--rgb-dark-principale);
 }
 
 .mappingContainer {
@@ -61,6 +61,7 @@
   margin: 0;
   font-size: 24px;
   letter-spacing: -0.03em;
+  color: var(--dark-principale);
 }
 
 .closeBtn {
@@ -68,14 +69,14 @@
   height: 42px;
   border-radius: 50%;
   border: none;
-  background: #f1f4f7;
-  color: #42505d;
+  background: var(--close-bg);
+  color: var(--close-text);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .closeBtn:hover {
-  background: #e8edf2;
+  background: var(--close-bg-hover);
 }
 
 .listDetailsHeader {
@@ -84,5 +85,5 @@
   align-items: center;
   margin-bottom: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border);
 }

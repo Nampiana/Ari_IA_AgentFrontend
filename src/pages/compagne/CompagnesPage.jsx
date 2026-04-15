@@ -127,8 +127,8 @@ export default function CompagnesPage({ showToast }) {
     <div className="compagnesPage">
       <HeaderBar />
 
-      <div className="compagnesContainer">
-        <div className="compagnesTopBar">
+      <div className="agentsContainer">
+        <div className="agentsTopBar">
           <div>
             <h1>Gestion des campagnes</h1>
             <p>
@@ -203,7 +203,7 @@ export default function CompagnesPage({ showToast }) {
               </button>
 
               <button
-                className="btnDanger"
+                className="btnDelete"
                 onClick={confirmDelete}
                 disabled={deleteModal.loading}
               >
