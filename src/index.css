@@ -30,10 +30,18 @@
   --white-border: #eef2f6;
   --white-bg-principale: #fcfdff;
   --white-bg-soft: linear-gradient(180deg, #f8fafc 0%, #f4f8fa 100%);
+  --white-tertiaire: #e2e8ef;
+  --white-bg-secondaire: #f4f6f8;
+  --white-bg-tertiaire: #ffe8e8;
 
   --gray-principale: #475467;
   --gray-box-shadow: rgba(76, 175, 80, 0.12);
   --gray-box-shadow-primary: rgba(15, 23, 42, 0.09);
+  --gray-secondaire: #6c7a87;
+  --gray-tertiaire: #41505d;
+
+  --red-principale: #c0392b;
+  --red-secondaire: #ffb3b3;
 
   --background-principale: rgba(15, 23, 42, 0.45);
   --background-secondaire: rgba(230, 235, 241, 0.9);

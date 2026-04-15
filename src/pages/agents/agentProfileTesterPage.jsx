@@ -53,8 +53,7 @@ export default function AgentProfileTesterPage({ showToast }) {
         <div className="testerCard">
           <h1>Tester le profil retourné par l’API</h1>
           <p>
-            Entrez un numéro pour tester la route :
-            <strong> /api/agents/profile?calledNumber=...</strong>
+            Entrez un numéro pour tester la route
           </p>
 
           <div className="testerInputRow">

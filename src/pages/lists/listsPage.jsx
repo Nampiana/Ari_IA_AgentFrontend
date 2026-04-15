@@ -592,7 +592,7 @@ export default function ListsPage({ showToast }) {
               </button>
 
               <button
-                className="btnDanger"
+                className="btnDelete"
                 onClick={confirmDelete}
                 disabled={deleteModal.loading}
               >
