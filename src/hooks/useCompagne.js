@@ -23,11 +23,16 @@ export default function useCompagne() {
     return await service.delete(id);
   };
 
+  const lancerCompagne = async (id) => {
+    return await service.lancerAppelCompagne(id);
+  }
+
   return {
     getCompagnes,
     getCompagne,
     createCompagne,
     updateCompagne,
     deleteCompagne,
+    lancerCompagne
   };
 }

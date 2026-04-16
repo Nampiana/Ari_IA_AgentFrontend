@@ -1,6 +1,7 @@
 import React from "react";
 
-export default function CompagneCard({ compagne, onEdit, onDelete }) {
+export default function CompagneCard({ compagne, onEdit, onDelete, lancerCampagne }) {
+
   return (
     <div className="compagneCard">
       <div className="compagneCardTop">
@@ -18,8 +19,11 @@ export default function CompagneCard({ compagne, onEdit, onDelete }) {
           <button
             type="button"
             className="btnLancer"
+            onClick={()=>{
+              lancerCampagne(compagne)
+            }}
           >
-            Lancer
+            {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
           </button>
           <button
             type="button"

@@ -17,7 +17,7 @@ export default function ListsPage({ showToast }) {
   const [columns, setColumns] = useState([]);
   const [mapping, setMapping] = useState({
     nom: "",
-    telephone: "",
+    phone: "",
     adresse: "",
     habitation: "",
     ville: "",
@@ -94,7 +94,7 @@ export default function ListsPage({ showToast }) {
       return showToast("Le nom de la fiche est obligatoire", "warning");
     }
 
-    if (!mapping.nom || !mapping.telephone) {
+    if (!mapping.nom || !mapping.phone) {
       return showToast("Le nom et le téléphone sont obligatoires", "warning");
     }
 
@@ -105,7 +105,7 @@ export default function ListsPage({ showToast }) {
     try {
       const formattedData = csvData.map((row) => ({
         nom: mapping.nom ? row[mapping.nom] || "" : "",
-        telephone: mapping.telephone ? row[mapping.telephone] || "" : "",
+        phone: mapping.phone ? row[mapping.phone] || "" : "",
         adresse: mapping.adresse ? row[mapping.adresse] || "" : "",
         habitation: mapping.habitation ? row[mapping.habitation] || "" : "",
         ville: mapping.ville ? row[mapping.ville] || "" : "",
@@ -130,7 +130,7 @@ export default function ListsPage({ showToast }) {
       setColumns([]);
       setMapping({
         nom: "",
-        telephone: "",
+        phone: "",
         adresse: "",
         habitation: "",
         ville: "",
@@ -192,7 +192,7 @@ export default function ListsPage({ showToast }) {
     setColumns([]);
     setMapping({
       nom: "",
-      telephone: "",
+      phone: "",
       adresse: "",
       habitation: "",
       ville: "",
@@ -207,7 +207,7 @@ export default function ListsPage({ showToast }) {
 
   const mappingFields = [
     { key: "nom", label: "Nom *" },
-    { key: "telephone", label: "Téléphone *" },
+    { key: "phone", label: "Téléphone *" },
     { key: "adresse", label: "Adresse" },
     { key: "habitation", label: "Habitation" },
     { key: "ville", label: "Ville" },

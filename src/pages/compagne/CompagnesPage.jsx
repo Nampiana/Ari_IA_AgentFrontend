@@ -8,7 +8,7 @@ import "../../assets/css/CompagnesPage.css";
 import useLists from "../../hooks/useLists";
 
 export default function CompagnesPage({ showToast }) {
-  const { getCompagnes, createCompagne, updateCompagne, deleteCompagne } =
+  const { getCompagnes, createCompagne, updateCompagne, deleteCompagne, lancerCompagne } =
     useCompagne();
   const { getAgents } = useAgent();
 
@@ -26,14 +26,14 @@ export default function CompagnesPage({ showToast }) {
   const [lists, setLists] = useState([]);
 
   const fetchLists = async () => {
-  try {
-    const res = await getLists();
-    const data = res?.data?.data || [];
-    setLists(data);
-  } catch (e) {
-    console.error(e);
-  }
-};
+    try {
+      const res = await getLists();
+      const data = res?.data?.data || [];
+      setLists(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchCompagnes = async () => {
     try {
@@ -84,39 +84,61 @@ export default function CompagnesPage({ showToast }) {
     });
   };
 
-  const confirmDelete = async () => {
+  const lancerCampagne = async (compagne) => {
     try {
-      setDeleteModal((prev) => ({ ...prev, loading: true }));
+      const statusRunning = compagne.isRunning === 1 ? 0 : 1;
 
-      await deleteCompagne(deleteModal.compagne);
+      await updateCompagne(compagne._id, { isRunning: statusRunning });
+      if (statusRunning === 1) {
+        await lancerCompagne(compagne._id);
+        showToast("Campagne lancée", "success");
+      } else {
+        showToast("Campagne arrêtée", "info");
+      }
+
+      setCompagnes((prev) =>
+        prev.map((c) =>
+          c._id === compagne._id ? { ...c, isRunning: statusRunning } : c,
+        ),
+      );
+    } catch (error) {
+      console.error("Erreur lancement campagne :", error);
+      showToast("Erreur lors du lancement de la campagne", "danger");
+    }
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteModal.compagne;
+    const backup = compagnes;
+    setCompagnes((prev) => prev.filter((c) => c._id !== id));
+    try {
+      await deleteCompagne(id);
 
       showToast("Campagne supprimée avec succès", "success");
-
       setDeleteModal({ open: false, compagne: null, loading: false });
-
-      fetchCompagnes();
     } catch (error) {
-      console.error("Erreur suppression :", error);
-
+      setCompagnes(backup);
       showToast("Erreur lors de la suppression", "danger");
-
-      setDeleteModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
   const handleSubmit = async (payload) => {
     try {
       if (selectedCompagne?._id) {
-        await updateCompagne(selectedCompagne._id, payload);
+        const updated = await updateCompagne(selectedCompagne._id, payload);
+        setCompagnes((prev) =>
+          prev.map((c) =>
+            c._id === selectedCompagne._id ? { ...c, ...payload } : c,
+          ),
+        );
         showToast("Campagne mise à jour avec succès", "success");
       } else {
-        await createCompagne(payload);
+        const created = await createCompagne(payload);
+        setCompagnes((prev) => [created, ...prev]);
         showToast("Campagne créée avec succès", "success");
       }
-
       setModalOpen(false);
       setSelectedCompagne(null);
-      fetchCompagnes();
     } catch (error) {
       console.error("Erreur enregistrement campagne :", error);
       showToast("Erreur lors de l'enregistrement", "danger");
@@ -158,6 +180,7 @@ export default function CompagnesPage({ showToast }) {
                 compagne={compagne}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                lancerCampagne={lancerCampagne}
               />
             ))}
           </div>

@@ -25,6 +25,10 @@ class CompagneServices {
   delete(id) {
     return this.api.delete(ApiUrl + `compagnes/${id}`);
   }
+
+  lancerAppelCompagne(id) {
+    return this.api.post(ApiUrl + `compagnes/autodialer/${id}`);
+  }
 }
 
 const api = axios.create({
