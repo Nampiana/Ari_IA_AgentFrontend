@@ -68,6 +68,26 @@ const buildRecordUrl = (pathRecord) => {
   return `${base}/${cleanPath}`;
 };
 
+const isSameOrAfter = (itemDate, startDate) => {
+  if (!startDate) return true;
+
+  const current = new Date(itemDate);
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+
+  return current >= start;
+};
+
+const isSameOrBefore = (itemDate, endDate) => {
+  if (!endDate) return true;
+
+  const current = new Date(itemDate);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+
+  return current <= end;
+};
+
 export default function HistoriquesPage({ showToast }) {
   const { getHistoriques } = useHistoriqueIa();
 
@@ -75,6 +95,8 @@ export default function HistoriquesPage({ showToast }) {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [dateStart, setDateStart] = useState("");
+  const [dateEnd, setDateEnd] = useState("");
   const [selectedHistorique, setSelectedHistorique] = useState(null);
 
   const fetchHistoriques = async () => {
@@ -94,6 +116,13 @@ export default function HistoriquesPage({ showToast }) {
   useEffect(() => {
     fetchHistoriques();
   }, []);
+
+  const resetFilters = () => {
+    setSearch("");
+    setSelectedStatus("all");
+    setDateStart("");
+    setDateEnd("");
+  };
 
   const filteredHistoriques = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -120,9 +149,17 @@ export default function HistoriquesPage({ showToast }) {
 
       const matchesSearch = !keyword || text.includes(keyword);
 
-      return matchesStatus && matchesSearch;
+      const matchesDateStart = isSameOrAfter(item.callDate, dateStart);
+      const matchesDateEnd = isSameOrBefore(item.callDate, dateEnd);
+
+      return (
+        matchesStatus &&
+        matchesSearch &&
+        matchesDateStart &&
+        matchesDateEnd
+      );
     });
-  }, [historiques, search, selectedStatus]);
+  }, [historiques, search, selectedStatus, dateStart, dateEnd]);
 
   return (
     <div className="historiquesPage">
@@ -149,6 +186,22 @@ export default function HistoriquesPage({ showToast }) {
                 <option value="1">NI</option>
               </select>
 
+              <div className="historiquesDateFilter">
+                <input
+                  type="date"
+                  className="historiquesDateInput"
+                  value={dateStart}
+                  onChange={(e) => setDateStart(e.target.value)}
+                />
+                <span className="historiquesDateSeparator">—</span>
+                <input
+                  type="date"
+                  className="historiquesDateInput"
+                  value={dateEnd}
+                  onChange={(e) => setDateEnd(e.target.value)}
+                />
+              </div>
+
               <div className="historiquesSearch">
                 <i className="bi bi-search" />
                 <input
@@ -158,6 +211,14 @@ export default function HistoriquesPage({ showToast }) {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
+
+              <button
+                type="button"
+                className="historiquesResetBtn"
+                onClick={resetFilters}
+              >
+                Réinitialiser
+              </button>
             </div>
           </div>
 
