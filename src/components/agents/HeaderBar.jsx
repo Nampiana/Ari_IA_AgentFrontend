@@ -83,9 +83,9 @@ export default function HeaderBar() {
           </Link>
 
           <Link
-            to="/tester"
+            to="/historique"
             onClick={() => setOpen(false)}
-            className={`headerLink ${location.pathname === "/tester" ? "active" : ""}`}
+            className={`headerLink ${location.pathname === "/historique" ? "active" : ""}`}
           >
             historique
           </Link>
