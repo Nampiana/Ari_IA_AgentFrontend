@@ -92,9 +92,7 @@ export default function CompagnesPage({ showToast }) {
   const lancerCampagne = async (compagne) => {
     try {
       const statusRunning = compagne.isRunning == 1 ? 0 : 1;
-      if (statusRunning == 1) {
-        console.log("Lancement......");
-        
+      if (statusRunning == 1) {        
         showToast("Campagne lancée", "success");
         await lancerAppelCompagne(compagne._id);
       } else {

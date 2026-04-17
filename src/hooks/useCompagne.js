@@ -18,11 +18,11 @@ export default function useCompagne() {
   };
 
   const deleteCompagne = async (id) => {
-    return await service.delete(id);
+    return await CompagneServices.delete(id);
   };
 
   const lancerAppelCompagne = async (id) => {
-    return await service.lancerAppelCompagne(id);
+    return await CompagneServices.lancerAppelCompagne(id);
   }
 
   return {
