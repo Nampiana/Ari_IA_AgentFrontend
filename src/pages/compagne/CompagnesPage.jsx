@@ -92,12 +92,6 @@ export default function CompagnesPage({ showToast }) {
   const lancerCampagne = async (compagne) => {
     try {
       const statusRunning = compagne.isRunning == 1 ? 0 : 1;
-      if (statusRunning == 1) {        
-        showToast("Campagne lancée", "success");
-        await lancerAppelCompagne(compagne._id);
-      } else {
-        showToast("Campagne arrêtée", "info");
-      }
 
       const res = await updateCompagne(compagne._id, {
         isRunning: statusRunning,
@@ -107,6 +101,12 @@ export default function CompagnesPage({ showToast }) {
       setCompagnes((prev) =>
         prev.map((c) => (c._id === compagne._id ? updated : c)),
       );
+      if (statusRunning == 1) {
+        showToast("Campagne lancée", "success");
+        await lancerAppelCompagne(compagne._id);
+      } else {
+        showToast("Campagne arrêtée", "info");
+      }
     } catch (error) {
       console.error("Erreur lancement campagne :", error);
       showToast("Erreur lors du lancement de la campagne", "danger");
