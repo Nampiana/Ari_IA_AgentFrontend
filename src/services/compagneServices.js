@@ -1,37 +1,26 @@
 import axios from "axios";
-import { ApiUrl } from "../utils/modules.js";
+import { ApiUrl, header } from "../utils/modules.js";
 
 class CompagneServices {
-  constructor(api) {
-    this.api = api;
-  }
-
   getAll() {
-    return this.api.get(ApiUrl + "compagnes");
+    return axios.get(ApiUrl + "compagnes", header());
   }
 
   getOne(id) {
-    return this.api.get(ApiUrl + `compagnes/${id}`);
+    return axios.get(ApiUrl + `compagnes/${id}`, header());
   }
 
   create(data) {
-    return this.api.post(ApiUrl + "compagnes", data);
+    return axios.post(ApiUrl + "compagnes", data, header());
   }
 
   update(id, data) {
-    return this.api.put(ApiUrl + `compagnes/${id}`, data);
+    return axios.put(ApiUrl + `compagnes/${id}`, data, header());
   }
 
   delete(id) {
-    return this.api.delete(ApiUrl + `compagnes/${id}`);
+    return axios.delete(ApiUrl + `compagnes/${id}`, header());
   }
 }
 
-const api = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-export { api };
-export default CompagneServices;
+export default new CompagneServices();

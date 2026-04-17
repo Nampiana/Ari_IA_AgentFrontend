@@ -1,38 +1,26 @@
 import axios from "axios";
-import { ApiUrl } from "../utils/modules.js";
+import { ApiUrl, header } from "../utils/modules.js";
 
 class ListeServices {
-  constructor(api) {
-    this.api = api;
-  }
-
   getAll() {
-    return this.api.get(ApiUrl + "lists");
+    return axios.get(ApiUrl + "lists", header());
   }
 
   getOne(id) {
-    return this.api.get(ApiUrl + `lists/${id}`);
+    return axios.get(ApiUrl + `lists/${id}`, header());
   }
 
   create(data) {
-    return this.api.post(ApiUrl + "lists", data);
+    return axios.post(ApiUrl + "lists", data, header());
   }
 
   update(id, data) {
-    return this.api.put(ApiUrl + `lists/${id}`, data);
+    return axios.put(ApiUrl + `lists/${id}`, data, header());
   }
 
   delete(id) {
-    return this.api.delete(ApiUrl + `lists/${id}`);
+    return axios.delete(ApiUrl + `lists/${id}`, header());
   }
-
 }
 
-const api = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-export { api };
-export default ListeServices;
+export default new ListeServices();

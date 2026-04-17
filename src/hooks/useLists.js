@@ -1,26 +1,24 @@
-import ListeServices, { api } from "../services/listeServices.js";
+import ListeServices from "../services/listeServices.js";
 
 export default function useLists() {
-  const service = new ListeServices(api);
-
   const getLists = async () => {
-    return service.getAll();
+    return ListeServices.getAll();
   };
 
   const getList = async (id) => {
-    return service.getOne(id);
+    return ListeServices.getOne(id);
   };
 
   const createList = async (data) => {
-    return service.create(data);
+    return ListeServices.create(data);
   };
 
   const updateList = async (id, data) => {
-    return service.update(id, data);
+    return ListeServices.update(id, data);
   };
 
   const deleteList = async (id) => {
-    return service.delete(id);
+    return ListeServices.delete(id);
   };
 
   return {

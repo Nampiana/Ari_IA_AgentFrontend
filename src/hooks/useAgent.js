@@ -1,30 +1,28 @@
-import AgentServices, { api } from "../services/agentServices.js";
+import AgentServices from "../services/agentServices.js";
 
 export default function useAgent() {
-  const service = new AgentServices(api);
-
   const getAgents = async () => {
-    return service.getAll();
+    return AgentServices.getAll();
   };
 
   const getAgent = async (id) => {
-    return service.getOne(id);
+    return AgentServices.getOne(id);
   };
 
   const createAgent = async (data) => {
-    return service.create(data);
+    return AgentServices.create(data);
   };
 
   const updateAgent = async (id, data) => {
-    return service.update(id, data);
+    return AgentServices.update(id, data);
   };
 
   const deleteAgent = async (id) => {
-    return service.delete(id);
+    return AgentServices.delete(id);
   };
 
   const getAgentProfileByNumber = async (calledNumber) => {
-    return service.getProfileByNumber(calledNumber);
+    return AgentServices.getProfileByNumber(calledNumber);
   };
 
   return {

@@ -1,41 +1,33 @@
 import axios from "axios";
-import { ApiUrl } from "../utils/modules.js";
+import { ApiUrl, header } from "../utils/modules.js";
 
 class AgentServices {
-  constructor(api) {
-    this.api = api;
-  }
-
   getAll() {
-    return this.api.get(ApiUrl + "agents");
+    return axios.get(ApiUrl + "agents", header());
   }
 
   getOne(id) {
-    return this.api.get(ApiUrl + `agents/${id}`);
+    return axios.get(ApiUrl + `agents/${id}`, header());
   }
 
   create(data) {
-    return this.api.post(ApiUrl + "agents", data);
+    return axios.post(ApiUrl + "agents", data, header());
   }
 
   update(id, data) {
-    return this.api.put(ApiUrl + `agents/${id}`, data);
+    return axios.put(ApiUrl + `agents/${id}`, data, header());
   }
 
   delete(id) {
-    return this.api.delete(ApiUrl + `agents/${id}`);
+    return axios.delete(ApiUrl + `agents/${id}`, header());
   }
 
   getProfileByNumber(calledNumber) {
-    return this.api.get(ApiUrl + `agents/profile?calledNumber=${encodeURIComponent(calledNumber)}`);
+    return axios.get(
+      ApiUrl + `agents/profile?calledNumber=${encodeURIComponent(calledNumber)}`,
+      header()
+    );
   }
 }
 
-const api = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-export { api };
-export default AgentServices;
+export default new AgentServices();
