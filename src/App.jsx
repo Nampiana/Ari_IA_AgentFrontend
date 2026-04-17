@@ -8,6 +8,7 @@ import AgentProfileTesterPage from "./pages/agents/agentProfileTesterPage.jsx";
 import CompagnesPage from "./pages/compagne/CompagnesPage.jsx";
 import ListsPage from "./pages/lists/listsPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
+import Historique from "./pages/historique/HistoriquesPage.jsx";
 
 import ToastMessage from "./components/alert/toastMessage.js";
 import { AuthProvider, AuthContext } from "./context/AuthContext.jsx";
@@ -55,6 +56,15 @@ function AppRoutes({ showToast }) {
         element={
           <PrivateRoute>
             <AgentProfileTesterPage showToast={showToast} />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/historique"
+        element={
+          <PrivateRoute>
+            <Historique showToast={showToast} />
           </PrivateRoute>
         }
       />
