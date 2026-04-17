@@ -21,7 +21,7 @@ export default function useCompagne() {
     return await service.delete(id);
   };
 
-  const lancerCompagne = async (id) => {
+  const lancerAppelCompagne = async (id) => {
     return await service.lancerAppelCompagne(id);
   }
 
@@ -31,6 +31,6 @@ export default function useCompagne() {
     createCompagne,
     updateCompagne,
     deleteCompagne,
-    lancerCompagne,
+    lancerAppelCompagne,
   };
 }
