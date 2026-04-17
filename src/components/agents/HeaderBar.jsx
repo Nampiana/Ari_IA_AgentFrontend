@@ -40,7 +40,7 @@ export default function HeaderBar() {
     <>
       <header className="headerBar">
         <div className="headerBarLeft">
-          <div className="agentLogo">AI Agent Manager</div>
+          <div className="agentLogo"><img src="favicon.ico" alt="Logo" style={{width:"40px", height:"40px"}}/> AI Agent Manager</div>
         </div>
 
         <div className="burger" onClick={toggleMenu}>
