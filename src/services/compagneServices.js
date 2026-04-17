@@ -25,10 +25,6 @@ class CompagneServices {
   lancerAppelCompagne(id) {
     return axios.post(ApiUrl + `compagnes/autodialer/${id}`, {}, header());
   }
-
-  lancerAppelCompagne(id) {
-    return this.api.post(ApiUrl + `compagnes/autodialer/${id}`);
-  }
 }
 
 export default new CompagneServices();
