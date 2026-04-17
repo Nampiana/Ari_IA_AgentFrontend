@@ -1,22 +1,20 @@
-import CompagneServices, { api } from "../services/compagneServices.js";
+import CompagneServices from "../services/compagneServices.js";
 
 export default function useCompagne() {
-  const service = new CompagneServices(api);
-
   const getCompagnes = async () => {
-    return await service.getAll();
+    return CompagneServices.getAll();
   };
 
   const getCompagne = async (id) => {
-    return await service.getOne(id);
+    return CompagneServices.getOne(id);
   };
 
   const createCompagne = async (data) => {
-    return await service.create(data);
+    return CompagneServices.create(data);
   };
 
   const updateCompagne = async (id, data) => {
-    return await service.update(id, data);
+    return CompagneServices.update(id, data);
   };
 
   const deleteCompagne = async (id) => {
@@ -33,6 +31,6 @@ export default function useCompagne() {
     createCompagne,
     updateCompagne,
     deleteCompagne,
-    lancerCompagne
+    lancerCompagne,
   };
 }

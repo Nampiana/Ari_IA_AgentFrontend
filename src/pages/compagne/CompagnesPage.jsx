@@ -8,8 +8,13 @@ import "../../assets/css/CompagnesPage.css";
 import useLists from "../../hooks/useLists";
 
 export default function CompagnesPage({ showToast }) {
-  const { getCompagnes, createCompagne, updateCompagne, deleteCompagne, lancerCompagne } =
-    useCompagne();
+  const {
+    getCompagnes,
+    createCompagne,
+    updateCompagne,
+    deleteCompagne,
+    lancerCompagne,
+  } = useCompagne();
   const { getAgents } = useAgent();
 
   const [compagnes, setCompagnes] = useState([]);
@@ -86,21 +91,29 @@ export default function CompagnesPage({ showToast }) {
 
   const lancerCampagne = async (compagne) => {
     try {
-      const statusRunning = compagne.isRunning === 1 ? 0 : 1;
+      const statusRunning = compagne.isRunning == 1 ? 0 : 1;
 
-      await updateCompagne(compagne._id, { isRunning: statusRunning });
-      if (statusRunning === 1) {
-        await lancerCompagne(compagne._id);
+      const res = await updateCompagne(compagne._id, {
+        isRunning: statusRunning,
+      });
+      const updated = res?.data?.data;
+
+      setCompagnes((prev) =>
+        prev.map((c) => (c._id === compagne._id ? updated : c)),
+      );
+
+      if (statusRunning == 1) {
         showToast("Campagne lancée", "success");
+        await lancerCompagne(compagne._id);
       } else {
         showToast("Campagne arrêtée", "info");
       }
 
-      setCompagnes((prev) =>
-        prev.map((c) =>
-          c._id === compagne._id ? { ...c, isRunning: statusRunning } : c,
-        ),
-      );
+      // setCompagnes((prev) =>
+      //   prev.map((c) =>
+      //     c._id === compagne._id ? { ...c, isRunning: statusRunning } : c,
+      //   ),
+      // );
     } catch (error) {
       console.error("Erreur lancement campagne :", error);
       showToast("Erreur lors du lancement de la campagne", "danger");
@@ -126,15 +139,16 @@ export default function CompagnesPage({ showToast }) {
     try {
       if (selectedCompagne?._id) {
         const updated = await updateCompagne(selectedCompagne._id, payload);
+        const updatedData = updated?.data?.data;
         setCompagnes((prev) =>
-          prev.map((c) =>
-            c._id === selectedCompagne._id ? { ...c, ...payload } : c,
-          ),
+          prev.map((c) => (c._id === selectedCompagne._id ? updatedData : c)),
         );
+
         showToast("Campagne mise à jour avec succès", "success");
       } else {
-        const created = await createCompagne(payload);
-        setCompagnes((prev) => [created, ...prev]);
+        const res = await createCompagne(payload);
+        const newData = res?.data?.data;
+        setCompagnes((prev) => [newData, ...prev]);
         showToast("Campagne créée avec succès", "success");
       }
       setModalOpen(false);
