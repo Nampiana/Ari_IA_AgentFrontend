@@ -21,7 +21,6 @@ export default function AgentProfileTesterPage({ showToast }) {
       setError(null);
 
       const res = await getAgentProfileByNumber(calledNumber);
-
       const data = res?.data?.data || null;
 
       if (!data) {
@@ -38,12 +37,16 @@ export default function AgentProfileTesterPage({ showToast }) {
 
       setProfile(null);
       setError("Erreur lors de la récupération du profil");
-
       showToast(error?.response?.data?.message || "Erreur serveur", "danger");
     } finally {
       setLoading(false);
     }
   };
+
+  const ficheColumns =
+    profile?.fiche?.infoFiche && profile.fiche.infoFiche.length > 0
+      ? Object.keys(profile.fiche.infoFiche[0])
+      : [];
 
   return (
     <div className="testerPage">
@@ -52,9 +55,7 @@ export default function AgentProfileTesterPage({ showToast }) {
       <div className="testerContainer">
         <div className="testerCard">
           <h1>Tester le profil retourné par l’API</h1>
-          <p>
-            Entrez un numéro pour tester la route
-          </p>
+          <p>Entrez un numéro pour tester la route</p>
 
           <div className="testerInputRow">
             <input
@@ -74,6 +75,7 @@ export default function AgentProfileTesterPage({ showToast }) {
           </div>
 
           {loading && <div className="loadingBox">Chargement du profil...</div>}
+
           {error && !loading && (
             <div className="errorBox">
               <i className="bi bi-exclamation-triangle-fill"></i>
@@ -88,6 +90,7 @@ export default function AgentProfileTesterPage({ showToast }) {
                   <h2>{profile.nomAgent}</h2>
                   <p>{profile.companyName}</p>
                 </div>
+
                 <div className="profileBadges">
                   <span className="badge success">
                     {profile.active === 1 ? "Actif" : "Inactif"}
@@ -111,10 +114,52 @@ export default function AgentProfileTesterPage({ showToast }) {
                   <span className="label">Vitesse</span>
                   <div>{profile.speed}</div>
                 </div>
-                {/* <div>
-                  <span className="label">Numéros</span>
-                  <div>{profile.calledNumbers?.join(", ") || "Aucun"}</div>
-                </div> */}
+                <div>
+                  <span className="label">Campagne</span>
+                  <div>{profile.nomCompagne || "Non définie"}</div>
+                </div>
+              </div>
+
+              <div className="instructionsBox">
+                <span className="label">Fiche liée</span>
+
+                {profile.fiche ? (
+                  <>
+                    <div className="ficheTitleRow">
+                      <strong>Nom de la fiche :</strong>
+                      <span>{profile.fiche.nomFiche}</span>
+                    </div>
+
+                    {profile.fiche.infoFiche?.length > 0 ? (
+                      <div className="ficheTableWrapper">
+                        <table className="ficheTable">
+                          <thead>
+                            <tr>
+                              {ficheColumns.map((col) => (
+                                <th key={col}>{col}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {profile.fiche.infoFiche.map((row, i) => (
+                              <tr key={i}>
+                                {ficheColumns.map((col) => (
+                                  <td key={col}>{row[col] || ""}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="emptyFicheText">
+                        Aucune information dans cette fiche
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div>Aucune fiche liée</div>
+                )}
               </div>
 
               <div className="instructionsBox">

@@ -1,0 +1,264 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,800");
+
+* {
+  box-sizing: border-box;
+}
+
+.bodyVt {
+  background: #f6f5f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-family: "Montserrat", sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 24px;
+}
+
+.h1Vt {
+  font-weight: bold;
+  margin: 0;
+  font-size: 30px;
+}
+
+.h2Vt {
+  text-align: center;
+}
+
+.pVt {
+  font-size: 14px;
+  font-weight: 100;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  margin: 20px 0 30px;
+  max-width: 280px;
+}
+
+.aVt {
+  color: #333;
+  font-size: 14px;
+  text-decoration: none;
+  margin: 15px 0;
+}
+
+.buttonVt {
+  border-radius: 20px;
+  border: 1px solid #61ce70;
+  background-color: #61ce70;
+  color: rgba(255, 246, 246, 0.95);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in, opacity 0.2s ease;
+  cursor: pointer;
+  min-width: 175px;
+}
+
+.buttonVt:active {
+  transform: scale(0.95);
+}
+
+.buttonVt:focus {
+  outline: none;
+}
+
+.buttonVt:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.buttonVt.ghost {
+  background-color: transparent;
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.forms {
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 50px;
+  height: 100%;
+  text-align: center;
+}
+
+.inputs {
+  background-color: #e7edf7;
+  border: none;
+  padding: 13px 15px;
+  margin: 8px 0;
+  width: 100%;
+  max-width: 285px;
+  font-size: 15px;
+  color: #111;
+}
+
+.inputs:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(97, 206, 112, 0.2);
+}
+
+.containerVt {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.25),
+    0 10px 10px rgba(0, 0, 0, 0.22);
+  position: relative;
+  overflow: hidden;
+  width: 768px;
+  max-width: 100%;
+  min-height: 480px;
+}
+
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+
+.sign-in-container {
+  left: 0;
+  width: 50%;
+  z-index: 2;
+}
+
+.overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.overlay {
+  background: #61ce70;
+  background: linear-gradient(to right, #9acaa0, #61ce70);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 0 0;
+  color: #ffffff;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+}
+
+.overlay-panel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 40px;
+  text-align: center;
+  top: 0;
+  height: 100%;
+  width: 50%;
+}
+
+.overlay-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.logo {
+  width: 220px;
+  max-width: 100%;
+  margin-bottom: 26px;
+  object-fit: contain;
+}
+
+.loginLinkBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.loginLinkBtn:hover {
+  text-decoration: underline;
+}
+
+/* responsive */
+@media screen and (max-width: 768px) {
+  .containerVt {
+    width: 100%;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-container,
+  .sign-in-container,
+  .overlay-container {
+    position: relative;
+    width: 100%;
+    left: auto;
+    top: auto;
+    height: auto;
+  }
+
+  .sign-in-container {
+    min-height: 360px;
+  }
+
+  .overlay-container {
+    min-height: 240px;
+  }
+
+  .overlay {
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .overlay-panel {
+    position: relative;
+    width: 100%;
+    padding: 30px 24px;
+  }
+
+  .forms {
+    padding: 32px 24px;
+  }
+
+  .h1Vt {
+    font-size: 24px;
+  }
+
+  .pVt {
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 532px) {
+  .buttonVt {
+    font-size: 10px;
+    padding: 10px 20px;
+    min-width: 150px;
+  }
+
+  .inputs {
+    padding: 12px 12px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .aVt {
+    font-size: 12px;
+  }
+
+  .logo {
+    width: 180px;
+  }
+}
