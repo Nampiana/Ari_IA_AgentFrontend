@@ -112,10 +112,10 @@
 
 .historiqueRow {
   display: grid;
-  grid-template-columns: 64px 1.2fr 1.2fr 1fr 140px 240px;
+  grid-template-columns: minmax(220px, 1.35fr) minmax(180px, 1.1fr) minmax(170px, 1fr) minmax(130px, 0.9fr) 120px 240px;
   align-items: center;
   gap: 16px;
-  padding: 14px 6px;
+  padding: 16px 8px;
   border-bottom: 1px solid #edf1f7;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
@@ -422,13 +422,17 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .historiqueRow {
-    grid-template-columns: 56px 1fr 1fr 0.9fr 120px;
+    grid-template-columns: 1.3fr 1fr 1fr 0.9fr 120px;
   }
 
   .historiqueAudioCol {
-    grid-column: 2 / -1;
+    grid-column: 1 / -1;
     justify-content: flex-start;
-    padding-top: 2px;
+    padding-top: 6px;
+  }
+
+  .historiqueAudio {
+    max-width: 320px;
   }
 }
 
@@ -447,21 +451,18 @@
   }
 
   .historiqueRow {
-    grid-template-columns: 52px 1fr;
-    gap: 12px;
-    padding: 14px 2px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px 4px;
   }
 
-  .historiqueStatusIcon {
-    margin-left: 4px;
-  }
-
-  .historiqueCaller,
+  .historiqueNumber,
+  .historiqueCampagne,
   .historiqueAgent,
   .historiqueDate,
   .historiqueBadgeCol,
   .historiqueAudioCol {
-    grid-column: 2 / 3;
+    grid-column: auto;
   }
 
   .historiqueBadgeCol,
@@ -476,6 +477,7 @@
 
   .historiqueAudio {
     width: 100%;
+    max-width: 100%;
   }
 
   .historiqueDetailGrid {
@@ -552,4 +554,55 @@
 
 .historiquesResetBtn:hover {
   background: #e0e7ff;
+}
+
+.historiqueNumber .historiqueMain span,
+.historiqueCampagne .historiqueMain span,
+.historiqueAgent .historiqueMain span {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.historiqueNumber .historiqueMain {
+  color: #18243d;
+  font-weight: 700;
+}
+
+.historiqueCampagne .historiqueMain {
+  color: #1f2a44;
+  font-weight: 700;
+}
+
+.historiqueAgent .historiqueMain {
+  color: #1f2a44;
+  font-weight: 700;
+}
+
+.historiqueDate .historiqueMain {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.historiqueDate .historiqueSub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.historiqueAudioCol {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.historiqueAudio {
+  width: 100%;
+  max-width: 220px;
+  height: 36px;
+}
+
+.historiqueBadgeCol {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }

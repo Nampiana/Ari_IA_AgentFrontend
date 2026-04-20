@@ -63,8 +63,6 @@ const buildRecordUrl = (pathRecord) => {
     .replace("/api/v1/", "")
     .replace(/\/$/, "");
 
- /* const cleanPath = String(pathRecord).replace(/\\/g, "/").replace(/^\/+/, "");*/
-
   return `${base}/files/${pathRecord}`;
 };
 
@@ -95,6 +93,7 @@ export default function HistoriquesPage({ showToast }) {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedCampagne, setSelectedCampagne] = useState("all");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [selectedHistorique, setSelectedHistorique] = useState(null);
@@ -104,7 +103,7 @@ export default function HistoriquesPage({ showToast }) {
       setLoading(true);
       const res = await getHistoriques();
       const data = res?.data?.data || [];
-    console.log("Fetched historiques:", data);
+      console.log("Fetched historiques:", data);
       setHistoriques(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur récupération historiques :", error);
@@ -118,9 +117,27 @@ export default function HistoriquesPage({ showToast }) {
     fetchHistoriques();
   }, []);
 
+  const campagnesOptions = useMemo(() => {
+    const map = new Map();
+
+    historiques.forEach((item) => {
+      const campagne = item?.campagneId;
+
+      if (campagne?._id) {
+        map.set(campagne._id, {
+          _id: campagne._id,
+          nomCompagne: campagne.nomCompagne || "Sans nom",
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [historiques]);
+
   const resetFilters = () => {
     setSearch("");
     setSelectedStatus("all");
+    setSelectedCampagne("all");
     setDateStart("");
     setDateEnd("");
   };
@@ -130,14 +147,19 @@ export default function HistoriquesPage({ showToast }) {
 
     return historiques.filter((item) => {
       const statusValue = Number(item.status);
+      const campagneId = item?.campagneId?._id || item?.campagneId;
 
       const matchesStatus =
         selectedStatus === "all" || statusValue === Number(selectedStatus);
 
+      const matchesCampagne =
+        selectedCampagne === "all" || String(campagneId) === String(selectedCampagne);
+
       const text = [
         item.calledNumber,
         item.callerNumber,
-        item.agentName,
+        item.agentIaId?.nomAgent,
+        item?.campagneId?.nomCompagne,
         item.channelId,
         item?.aiResponse?.description,
         item?.aiResponse?.nameUser,
@@ -155,12 +177,13 @@ export default function HistoriquesPage({ showToast }) {
 
       return (
         matchesStatus &&
+        matchesCampagne &&
         matchesSearch &&
         matchesDateStart &&
         matchesDateEnd
       );
     });
-  }, [historiques, search, selectedStatus, dateStart, dateEnd]);
+  }, [historiques, search, selectedStatus, selectedCampagne, dateStart, dateEnd]);
 
   return (
     <div className="historiquesPage">
@@ -180,11 +203,24 @@ export default function HistoriquesPage({ showToast }) {
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
-                <option value="all">Tous</option>
+                <option value="all">Tous les statuts</option>
                 <option value="2">SALE</option>
                 <option value="3">CALLBACK</option>
                 <option value="4">OCCUPÉ</option>
                 <option value="1">NI</option>
+              </select>
+
+              <select
+                className="historiquesFilterSelect"
+                value={selectedCampagne}
+                onChange={(e) => setSelectedCampagne(e.target.value)}
+              >
+                <option value="all">Toutes les campagnes</option>
+                {campagnesOptions.map((campagne) => (
+                  <option key={campagne._id} value={campagne._id}>
+                    {campagne.nomCompagne}
+                  </option>
+                ))}
               </select>
 
               <div className="historiquesDateFilter">
@@ -238,17 +274,23 @@ export default function HistoriquesPage({ showToast }) {
                     className="historiqueRow"
                     onClick={() => setSelectedHistorique(item)}
                   >
-                    <div className={`historiqueStatusIcon ${getStatusClass(item.status)}`}>
-                      <i className="bi bi-telephone-fill" />
-                    </div>
-
-                    <div className="historiqueCol historiqueCaller">
+                    <div className="historiqueCol historiqueNumber">
                       <div className="historiqueMain">
-                        <i className="bi bi-person-circle" />
+                        <i className="bi bi-telephone-outbound" />
                         <span>{item.calledNumber || "-"}</span>
                       </div>
                       <div className="historiqueSub">
-                        {item?.campagneId?.nomCompagne || "-"}
+                        Canal : {item.channelId || "-"}
+                      </div>
+                    </div>
+
+                    <div className="historiqueCol historiqueCampagne">
+                      <div className="historiqueMain">
+                        <i className="bi bi-megaphone" />
+                        <span>{item?.campagneId?.nomCompagne || "Campagne"}</span>
+                      </div>
+                      <div className="historiqueSub">
+                        {item.callerNumber || "-"}
                       </div>
                     </div>
 
@@ -257,13 +299,15 @@ export default function HistoriquesPage({ showToast }) {
                         <i className="bi bi-person-badge" />
                         <span>{item.agentIaId?.nomAgent || "Agent IA"}</span>
                       </div>
-                      <div className="historiqueSub">{item.callerNumber || "-"}</div>
+                      <div className="historiqueSub">
+                        Agent vocal
+                      </div>
                     </div>
 
                     <div className="historiqueCol historiqueDate">
                       <div className="historiqueMain">{formatDate(item.callDate)}</div>
                       <div className="historiqueSub">
-                        <i className="bi bi-telephone" />{" "}
+                        <i className="bi bi-clock" />{" "}
                         {formatDuration(item.billsec || item.callDuration)}
                       </div>
                     </div>
