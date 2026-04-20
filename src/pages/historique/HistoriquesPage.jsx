@@ -97,6 +97,7 @@ export default function HistoriquesPage({ showToast }) {
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [selectedHistorique, setSelectedHistorique] = useState(null);
+  const [selectedAgentIa, setSelectedAgentIa] = useState("all");
 
   const fetchHistoriques = async () => {
     try {
@@ -116,6 +117,23 @@ export default function HistoriquesPage({ showToast }) {
   useEffect(() => {
     fetchHistoriques();
   }, []);
+
+  const agentsIaOptions = useMemo(() => {
+    const map = new Map();
+
+    historiques.forEach((item) => {
+      const agent = item?.agentIaId;
+
+      if (agent?._id) {
+        map.set(agent._id, {
+          _id: agent._id,
+          nomAgent: agent.nomAgent || "Sans nom",
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [historiques]);
 
   const campagnesOptions = useMemo(() => {
     const map = new Map();
@@ -138,6 +156,7 @@ export default function HistoriquesPage({ showToast }) {
     setSearch("");
     setSelectedStatus("all");
     setSelectedCampagne("all");
+    setSelectedAgentIa("all");
     setDateStart("");
     setDateEnd("");
   };
@@ -148,12 +167,16 @@ export default function HistoriquesPage({ showToast }) {
     return historiques.filter((item) => {
       const statusValue = Number(item.status);
       const campagneId = item?.campagneId?._id || item?.campagneId;
+      const agentIaId = item?.agentIaId?._id || item?.agentIaId;
 
       const matchesStatus =
         selectedStatus === "all" || statusValue === Number(selectedStatus);
 
       const matchesCampagne =
         selectedCampagne === "all" || String(campagneId) === String(selectedCampagne);
+
+      const matchesAgentIa =
+        selectedAgentIa === "all" || String(agentIaId) === String(selectedAgentIa);
 
       const text = [
         item.calledNumber,
@@ -178,12 +201,13 @@ export default function HistoriquesPage({ showToast }) {
       return (
         matchesStatus &&
         matchesCampagne &&
+        matchesAgentIa &&
         matchesSearch &&
         matchesDateStart &&
         matchesDateEnd
       );
     });
-  }, [historiques, search, selectedStatus, selectedCampagne, dateStart, dateEnd]);
+  }, [historiques, search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd]);
 
   return (
     <div className="historiquesPage">
@@ -219,6 +243,19 @@ export default function HistoriquesPage({ showToast }) {
                 {campagnesOptions.map((campagne) => (
                   <option key={campagne._id} value={campagne._id}>
                     {campagne.nomCompagne}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="historiquesFilterSelect"
+                value={selectedAgentIa}
+                onChange={(e) => setSelectedAgentIa(e.target.value)}
+              >
+                <option value="all">Tous les agents IA</option>
+                {agentsIaOptions.map((agent) => (
+                  <option key={agent._id} value={agent._id}>
+                    {agent.nomAgent}
                   </option>
                 ))}
               </select>
