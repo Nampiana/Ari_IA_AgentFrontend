@@ -20,11 +20,11 @@ const buildRecordUrl = (pathRecord) => {
 
   const base = (process.env.REACT_APP_HOST_API || "http://localhost:4000/api/v1/")
     .replace("/api/v1/", "")
-    .replace(/\/$/, "");
+    .replace(/\/$/, ""); 
 
-  const cleanPath = String(pathRecord).replace(/\\/g, "/").replace(/^\/+/, "");
+ /* const cleanPath = String(pathRecord).replace(/\\/g, "/").replace(/^\/+/, "");*/
 
-  return `${base}/${cleanPath}`;
+  return `${base}/files/${pathRecord}`;
 };
 
 const isSale = (status) => {
