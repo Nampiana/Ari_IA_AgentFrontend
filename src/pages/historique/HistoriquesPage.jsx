@@ -104,6 +104,7 @@ export default function HistoriquesPage({ showToast }) {
       setLoading(true);
       const res = await getHistoriques();
       const data = res?.data?.data || [];
+    console.log("Fetched historiques:", data);
       setHistoriques(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erreur récupération historiques :", error);

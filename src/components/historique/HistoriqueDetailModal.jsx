@@ -36,6 +36,7 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
   if (!open || !historique) return null;
 
   const ai = historique.aiResponse || {};
+  console.log("AI Response:", historique);
   const recordUrl = buildRecordUrl(historique.pathRecord);
 
   return (
