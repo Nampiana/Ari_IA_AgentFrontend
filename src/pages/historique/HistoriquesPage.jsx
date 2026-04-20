@@ -63,9 +63,9 @@ const buildRecordUrl = (pathRecord) => {
     .replace("/api/v1/", "")
     .replace(/\/$/, "");
 
-  const cleanPath = String(pathRecord).replace(/\\/g, "/").replace(/^\/+/, "");
+ /* const cleanPath = String(pathRecord).replace(/\\/g, "/").replace(/^\/+/, "");*/
 
-  return `${base}/${cleanPath}`;
+  return `${base}/files/${pathRecord}`;
 };
 
 const isSameOrAfter = (itemDate, startDate) => {

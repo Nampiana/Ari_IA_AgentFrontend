@@ -12,6 +12,7 @@ const getStatusLabel = (status) => {
 };
 
 const buildRecordUrl = (pathRecord) => {
+  console.log("buildRecordUrl called with pathRecord:", pathRecord);
   if (!pathRecord) return "";
 
   if (pathRecord.startsWith("http://") || pathRecord.startsWith("https://")) {
