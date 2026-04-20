@@ -66,8 +66,13 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
             </div>
 
             <div className="historiqueDetailItem">
+              <span>Compagne</span>
+              <strong>{historique.campagneId?.nomCompagne || "-"}</strong>
+            </div>
+
+            <div className="historiqueDetailItem">
               <span>Agent</span>
-              <strong>{historique.agentName || "-"}</strong>
+              <strong>{historique.agentIaId?.nomAgent || "-"}</strong>
             </div>
 
             <div className="historiqueDetailItem">

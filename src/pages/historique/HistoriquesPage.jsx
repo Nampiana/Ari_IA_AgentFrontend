@@ -248,14 +248,14 @@ export default function HistoriquesPage({ showToast }) {
                         <span>{item.calledNumber || "-"}</span>
                       </div>
                       <div className="historiqueSub">
-                        {item?.aiResponse?.nameUser || item.agentName || "-"}
+                        {item?.campagneId?.nomCompagne || "-"}
                       </div>
                     </div>
 
                     <div className="historiqueCol historiqueAgent">
                       <div className="historiqueMain">
                         <i className="bi bi-person-badge" />
-                        <span>{item.agentName || "Agent IA"}</span>
+                        <span>{item.agentIaId?.nomAgent || "Agent IA"}</span>
                       </div>
                       <div className="historiqueSub">{item.callerNumber || "-"}</div>
                     </div>
