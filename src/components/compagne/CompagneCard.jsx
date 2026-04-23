@@ -1,7 +1,11 @@
 import React from "react";
 
-export default function CompagneCard({ compagne, onEdit, onDelete, lancerCampagne }) {
-
+export default function CompagneCard({
+  compagne,
+  onEdit,
+  onDelete,
+  lancerCampagne,
+}) {
   return (
     <div className="compagneCard">
       <div className="compagneCardTop">
@@ -18,13 +22,19 @@ export default function CompagneCard({ compagne, onEdit, onDelete, lancerCampagn
         <div className="compagneStatusWrap">
           <button
             type="button"
-            className="btnLancer"
-            onClick={()=>{
-              lancerCampagne(compagne)
-            }}
+            className={`btnAction ${
+              compagne.isRunning === 1 ? "btnStop" : "btnStart"
+            }`}
+            onClick={() => lancerCampagne(compagne)}
           >
-            {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
+            <i
+              className={`bi ${
+                compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"
+              }`}
+            ></i>
+            {compagne.isRunning === 1 ? " Arrêter" : " Lancer"}
           </button>
+
           <button
             type="button"
             className="btnEdit"
