@@ -21,11 +21,31 @@ export default function useLists() {
     return ListeServices.delete(id);
   };
 
+  const getFiches = async (listId) => {
+    return ListeServices.getFiches(listId);
+  };
+
+  const addFiche = async (listId, data) => {
+    return ListeServices.addFiche(listId, data);
+  };
+
+  const updateFiche = async (listId, ficheId, data) => {
+    return ListeServices.updateFiche(listId, ficheId, data);
+  };
+
+  const deleteFiche = async (listId, ficheId) => {
+    return ListeServices.deleteFiche(listId, ficheId);
+  };
+
   return {
     getLists,
     getList,
     createList,
     updateList,
     deleteList,
+    getFiches,
+    addFiche,
+    updateFiche,
+    deleteFiche,
   };
 }
