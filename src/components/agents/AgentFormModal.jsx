@@ -14,6 +14,7 @@ const getInitialFormData = (selectedAgent) => ({
   //   "33256564987497, 33256564987498",
   active: selectedAgent?.active || 1,
   // isDefault: selectedAgent?.isDefault ?? 0,
+  companyName: selectedAgent?.companyName || "",
 });
 
 export default function AgentFormModal({

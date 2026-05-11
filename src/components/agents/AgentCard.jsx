@@ -31,7 +31,7 @@ export default function AgentCard({ agent, onEdit, onDelete }) {
           <div>{agent.speed}</div>
         </div>
         <div>
-          <span className="label">Société</span>
+          <span className="label">companyName</span>
           <div>{agent.companyName}</div>
         </div>
         {/* <div>
