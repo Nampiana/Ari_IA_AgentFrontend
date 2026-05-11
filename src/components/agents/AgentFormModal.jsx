@@ -82,6 +82,17 @@ export default function AgentFormModal({
             </div>
 
             <div className="formGroup">
+              <label>Société</label>
+              <input
+                className="form-control"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="formGroup">
               <label>Voix</label>
               <input
                 name="voice"
