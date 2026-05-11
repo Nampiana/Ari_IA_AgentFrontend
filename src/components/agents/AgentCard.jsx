@@ -30,6 +30,10 @@ export default function AgentCard({ agent, onEdit, onDelete }) {
           <span className="label">Vitesse</span>
           <div>{agent.speed}</div>
         </div>
+        <div>
+          <span className="label">Société</span>
+          <div>{agent.companyName}</div>
+        </div>
         {/* <div>
           <span className="label">Numéros</span>
           <div>{agent.calledNumbers?.length ? agent.calledNumbers.join(", ") : "Aucun"}</div>
