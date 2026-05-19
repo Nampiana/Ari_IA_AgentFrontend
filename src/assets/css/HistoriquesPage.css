@@ -137,22 +137,22 @@
   flex-shrink: 0;
 }
 
-.historiqueStatusIcon.sale {
+.historiqueStatusIcon.VENDU {
   color: #18b368;
   background: rgba(24, 179, 104, 0.14);
 }
 
-.historiqueStatusIcon.callback {
+.historiqueStatusIcon.RAPPEL {
   color: #10c7d4;
   background: rgba(16, 199, 212, 0.14);
 }
 
-.historiqueStatusIcon.busy {
+.historiqueStatusIcon.OCCUPÉ {
   color: #ef476f;
   background: rgba(239, 71, 111, 0.14);
 }
 
-.historiqueStatusIcon.ni {
+.historiqueStatusIcon.PAS INTÉRESSÉ {
   color: #7fbf59;
   background: rgba(127, 191, 89, 0.14);
 }
@@ -226,25 +226,25 @@
   border: 1px solid transparent;
 }
 
-.historiqueBadge.sale {
+.historiqueBadge.VENDU {
   background: rgba(24, 179, 104, 0.12);
   color: #13945a;
   border-color: rgba(24, 179, 104, 0.18);
 }
 
-.historiqueBadge.callback {
+.historiqueBadge.RAPPEL {
   background: rgba(16, 199, 212, 0.12);
   color: #0891b2;
   border-color: rgba(16, 199, 212, 0.18);
 }
 
-.historiqueBadge.busy {
+.historiqueBadge.OCCUPÉ {
   background: rgba(239, 71, 111, 0.12);
   color: #d63357;
   border-color: rgba(239, 71, 111, 0.18);
 }
 
-.historiqueBadge.ni {
+.historiqueBadge.PAS_INTÉRESSÉ {
   background: rgba(127, 191, 89, 0.12);
   color: #5f9c3d;
   border-color: rgba(127, 191, 89, 0.18);

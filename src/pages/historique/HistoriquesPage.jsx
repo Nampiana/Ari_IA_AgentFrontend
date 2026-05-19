@@ -7,10 +7,10 @@ import "../../assets/css/HistoriquesPage.css";
 const getStatusLabel = (status) => {
   const value = Number(status);
 
-  if (value === 2) return "SALE";
-  if (value === 3) return "CALLBACK";
+  if (value === 2) return "VENDU";
+  if (value === 3) return "RAPPEL";
   if (value === 4) return "OCCUPÉ";
-  if (value === 1) return "NI";
+  if (value === 1) return "PAS_INTÉRESSÉ";
 
   return "INCONNU";
 };
@@ -18,10 +18,10 @@ const getStatusLabel = (status) => {
 const getStatusClass = (status) => {
   const value = Number(status);
 
-  if (value === 2) return "sale";
-  if (value === 3) return "callback";
-  if (value === 4) return "busy";
-  if (value === 1) return "ni";
+  if (value === 2) return "VENDU";
+  if (value === 3) return "RAPPEL";
+  if (value === 4) return "OCCUPÉ";
+  if (value === 1) return "PAS_INTÉRESSÉ";
 
   return "default";
 };
@@ -228,10 +228,10 @@ export default function HistoriquesPage({ showToast }) {
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
                 <option value="all">Tous les statuts</option>
-                <option value="2">SALE</option>
-                <option value="3">CALLBACK</option>
+                <option value="2">VENDU</option>
+                <option value="3">RAPPEL</option>
                 <option value="4">OCCUPÉ</option>
-                <option value="1">NI</option>
+                <option value="1">PAS INTÉRESSÉ</option>
               </select>
 
               <select
