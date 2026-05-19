@@ -46,6 +46,22 @@ const formatDuration = (seconds) => {
   return `${mm}:${ss}`;
 };
 
+const formatTotalDuration = (seconds) => {
+  const sec = Math.floor(Number(seconds || 0));
+
+  const hours = Math.floor(sec / 3600);
+  const minutes = Math.floor((sec % 3600) / 60);
+  const remainingSeconds = sec % 60;
+
+  if (hours > 0) {
+    return `${hours} h ${String(minutes).padStart(2, "0")} min ${String(
+      remainingSeconds
+    ).padStart(2, "0")} s`;
+  }
+
+  return `${minutes} min ${String(remainingSeconds).padStart(2, "0")} s`;
+};
+
 const buildRecordUrl = (pathRecord) => {
   if (!pathRecord) return "";
   if (pathRecord.startsWith("http://") || pathRecord.startsWith("https://")) {
@@ -94,20 +110,38 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedHistorique, setSelectedHistorique] = useState(null);
   const [selectedAgentIa, setSelectedAgentIa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  
+
 
   const fetchHistoriques = async () => {
     try {
       setLoading(true);
+
       const res = await getHistoriques();
-      const data = res?.data?.data || [];
-      setHistoriques(Array.isArray(data) ? data : []);
+
+      console.log("RÉPONSE HISTORIQUES :", res?.data);
+
+      const data =
+        Array.isArray(res?.data?.data)
+          ? res.data.data
+          : Array.isArray(res?.data?.historiques)
+            ? res.data.historiques
+            : Array.isArray(res?.data)
+              ? res.data
+              : [];
+
+      console.log("DATA HISTORIQUES UTILISÉE :", data);
+
+      setHistoriques(data);
     } catch (error) {
       console.error("Erreur récupération historiques :", error);
       showToast?.("Erreur lors du chargement des historiques", "danger");
     } finally {
       setLoading(false);
     }
+  };
+
+  const getDurationValue = (item) => {
+    return Number(item?.callDuration ?? item?.billsec ?? 0);
   };
 
   useEffect(() => {
@@ -184,6 +218,12 @@ export default function HistoriquesPage({ showToast }) {
     });
   }, [historiques, search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd]);
 
+  const totalCallDuration = useMemo(() => {
+    return filteredHistoriques.reduce((total, item) => {
+      return total + getDurationValue(item);
+    }, 0);
+  }, [filteredHistoriques]);
+
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredHistoriques.length / ITEMS_PER_PAGE));
   const paginatedHistoriques = useMemo(() => {
@@ -246,6 +286,10 @@ export default function HistoriquesPage({ showToast }) {
               <div className="historiquesCounter">
                 <i className="bi bi-telephone-fill" />
                 <span>{getCounterLabel()}</span>
+              </div>
+              <div className="historiquesCounter">
+                <i className="bi bi-clock-history" />
+                <span>Durée totale : {formatTotalDuration(totalCallDuration)}</span>
               </div>
             </div>
 
@@ -364,7 +408,7 @@ export default function HistoriquesPage({ showToast }) {
                         <div className="historiqueMain">{formatDate(item.callDate)}</div>
                         <div className="historiqueSub">
                           <i className="bi bi-clock" />{" "}
-                          {formatDuration(item.billsec || item.callDuration)}
+                          {formatDuration(getDurationValue(item))}
                         </div>
                       </div>
 
