@@ -94,6 +94,7 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedHistorique, setSelectedHistorique] = useState(null);
   const [selectedAgentIa, setSelectedAgentIa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  
 
   const fetchHistoriques = async () => {
     try {
