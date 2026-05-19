@@ -137,7 +137,7 @@
   flex-shrink: 0;
 }
 
-.historiqueStatusIcon.VENDU {
+.historiqueStatusIcon.RÉUSSI {
   color: #18b368;
   background: rgba(24, 179, 104, 0.14);
 }
@@ -226,7 +226,7 @@
   border: 1px solid transparent;
 }
 
-.historiqueBadge.VENDU {
+.historiqueBadge.RÉUSSI {
   background: rgba(24, 179, 104, 0.12);
   color: #13945a;
   border-color: rgba(24, 179, 104, 0.18);
@@ -605,4 +605,52 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.paginationNumbers {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pageBtn {
+  padding: 7px 12px;
+  border: none;
+  background: #e9ecef;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.pageBtn.active {
+  background: #007bff;
+  color: white;
+}
+
+.paginationContainer button {
+  padding: 8px 14px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.paginationContainer button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.paginationContainer select {
+  padding: 6px;
+  border-radius: 5px;
 }
