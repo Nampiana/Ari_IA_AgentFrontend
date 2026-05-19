@@ -606,3 +606,82 @@
   align-items: center;
   justify-content: flex-start;
 }
+
+/* ── Counter ──────────────────────────────────────────── */
+.historiquesCounter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(var(--primary-rgb, 99, 102, 241), 0.08);
+  color: var(--primary, #6366f1);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.historiquesCounter i {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+/* ── Pagination ───────────────────────────────────────── */
+.historiquesPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 20px 16px 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 8px;
+}
+
+.historiquesPaginationBtn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historiquesPaginationBtn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.historiquesPaginationBtn.active {
+  background: var(--primary, #6366f1);
+  border-color: var(--primary, #6366f1);
+  color: #fff;
+}
+
+.historiquesPaginationBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.historiquesPaginationEllipsis {
+  padding: 0 4px;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  line-height: 36px;
+}
+
+.historiquesPaginationInfo {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-left: 8px;
+  white-space: nowrap;
+}
