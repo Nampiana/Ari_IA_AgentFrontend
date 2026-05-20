@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import AgentsPage from "./pages/agents/agentsPage.jsx";
 import AgentProfileTesterPage from "./pages/agents/agentProfileTesterPage.jsx";
 import CompagnesPage from "./pages/compagne/CompagnesPage.jsx";
+import CalendrierPage from "./pages/calendrier/calendrierPage.jsx";
 import ListsPage from "./pages/lists/listsPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import Historique from "./pages/historique/HistoriquesPage.jsx";
@@ -65,6 +66,15 @@ function AppRoutes({ showToast }) {
         element={
           <PrivateRoute>
             <Historique showToast={showToast} />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/calendrier"
+        element={
+          <PrivateRoute>
+            <CalendrierPage showToast={showToast} />
           </PrivateRoute>
         }
       />

@@ -118,8 +118,6 @@ export default function HistoriquesPage({ showToast }) {
 
       const res = await getHistoriques();
 
-      console.log("RÉPONSE HISTORIQUES :", res?.data);
-
       const data =
         Array.isArray(res?.data?.data)
           ? res.data.data
@@ -128,8 +126,6 @@ export default function HistoriquesPage({ showToast }) {
             : Array.isArray(res?.data)
               ? res.data
               : [];
-
-      console.log("DATA HISTORIQUES UTILISÉE :", data);
 
       setHistoriques(data);
     } catch (error) {
