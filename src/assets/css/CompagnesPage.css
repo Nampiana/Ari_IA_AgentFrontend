@@ -208,3 +208,141 @@
     transform: scale(1);
   }
 }
+
+.formHint {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.concurrentWrapper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.formRange {
+  flex: 1;
+  accent-color: #6366f1;
+  cursor: pointer;
+  height: 6px;
+}
+
+.concurrentBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  background: #6366f1;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.concurrentLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+
+/* ── Badges campagne ── */
+.compagneBadges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.badgeConcurrent {
+  background: #ede9fe;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badgeSeq {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ── Affichage icônes téléphones dans la card ── */
+.concurrentDisplay {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.concurrentDot {
+  font-size: 0.75rem;
+  color: #7c3aed;
+}
+
+.concurrentCount {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #7c3aed;
+  margin-left: 4px;
+}
+
+/* ── Slider dans le formulaire ── */
+.formHint {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.concurrentWrapper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.formRange {
+  flex: 1;
+  accent-color: #7c3aed;
+  cursor: pointer;
+  height: 6px;
+}
+
+.concurrentBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.concurrentLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 4px;
+  padding: 0 2px;
+}
