@@ -122,20 +122,29 @@ export default function ListsPage({ showToast }) {
     }
   }, [selectedList]);
 
-  const saveAll = async () => {
-    try {
-      const updates = Object.entries(dirtyFiches);
-      for (const [ficheId, data] of updates) {
-        await updateFiche(selectedList._id, ficheId, data);
-      }
-      setDirtyFiches({});
-      await fetchFiches(selectedList._id);
-      showToast("Modifications enregistrées", "success");
-    } catch (err) {
-      showToast("Erreur sauvegarde", "danger");
+const saveAll = async () => {
+  try {
+    const updates = Object.entries(dirtyFiches);
+    for (const [ficheId, data] of updates) {
+      await updateFiche(selectedList._id, ficheId, data);
     }
-  };
 
+    setFiches((prev) =>
+      prev.map((fiche) =>
+        dirtyFiches[fiche._id]
+          ? { ...fiche, ...dirtyFiches[fiche._id] }
+          : fiche
+      )
+    );
+
+    setDirtyFiches({});
+    setEditingCell(null); // ✅ reset la cellule active
+    showToast("Modifications enregistrées", "success");
+    await fetchFiches(selectedList._id);
+  } catch (err) {
+    showToast("Erreur sauvegarde", "danger");
+  }
+};
   const fetchFiches = async (id) => {
     try {
       setLoadingFiche(true);
@@ -835,13 +844,13 @@ export default function ListsPage({ showToast }) {
                                     />
                                   )}
                                 </>
-                              ) : (
+                                ) : (
                                 <>
                                 {key === "isAlreadyCalled"
-                                  ? row[key] == 1
+                                  ? (dirtyFiches[row._id]?.[key] ?? row[key]) == 1
                                     ? "Appelé"
                                     : "Non appelé"
-                                  : row[key]}
+                                  : (dirtyFiches[row._id]?.[key] ?? row[key])}
                                 </>
                               )}
                             </td>
