@@ -627,6 +627,31 @@
   opacity: 0.85;
 }
 
+/* ── Duration ─────────────────────────────────────────── */
+.historiquesDuration {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px 12px;
+  border-radius: px;
+  background: rgba(16, 185, 129, 0.08);
+  color: #059669;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+ 
+.historiquesDuration i {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+ 
+.historiquesDuration strong {
+  font-weight: 700;
+}
+
+
 /* ── Pagination ───────────────────────────────────────── */
 .historiquesPagination {
   display: flex;
