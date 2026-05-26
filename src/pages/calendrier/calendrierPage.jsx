@@ -47,6 +47,7 @@ const STATUS_LABEL = {
   2: { label: "Vente", cls: "bg-success" },
   3: { label: "Callback", cls: "bg-warning text-dark" },
   4: { label: "Occupé", cls: "bg-secondary" },
+  5: { label: "Répondeur", cls: "bg-dark" },
 };
 
 export default function CalendrierPage() {
@@ -164,10 +165,11 @@ export default function CalendrierPage() {
         {/* LÉGENDE */}
         <div className="d-flex flex-wrap gap-4 mb-4">
           {[
-            { cls: "bg-primary", label: "Historique appels" },
+            // { cls: "bg-primary", label: "Historique appels" },
             { cls: "bg-warning", label: "Callback" },
             { cls: "bg-danger", label: "Non intéressé" },
-            { cls: "bg-secondary", label: "Occupé / Répondeur" },
+            { cls: "bg-secondary", label: "Occupé" },
+            { cls: "bg-dark", label: "Répondeur" },
             { cls: "bg-success", label: "RDV / Vente" },
           ].map(({ cls, label }) => (
             <div key={label} className="d-flex align-items-center gap-2">
@@ -223,7 +225,9 @@ export default function CalendrierPage() {
                 style={{ minWidth: "14.2%", maxWidth: "14.2%" }}
               >
                 <div
-                  className={`card border-0 shadow-sm h-100 ${isToday ? "border border-primary border-2" : ""}`}
+                  className={`card border-0 shadow-sm h-100 ${
+                    isToday ? "border border-primary border-2" : ""
+                  }`}
                   style={{
                     minHeight: 120,
                     cursor: "pointer",
@@ -235,7 +239,11 @@ export default function CalendrierPage() {
                     {/* Numéro du jour */}
                     <div className="d-flex justify-content-between align-items-center mb-1">
                       <div
-                        className={`fw-bold ${isToday ? "text-white bg-primary rounded-circle d-flex align-items-center justify-content-center" : ""}`}
+                        className={`fw-bold ${
+                          isToday
+                            ? "text-white bg-primary rounded-circle d-flex align-items-center justify-content-center"
+                            : ""
+                        }`}
                         style={
                           isToday ? { width: 26, height: 26, fontSize: 13 } : {}
                         }
@@ -281,7 +289,9 @@ export default function CalendrierPage() {
                         style={{ fontSize: 11 }}
                       >
                         <span
-                          className={`rounded-circle flex-shrink-0 ${REASON_COLOR[s.reason] ?? "bg-secondary"}`}
+                          className={`rounded-circle flex-shrink-0 ${
+                            REASON_COLOR[s.reason] ?? "bg-secondary"
+                          }`}
                           style={{
                             width: 8,
                             height: 8,
@@ -329,7 +339,7 @@ export default function CalendrierPage() {
                       day: "numeric",
                       month: "long",
                       year: "numeric",
-                    },
+                    }
                   )}
                 </h5>
                 <button
@@ -403,7 +413,9 @@ export default function CalendrierPage() {
                         {/* Numéro */}
                         <div className="d-flex align-items-center gap-2 mb-2">
                           <div
-                            className={`rounded-circle ${REASON_COLOR[s.reason] ?? "bg-secondary"}`}
+                            className={`rounded-circle ${
+                              REASON_COLOR[s.reason] ?? "bg-secondary"
+                            }`}
                             style={{
                               width: 14,
                               height: 14,
@@ -436,7 +448,7 @@ export default function CalendrierPage() {
                               {
                                 hour: "2-digit",
                                 minute: "2-digit",
-                              },
+                              }
                             )}
                           </div>
 
@@ -467,10 +479,10 @@ export default function CalendrierPage() {
                             s.status === "pending"
                               ? "bg-warning text-dark"
                               : s.status === "done"
-                                ? "bg-success"
-                                : s.status === "running"
-                                  ? "bg-info"
-                                  : "bg-danger"
+                              ? "bg-success"
+                              : s.status === "running"
+                              ? "bg-info"
+                              : "bg-danger"
                           }`}
                         >
                           {s.status === "pending" && "En attente"}
@@ -486,7 +498,7 @@ export default function CalendrierPage() {
                             e.stopPropagation();
 
                             const confirmDelete = window.confirm(
-                              `Supprimer le rappel du numéro ${s.calledNumber} ?`,
+                              `Supprimer le rappel du numéro ${s.calledNumber} ?`
                             );
 
                             if (!confirmDelete) return;
@@ -500,14 +512,14 @@ export default function CalendrierPage() {
                                 data: {
                                   ...prev.data,
                                   scheduled: prev.data.scheduled.filter(
-                                    (item) => item._id !== s._id,
+                                    (item) => item._id !== s._id
                                   ),
                                 },
                               }));
 
                               // update calendar state
                               setScheduledCalls((prev) =>
-                                prev.filter((item) => item._id !== s._id),
+                                prev.filter((item) => item._id !== s._id)
                               );
                             } catch (err) {
                               console.error(err);
