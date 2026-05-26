@@ -37,7 +37,8 @@ export default function ListsPage({ showToast }) {
     entreprise: "",
     pays: "",
     commentaire: "",
-    isAlreadyCalled: 0,
+
+    isBlackList: 1,
   });
   const [newFiche, setNewFiche] = useState({
     nom: "",
@@ -64,6 +65,7 @@ export default function ListsPage({ showToast }) {
     "pays",
     "commentaire",
     "isAlreadyCalled",
+    "isBlackList",
   ]);
 
   const ALL_COLUMNS = [
@@ -78,6 +80,7 @@ export default function ListsPage({ showToast }) {
     "pays",
     "commentaire",
     "isAlreadyCalled",
+    "isBlackList",
   ];
 
   const [search, setSearch] = useState("");
@@ -122,29 +125,29 @@ export default function ListsPage({ showToast }) {
     }
   }, [selectedList]);
 
-const saveAll = async () => {
-  try {
-    const updates = Object.entries(dirtyFiches);
-    for (const [ficheId, data] of updates) {
-      await updateFiche(selectedList._id, ficheId, data);
+  const saveAll = async () => {
+    try {
+      const updates = Object.entries(dirtyFiches);
+      for (const [ficheId, data] of updates) {
+        await updateFiche(selectedList._id, ficheId, data);
+      }
+
+      setFiches((prev) =>
+        prev.map((fiche) =>
+          dirtyFiches[fiche._id]
+            ? { ...fiche, ...dirtyFiches[fiche._id] }
+            : fiche
+        )
+      );
+
+      setDirtyFiches({});
+      setEditingCell(null); // ✅ reset la cellule active
+      showToast("Modifications enregistrées", "success");
+      await fetchFiches(selectedList._id);
+    } catch (err) {
+      showToast("Erreur sauvegarde", "danger");
     }
-
-    setFiches((prev) =>
-      prev.map((fiche) =>
-        dirtyFiches[fiche._id]
-          ? { ...fiche, ...dirtyFiches[fiche._id] }
-          : fiche
-      )
-    );
-
-    setDirtyFiches({});
-    setEditingCell(null); // ✅ reset la cellule active
-    showToast("Modifications enregistrées", "success");
-    await fetchFiches(selectedList._id);
-  } catch (err) {
-    showToast("Erreur sauvegarde", "danger");
-  }
-};
+  };
   const fetchFiches = async (id) => {
     try {
       setLoadingFiche(true);
@@ -221,6 +224,7 @@ const saveAll = async () => {
         pays: mapping.pays ? row[mapping.pays] || "" : "",
         commentaire: mapping.commentaire ? row[mapping.commentaire] || "" : "",
         isAlreadyCalled: 0,
+        isBlackList: 1,
       }));
 
       await createList({
@@ -247,6 +251,7 @@ const saveAll = async () => {
         pays: "",
         commentaire: "",
         isAlreadyCalled: 0,
+        isBlackList: 1,
       });
 
       fetchLists();
@@ -428,9 +433,8 @@ const saveAll = async () => {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${
-                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                  }`}
+                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                    }`}
                 />
               </div>
 
@@ -471,11 +475,10 @@ const saveAll = async () => {
                         {ALL_COLUMNS.map((col) => (
                           <label
                             key={col}
-                            className={`badge rounded-pill border px-2 py-1 ${
-                              filterFields.includes(col)
-                                ? "bg-primary text-white"
-                                : "bg-light text-dark"
-                            }`}
+                            className={`badge rounded-pill border px-2 py-1 ${filterFields.includes(col)
+                              ? "bg-primary text-white"
+                              : "bg-light text-dark"
+                              }`}
                             style={{ cursor: "pointer", fontSize: "11px" }}
                           >
                             <input
@@ -776,18 +779,19 @@ const saveAll = async () => {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                              editingCell?.field === key ? (
+                                editingCell?.field === key ? (
                                 <>
-                                  {key === "isAlreadyCalled" ? (
+                                  {key === "isAlreadyCalled" || key === "isBlackList" ? (
                                     <select
-                                      style={{ width: "100%" }}
-                                      defaultValue={
-                                        dirtyFiches[row._id]?.[key] ??
-                                        editingCell?.value ??
-                                        row[key]
-                                      }
+                                      style={{
+                                        width: "100%",
+                                        minWidth: "120px",
+                                        padding: "2px 24px 2px 6px",
+                                        appearance: "auto"
+                                      }}
+                                      value={String(dirtyFiches[row._id]?.[key] ?? row[key] ?? (key === "isBlackList" ? 1 : 0))}
                                       onChange={(e) => {
-                                        const value = e.target.value;
+                                        const value = Number(e.target.value);
 
                                         setDirtyFiches((prev) => ({
                                           ...prev,
@@ -804,12 +808,17 @@ const saveAll = async () => {
                                         });
                                       }}
                                     >
-                                      <option value={0} selected={editingCell.value == 0 ? true : false}>
-                                        Non appelé
-                                      </option>
-                                      <option value={1} selected={editingCell.value == 1 ? true : false}>
-                                        Appelé
-                                      </option>
+                                      {key === "isAlreadyCalled" ? (
+                                        <>
+                                          <option value="0">Non appelé</option>
+                                          <option value="1">Appelé</option>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <option value="1">Whitelist</option>
+                                          <option value="2">Blacklist</option>
+                                        </>
+                                      )}
                                     </select>
                                   ) : (
                                     <input
@@ -844,13 +853,17 @@ const saveAll = async () => {
                                     />
                                   )}
                                 </>
-                                ) : (
+                              ) : (
                                 <>
-                                {key === "isAlreadyCalled"
-                                  ? (dirtyFiches[row._id]?.[key] ?? row[key]) == 1
-                                    ? "Appelé"
-                                    : "Non appelé"
-                                  : (dirtyFiches[row._id]?.[key] ?? row[key])}
+                                  {key === "isAlreadyCalled"
+                                    ? (dirtyFiches[row._id]?.[key] ?? row[key]) == 1
+                                      ? "Appelé"
+                                      : "Non appelé"
+                                    : key === "isBlackList"
+                                      ? (dirtyFiches[row._id]?.[key] ?? row[key] ?? 1) == 2
+                                        ? "Blacklist"
+                                        : "Whitelist"
+                                      : (dirtyFiches[row._id]?.[key] ?? row[key])}
                                 </>
                               )}
                             </td>
