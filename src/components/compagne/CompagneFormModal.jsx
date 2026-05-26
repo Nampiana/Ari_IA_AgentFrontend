@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const getInitialFormData = (selectedCompagne) => ({
   nomCompagne: selectedCompagne?.nomCompagne || "",
@@ -8,7 +8,7 @@ const getInitialFormData = (selectedCompagne) => ({
   fiche: selectedCompagne?.fiche?._id || selectedCompagne?.fiche || "",
   active: selectedCompagne?.active ?? 1,
   dialTimeout: selectedCompagne?.dialTimeout ?? 30,
-  maxConcurrent: selectedCompagne?.maxConcurrentCalls  ?? 1,
+  maxConcurrentCalls: selectedCompagne?.maxConcurrentCalls ?? 1,
 });
 
 export default function CompagneFormModal({
@@ -20,6 +20,12 @@ export default function CompagneFormModal({
   lists = [],
 }) {
   const [formData, setFormData] = useState(() => getInitialFormData(selectedCompagne));
+
+  useEffect(() => {
+    if (open) {
+      setFormData(getInitialFormData(selectedCompagne));
+    }
+  }, [open, selectedCompagne]);
 
   if (!open) return null;
 
@@ -137,7 +143,7 @@ export default function CompagneFormModal({
                 onChange={handleChange}
                 className="formRange"
               />
-              <span className="concurrentBadge">{formData.maxConcurrent}</span>
+              <span className="concurrentBadge">{formData.maxConcurrentCalls}</span>
             </div>
             <div className="concurrentLabels">
               <span>1 (séquentiel)</span>
