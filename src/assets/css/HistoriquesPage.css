@@ -152,6 +152,11 @@
   background: rgba(239, 71, 111, 0.14);
 }
 
+.historiqueStatusIcon.RÉPONDEUR {
+  color: #b8dce7;
+  background: rgba(239, 71, 111, 0.14);
+}
+
 .historiqueStatusIcon.PAS INTÉRESSÉ {
   color: #7fbf59;
   background: rgba(127, 191, 89, 0.14);

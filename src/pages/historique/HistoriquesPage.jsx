@@ -13,6 +13,7 @@ const getStatusLabel = (status) => {
   if (value === 3) return "RAPPEL";
   if (value === 4) return "OCCUPÉ";
   if (value === 1) return "PAS_INTÉRESSÉ";
+  if (value === 5) return "RÉPONDEUR";
 
   return "INCONNU";
 };
@@ -24,6 +25,7 @@ const getStatusClass = (status) => {
   if (value === 3) return "RAPPEL";
   if (value === 4) return "OCCUPÉ";
   if (value === 1) return "PAS_INTÉRESSÉ";
+  if (value === 5) return "RÉPONDEUR";
 
   return "default";
 };
@@ -299,6 +301,7 @@ export default function HistoriquesPage({ showToast }) {
                 <option value="2">RÉUSSI</option>
                 <option value="3">RAPPEL</option>
                 <option value="4">OCCUPÉ</option>
+                <option value="5">RÉPONDEUR</option>
                 <option value="1">PAS INTÉRESSÉ</option>
               </select>
 
