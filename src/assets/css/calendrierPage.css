@@ -1,3 +1,52 @@
-.calendrierPage{
+.calendrierPage {
     padding: 10px 0;
+}
+
+.schedulerAudioCol {
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.shcedulerAudio {
+    max-width: 220px;
+    height: 36px;
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+@media (max-width: 1200px) {
+    .historiqueRow {
+        grid-template-columns: 1.3fr 1fr 1fr 0.9fr 120px;
+    }
+
+    .schedulerAudioCol {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        padding-top: 6px;
+    }
+
+    .shcedulerAudio {
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 900px) {
+    .schedulerAudioCol {
+        grid-column: auto;
+    }
+
+    .schedulerAudioCol {
+        justify-content: flex-start;
+    }
+
+    .shcedulerAudio {
+        width: 100%;
+        max-width: 100%;
+    }
 }

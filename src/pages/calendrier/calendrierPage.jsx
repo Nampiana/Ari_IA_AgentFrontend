@@ -4,6 +4,7 @@ import useScheduledCall from "../../hooks/useScheduledCall";
 import useHistoriqueIa from "../../hooks/useHistoriqueIa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../assets/css/calendrierPage.css";
+import { buildRecordUrl } from "../../utils/buildPathAudio";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -40,44 +41,59 @@ function formatDuration(billsec) {
 // ─── Couleurs & Labels ─────────────────────────────────────────────────────────
 
 const REASON_COLOR = {
-  CALLBACK:  "bg-warning",
-  NI:        "bg-danger",
-  OCCUPE:    "bg-secondary",
+  CALLBACK: "bg-warning",
+  NI: "bg-danger",
+  OCCUPE: "bg-secondary",
   REPONDEUR: "bg-dark",
-  SALE:      "bg-success",
+  SALE: "bg-success",
 };
 
 const REASON_LABEL = {
-  CALLBACK:  "Callback",
-  NI:        "Non intéressé",
-  OCCUPE:    "Occupé",
+  CALLBACK: "Callback",
+  NI: "Non intéressé",
+  OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
-  SALE:      "Vente / RDV",
+  SALE: "Vente / RDV",
 };
 
 // status MongoDB : 1=NI, 2=SALE, 3=CALLBACK, 4=OCCUPE, 5=REPONDEUR
 const STATUS_LABEL = {
-  1: { label: "NI",          cls: "bg-danger",                 reason: "NI" },
-  2: { label: "Vente / RDV", cls: "bg-success",                reason: "SALE" },
-  3: { label: "Callback",    cls: "bg-warning text-dark",      reason: "CALLBACK" },
-  4: { label: "Occupé",      cls: "bg-secondary",              reason: "OCCUPE" },
-  5: { label: "Répondeur",   cls: "bg-dark",                   reason: "REPONDEUR" },
+  1: { label: "NI", cls: "bg-danger", reason: "NI" },
+  2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
+  3: { label: "Callback", cls: "bg-warning text-dark", reason: "CALLBACK" },
+  4: { label: "Occupé", cls: "bg-secondary", reason: "OCCUPE" },
+  5: { label: "Répondeur", cls: "bg-dark", reason: "REPONDEUR" },
 };
 
 const FILTER_CHIPS = [
-  { key: "ALL",      label: "Tous",          cls: "btn-outline-secondary" },
-  { key: "CALLBACK", label: "Callback",      cls: "btn-warning",  dotCls: "bg-warning" },
-  { key: "NI",       label: "Non intéressé", cls: "btn-danger",   dotCls: "bg-danger" },
-  { key: "OCCUPE",   label: "Occupé",        cls: "btn-secondary",dotCls: "bg-secondary" },
-  { key: "REPONDEUR",label: "Répondeur",     cls: "btn-dark",     dotCls: "bg-dark" },
-  { key: "SALE",     label: "Vente / RDV",   cls: "btn-success",  dotCls: "bg-success" },
+  { key: "ALL", label: "Tous", cls: "btn-outline-secondary" },
+  {
+    key: "CALLBACK",
+    label: "Callback",
+    cls: "btn-warning",
+    dotCls: "bg-warning",
+  },
+  { key: "NI", label: "Non intéressé", cls: "btn-danger", dotCls: "bg-danger" },
+  {
+    key: "OCCUPE",
+    label: "Occupé",
+    cls: "btn-secondary",
+    dotCls: "bg-secondary",
+  },
+  { key: "REPONDEUR", label: "Répondeur", cls: "btn-dark", dotCls: "bg-dark" },
+  {
+    key: "SALE",
+    label: "Vente / RDV",
+    cls: "btn-success",
+    dotCls: "bg-success",
+  },
 ];
 
 const SCHEDULED_STATUS = {
   pending: { label: "En attente", cls: "bg-warning text-dark" },
-  running: { label: "En cours",   cls: "bg-info text-dark" },
-  done:    { label: "Terminé",    cls: "bg-success" },
-  failed:  { label: "Échec",      cls: "bg-danger" },
+  running: { label: "En cours", cls: "bg-info text-dark" },
+  done: { label: "Terminé", cls: "bg-success" },
+  failed: { label: "Échec", cls: "bg-danger" },
 };
 
 // ─── Composant principal ───────────────────────────────────────────────────────
@@ -86,17 +102,17 @@ export default function CalendrierPage() {
   const { getScheduledCalls, deleteScheduledCall } = useScheduledCall();
   const { getHistoriques } = useHistoriqueIa();
 
-  const [currentDate,   setCurrentDate]   = useState(new Date());
-  const [scheduledCalls,setScheduledCalls]= useState([]);
-  const [historiques,   setHistoriques]   = useState([]);
-  const [selectedDay,   setSelectedDay]   = useState(null);
-  const [loading,       setLoading]       = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [scheduledCalls, setScheduledCalls] = useState([]);
+  const [historiques, setHistoriques] = useState([]);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // ── Filtres ──────────────────────────────────────────────
-  const [searchQuery,  setSearchQuery]  = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL"); // clé reason ou "ALL"
-  const [agentFilter,  setAgentFilter]  = useState("");    // _id agentIaId
-  const [campagneFilter,setCampagneFilter]=useState("");   // _id campagneId
+  const [agentFilter, setAgentFilter] = useState(""); // _id agentIaId
+  const [campagneFilter, setCampagneFilter] = useState(""); // _id campagneId
 
   // ── Chargement ────────────────────────────────────────────
   useEffect(() => {
@@ -108,10 +124,10 @@ export default function CalendrierPage() {
       setLoading(true);
       const [scheduledRes, historiquesRes] = await Promise.all([
         getScheduledCalls(),
-        getHistoriques({status:2}),
+        getHistoriques({ status: 2 }),
       ]);
-      setScheduledCalls(scheduledRes?.data?.data  || []);
-      // setHistoriques(historiquesRes?.data?.data   || []);
+      setScheduledCalls(scheduledRes?.data?.data || []);
+      setHistoriques(historiquesRes?.data?.data || []);
     } catch (err) {
       console.error("Erreur chargement calendrier:", err);
     } finally {
@@ -130,11 +146,14 @@ export default function CalendrierPage() {
   const agentOptions = useMemo(() => {
     const map = new Map();
     [...historiques, ...scheduledCalls].forEach((item) => {
-      const id = item.agentIaId;
+      const id = item?.agentIaId?._id;
       const name = item.aiResponse?.nameUser || `Agent ${id?.slice(-5)}`;
       if (id && !map.has(String(id))) map.set(String(id), name);
     });
-    return Array.from(map.entries()).map(([id, name]) => ({ value: id, label: name }));
+    return Array.from(map.entries()).map(([id, name]) => ({
+      value: id,
+      label: name,
+    }));
   }, [historiques, scheduledCalls]);
 
   const campagneOptions = useMemo(() => {
@@ -143,7 +162,10 @@ export default function CalendrierPage() {
       const id = item.campagneId;
       if (id && !map.has(String(id))) map.set(String(id), String(id));
     });
-    return Array.from(map.entries()).map(([id]) => ({ value: id, label: `Campagne ${id.slice(-5)}` }));
+    return Array.from(map.entries()).map(([id]) => ({
+      value: id,
+      label: `Campagne ${id.slice(-5)}`,
+    }));
   }, [historiques, scheduledCalls]);
 
   // ── Filtre générique ──────────────────────────────────────
@@ -153,7 +175,7 @@ export default function CalendrierPage() {
 
       // Recherche textuelle : numéro ou nom
       if (q) {
-        const num  = (item.calledNumber || "").toLowerCase();
+        const num = (item.calledNumber || "").toLowerCase();
         const name = (item.aiResponse?.nameUser || "").toLowerCase();
         if (!num.includes(q) && !name.includes(q)) return false;
       }
@@ -161,8 +183,8 @@ export default function CalendrierPage() {
       // Filtre statut/reason
       if (statusFilter !== "ALL") {
         const reason = isHistorique
-          ? (STATUS_LABEL[item.status]?.reason || "")
-          : (item.reason || "");
+          ? STATUS_LABEL[item.status]?.reason || ""
+          : item.reason || "";
         if (reason !== statusFilter) return false;
       }
 
@@ -170,7 +192,8 @@ export default function CalendrierPage() {
       if (agentFilter && String(item.agentIaId) !== agentFilter) return false;
 
       // Filtre campagne
-      if (campagneFilter && String(item.campagneId) !== campagneFilter) return false;
+      if (campagneFilter && String(item.campagneId) !== campagneFilter)
+        return false;
 
       return true;
     },
@@ -179,12 +202,12 @@ export default function CalendrierPage() {
 
   // ── Calcul du mois ────────────────────────────────────────
   const month = currentDate.getMonth();
-  const year  = currentDate.getFullYear();
+  const year = currentDate.getFullYear();
 
-  const firstDay  = new Date(year, month, 1);
-  const lastDay   = new Date(year, month + 1, 0);
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
   const startOffset = mondayFirstIndex(firstDay);
-  const totalDays   = lastDay.getDate();
+  const totalDays = lastDay.getDate();
 
   const cells = [];
   for (let i = 0; i < startOffset; i++) cells.push(null);
@@ -238,7 +261,7 @@ export default function CalendrierPage() {
   // ── Navigation ────────────────────────────────────────────
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-  const goToday   = () => setCurrentDate(new Date());
+  const goToday = () => setCurrentDate(new Date());
 
   // ── Suppression rappel ────────────────────────────────────
   const handleDelete = async (id) => {
@@ -269,7 +292,6 @@ export default function CalendrierPage() {
       <HeaderBar />
 
       <div className="container-fluid p-5">
-
         {/* ── BARRE RECHERCHE + FILTRES ── */}
         <div className="card border-0 shadow-sm mb-4 p-3">
           {/* Ligne 1 : recherche textuelle + selects */}
@@ -349,7 +371,12 @@ export default function CalendrierPage() {
                     className={`rounded-circle ${
                       statusFilter === key ? "bg-white" : dotCls
                     }`}
-                    style={{ width: 8, height: 8, display: "inline-block", flexShrink: 0 }}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      display: "inline-block",
+                      flexShrink: 0,
+                    }}
                   />
                 )}
                 {label}
@@ -368,11 +395,11 @@ export default function CalendrierPage() {
         {/* ── LÉGENDE ── */}
         <div className="d-flex flex-wrap gap-4 mb-4">
           {[
-            { cls: "bg-warning",   label: "Callback" },
-            { cls: "bg-danger",    label: "Non intéressé" },
+            { cls: "bg-warning", label: "Callback" },
+            { cls: "bg-danger", label: "Non intéressé" },
             { cls: "bg-secondary", label: "Occupé" },
-            { cls: "bg-dark",      label: "Répondeur" },
-            { cls: "bg-success",   label: "RDV / Vente" },
+            { cls: "bg-dark", label: "Répondeur" },
+            { cls: "bg-success", label: "RDV / Vente" },
           ].map(({ cls, label }) => (
             <div key={label} className="d-flex align-items-center gap-2">
               <span
@@ -391,7 +418,10 @@ export default function CalendrierPage() {
           </button>
           <div className="d-flex align-items-center gap-3">
             <h3 className="fw-bold text-capitalize m-0">{monthLabel}</h3>
-            <button className="btn btn-sm btn-outline-secondary" onClick={goToday}>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={goToday}
+            >
               Aujourd'hui
             </button>
           </div>
@@ -426,16 +456,20 @@ export default function CalendrierPage() {
                 <div
                   key={`empty-${index}`}
                   className="col"
-                  style={{ minWidth: "14.2%", maxWidth: "14.2%", minHeight: 120 }}
+                  style={{
+                    minWidth: "14.2%",
+                    maxWidth: "14.2%",
+                    minHeight: 120,
+                  }}
                 />
               );
             }
 
-            const key  = toLocalDateKey(day);
+            const key = toLocalDateKey(day);
             const data = groupedData[key] || { historiques: [], scheduled: [] };
-            const total    = data.historiques.length + data.scheduled.length;
-            const isToday  = key === todayKey;
-            const hasData  = total > 0;
+            const total = data.historiques.length + data.scheduled.length;
+            const isToday = key === todayKey;
+            const hasData = total > 0;
 
             return (
               <div
@@ -464,12 +498,17 @@ export default function CalendrierPage() {
                             ? "text-white bg-primary rounded-circle d-flex align-items-center justify-content-center"
                             : ""
                         }`}
-                        style={isToday ? { width: 26, height: 26, fontSize: 13 } : {}}
+                        style={
+                          isToday ? { width: 26, height: 26, fontSize: 13 } : {}
+                        }
                       >
                         {day.getDate()}
                       </div>
                       {total > 0 && (
-                        <span className="badge bg-dark" style={{ fontSize: 10 }}>
+                        <span
+                          className="badge bg-dark"
+                          style={{ fontSize: 10 }}
+                        >
                           {total}
                         </span>
                       )}
@@ -485,8 +524,14 @@ export default function CalendrierPage() {
                           style={{ fontSize: 11 }}
                         >
                           <span
-                            className={`rounded-circle flex-shrink-0 ${sm?.cls?.split(" ")[0] || "bg-secondary"}`}
-                            style={{ width: 8, height: 8, display: "inline-block" }}
+                            className={`rounded-circle flex-shrink-0 ${
+                              sm?.cls?.split(" ")[0] || "bg-secondary"
+                            }`}
+                            style={{
+                              width: 8,
+                              height: 8,
+                              display: "inline-block",
+                            }}
                           />
                           <span className="text-truncate text-muted">
                             {h.calledNumber}
@@ -506,7 +551,11 @@ export default function CalendrierPage() {
                           className={`rounded-circle flex-shrink-0 ${
                             REASON_COLOR[s.reason] ?? "bg-secondary"
                           }`}
-                          style={{ width: 8, height: 8, display: "inline-block" }}
+                          style={{
+                            width: 8,
+                            height: 8,
+                            display: "inline-block",
+                          }}
                         />
                         <span className="text-truncate text-muted">
                           {s.calledNumber}
@@ -539,19 +588,19 @@ export default function CalendrierPage() {
         >
           <div className="modal-dialog modal-xl modal-dialog-scrollable">
             <div className="modal-content">
-
               {/* Header modale */}
               <div className="modal-header">
                 <h5 className="modal-title fw-bold">
                   📅{" "}
-                  {new Date(
-                    selectedDay.date + "T12:00:00"
-                  ).toLocaleDateString("fr-FR", {
-                    weekday: "long",
-                    day:     "numeric",
-                    month:   "long",
-                    year:    "numeric",
-                  })}
+                  {new Date(selectedDay.date + "T12:00:00").toLocaleDateString(
+                    "fr-FR",
+                    {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )}
                 </h5>
                 <button
                   className="btn-close"
@@ -560,7 +609,6 @@ export default function CalendrierPage() {
               </div>
 
               <div className="modal-body">
-
                 {/* ── SECTION : Historique appels ── */}
                 <h6 className="fw-bold mb-3 text-primary">
                   📞 Historique appels ({selectedDay.data.historiques.length})
@@ -576,12 +624,15 @@ export default function CalendrierPage() {
                 {selectedDay.data.historiques.map((h) => {
                   const sm = STATUS_LABEL[h.status] ?? {
                     label: "—",
-                    cls:   "bg-light text-dark",
+                    cls: "bg-light text-dark",
                   };
-                  const time = new Date(h.callDate).toLocaleTimeString("fr-FR", {
-                    hour:   "2-digit",
-                    minute: "2-digit",
-                  });
+                  const time = new Date(h.callDate).toLocaleTimeString(
+                    "fr-FR",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  );
 
                   return (
                     <div key={h._id} className="border rounded p-3 mb-2">
@@ -596,9 +647,7 @@ export default function CalendrierPage() {
                           </div>
                           {/* Méta : heure + durée */}
                           <div className="d-flex gap-3 mt-2">
-                            <span className="small text-muted">
-                              🕐 {time}
-                            </span>
+                            <span className="small text-muted">🕐 {time}</span>
                             {h.billsec !== undefined && (
                               <span className="small text-muted">
                                 ⏱ {formatDuration(h.billsec)}
@@ -610,6 +659,33 @@ export default function CalendrierPage() {
                               </span>
                             )}
                           </div>
+                          {/* <div className="audio_calendrier">
+                            {h.pathRecord && (
+                              <div className="mt-2">
+                                <div
+                                  className="historiqueCol schedulerCol"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {buildRecordUrl(h.pathRecord) ? (
+                                    <>
+                                      <audio controls className="scheduler">
+                                        <source
+                                          src={buildRecordUrl(h.pathRecord)}
+                                        />
+                                        Votre navigateur ne supporte pas
+                                        l'audio.
+                                      </audio>
+                                    </>
+                                  ) : (
+                                    <span className="historiqueNoAudio">
+                                      <i className="bi bi-volume-mute" /> Pas
+                                      d'audio
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div> */}
                         </div>
                         <div className="d-flex flex-column align-items-end gap-1 flex-shrink-0">
                           <span className={`badge ${sm.cls}`}>{sm.label}</span>
@@ -635,19 +711,18 @@ export default function CalendrierPage() {
                 {selectedDay.data.scheduled.map((s) => {
                   const ssObj = SCHEDULED_STATUS[s.status] ?? {
                     label: s.status,
-                    cls:   "bg-secondary",
+                    cls: "bg-secondary",
                   };
-
+                  const recordUrl = buildRecordUrl(s.pathRecord); // 👈 calculé ici
+                  
                   return (
                     <div
                       key={s._id}
                       className="border rounded-4 p-3 mb-3 bg-white shadow-sm"
                     >
                       <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
-
                         {/* LEFT */}
                         <div className="flex-grow-1 min-w-0">
-                          {/* Numéro + pastille couleur */}
                           <div className="d-flex align-items-center gap-2 mb-2">
                             <div
                               className={`rounded-circle ${
@@ -658,19 +733,21 @@ export default function CalendrierPage() {
                             <h6 className="fw-bold mb-0">{s.calledNumber}</h6>
                           </div>
 
-                          {/* Infos IA */}
                           <div className="small text-muted mb-1">
                             <strong>Nom :</strong>{" "}
                             {s.aiResponse?.nameUser || "Inconnu"}
                           </div>
                           <div className="small text-muted mb-2">
+                            {/* Mettre a la ligne le text si c'est trop long */}
                             <strong>Description :</strong>{" "}
-                            {s.aiResponse?.description ||
-                              s.notes ||
-                              "Aucune description"}
+                            <span
+                              className="text-truncate d-inline-block"
+                              style={{ maxWidth: "50%" }}
+                            >
+                              {s.aiResponse?.description || "—"}
+                            </span>
                           </div>
 
-                          {/* Méta technique */}
                           <div className="d-flex flex-wrap gap-3 mt-2">
                             <div className="small text-muted">
                               🕐{" "}
@@ -680,17 +757,31 @@ export default function CalendrierPage() {
                               )}
                             </div>
                             <div className="small text-muted">
-                              🔄 Retry : {s.retryCount}
-                            </div>
-                            <div className="small text-muted">
                               📲 {s.callerNumber}
                             </div>
                           </div>
+
+                          {/* ── AUDIO ── */}
+                          {/* <div
+                            className="mt-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {recordUrl ? (
+                              <audio controls className="shcedulerAudio w-100">
+                                <source src={recordUrl} />
+                                Votre navigateur ne supporte pas l'audio.
+                              </audio>
+                            ) : (
+                              <span className="small text-muted fst-italic">
+                                <i className="bi bi-volume-mute me-1" />
+                                Pas d'enregistrement
+                              </span>
+                            )}
+                          </div> */}
                         </div>
 
                         {/* RIGHT */}
                         <div className="d-flex flex-column align-items-end gap-2 flex-shrink-0">
-                          {/* Raison */}
                           <span
                             className={`badge px-3 py-2 ${
                               REASON_COLOR[s.reason] ?? "bg-secondary"
@@ -698,13 +789,9 @@ export default function CalendrierPage() {
                           >
                             {REASON_LABEL[s.reason] ?? s.reason}
                           </span>
-
-                          {/* Statut planification */}
                           <span className={`badge px-3 py-2 ${ssObj.cls}`}>
                             {ssObj.label}
                           </span>
-
-                          {/* Bouton suppression */}
                           <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={(e) => {
