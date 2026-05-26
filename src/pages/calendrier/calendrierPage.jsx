@@ -108,10 +108,10 @@ export default function CalendrierPage() {
       setLoading(true);
       const [scheduledRes, historiquesRes] = await Promise.all([
         getScheduledCalls(),
-        getHistoriques(),
+        getHistoriques({status:2}),
       ]);
       setScheduledCalls(scheduledRes?.data?.data  || []);
-      // setHistoriques(historiquesRes?.data?.data   || []);
+      setHistoriques(historiquesRes?.data?.data   || []);
     } catch (err) {
       console.error("Erreur chargement calendrier:", err);
     } finally {
