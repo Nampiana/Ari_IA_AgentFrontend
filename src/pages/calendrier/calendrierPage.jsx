@@ -3,6 +3,7 @@ import HeaderBar from "../../components/agents/HeaderBar";
 import useScheduledCall from "../../hooks/useScheduledCall";
 import useHistoriqueIa from "../../hooks/useHistoriqueIa";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "../../assets/css/calendrierPage.css";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -110,7 +111,7 @@ export default function CalendrierPage() {
         getHistoriques(),
       ]);
       setScheduledCalls(scheduledRes?.data?.data  || []);
-      setHistoriques(historiquesRes?.data?.data   || []);
+      // setHistoriques(historiquesRes?.data?.data   || []);
     } catch (err) {
       console.error("Erreur chargement calendrier:", err);
     } finally {
@@ -130,9 +131,10 @@ export default function CalendrierPage() {
     const map = new Map();
     [...historiques, ...scheduledCalls].forEach((item) => {
       const id = item.agentIaId;
-      if (id && !map.has(String(id))) map.set(String(id), String(id));
+      const name = item.aiResponse?.nameUser || `Agent ${id?.slice(-5)}`;
+      if (id && !map.has(String(id))) map.set(String(id), name);
     });
-    return Array.from(map.entries()).map(([id]) => ({ value: id, label: `Agent ${id.slice(-5)}` }));
+    return Array.from(map.entries()).map(([id, name]) => ({ value: id, label: name }));
   }, [historiques, scheduledCalls]);
 
   const campagneOptions = useMemo(() => {
@@ -263,10 +265,10 @@ export default function CalendrierPage() {
 
   // ── Rendu ─────────────────────────────────────────────────
   return (
-    <div className="CalendrierPage bg-light min-vh-100">
+    <div className="calendrierPage bg-light min-vh-100">
       <HeaderBar />
 
-      <div className="container-fluid py-4">
+      <div className="container-fluid p-5">
 
         {/* ── BARRE RECHERCHE + FILTRES ── */}
         <div className="card border-0 shadow-sm mb-4 p-3">

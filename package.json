@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "PORT=3011 react-scripts start",
+    "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test"
   },
