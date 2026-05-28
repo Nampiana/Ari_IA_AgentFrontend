@@ -41,15 +41,15 @@ function formatDuration(billsec) {
 // ─── Couleurs & Labels ─────────────────────────────────────────────────────────
 
 const REASON_COLOR = {
-  CALLBACK: "bg-warning",
+  RAPPEL: "bg-warning",
   NI: "bg-danger",
-  OCCUPE: "bg-secondary",
-  REPONDEUR: "bg-dark",
+  OCCUPE: "bg-gris",
+  REPONDEUR: "bg-info",
   SALE: "bg-success",
 };
 
 const REASON_LABEL = {
-  CALLBACK: "Callback",
+  RAPPEL: "Rappel",
   NI: "Non intéressé",
   OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
@@ -60,16 +60,16 @@ const REASON_LABEL = {
 const STATUS_LABEL = {
   1: { label: "NI", cls: "bg-danger", reason: "NI" },
   2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
-  3: { label: "Callback", cls: "bg-warning text-dark", reason: "CALLBACK" },
-  4: { label: "Occupé", cls: "bg-secondary", reason: "OCCUPE" },
-  5: { label: "Répondeur", cls: "bg-dark", reason: "REPONDEUR" },
+  3: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
+  4: { label: "Occupé", cls: "bg-gris", reason: "OCCUPE" },
+  5: { label: "Répondeur", cls: "bg-info", reason: "REPONDEUR" },
 };
 
 const FILTER_CHIPS = [
   { key: "ALL", label: "Tous", cls: "btn-outline-secondary" },
   {
-    key: "CALLBACK",
-    label: "Callback",
+    key: "RAPPEL",
+    label: "Rappel",
     cls: "btn-warning",
     dotCls: "bg-warning",
   },
@@ -77,10 +77,10 @@ const FILTER_CHIPS = [
   {
     key: "OCCUPE",
     label: "Occupé",
-    cls: "btn-secondary",
-    dotCls: "bg-secondary",
+    cls: "btn-gris",
+    dotCls: "bg-gris",
   },
-  { key: "REPONDEUR", label: "Répondeur", cls: "btn-dark", dotCls: "bg-dark" },
+  { key: "REPONDEUR", label: "Répondeur", cls: "btn-info", dotCls: "bg-info" },
   {
     key: "SALE",
     label: "Vente / RDV",
@@ -395,10 +395,10 @@ export default function CalendrierPage() {
         {/* ── LÉGENDE ── */}
         <div className="d-flex flex-wrap gap-4 mb-4">
           {[
-            { cls: "bg-warning", label: "Callback" },
+            { cls: "bg-warning", label: "Rappel" },
             { cls: "bg-danger", label: "Non intéressé" },
-            { cls: "bg-secondary", label: "Occupé" },
-            { cls: "bg-dark", label: "Répondeur" },
+            { cls: "bg-gris", label: "Occupé" },
+            { cls: "bg-info", label: "Répondeur" },
             { cls: "bg-success", label: "RDV / Vente" },
           ].map(({ cls, label }) => (
             <div key={label} className="d-flex align-items-center gap-2">
@@ -785,7 +785,7 @@ export default function CalendrierPage() {
                           <span
                             className={`badge px-3 py-2 ${
                               REASON_COLOR[s.reason] ?? "bg-secondary"
-                            } ${s.reason === "CALLBACK" ? "text-dark" : ""}`}
+                            } ${s.reason === "RAPPEL" ? "text-dark" : ""}`}
                           >
                             {REASON_LABEL[s.reason] ?? s.reason}
                           </span>

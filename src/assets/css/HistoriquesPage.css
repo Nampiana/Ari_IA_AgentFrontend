@@ -231,36 +231,39 @@
   border: 1px solid transparent;
 }
 
+/* RÉUSSI → bg-success (vert) */
 .historiqueBadge.RÉUSSI {
-  background: rgba(24, 179, 104, 0.12);
-  color: #13945a;
-  border-color: rgba(24, 179, 104, 0.18);
+  background: rgba(25, 135, 84, 0.12);
+  color: #157347;
+  border-color: rgba(25, 135, 84, 0.18);
 }
 
+/* RAPPEL → bg-warning (jaune) */
 .historiqueBadge.RAPPEL {
-  background: rgba(16, 199, 212, 0.12);
-  color: #0891b2;
-  border-color: rgba(16, 199, 212, 0.18);
+  background: rgba(255, 193, 7, 0.12);
+  color: #cc9a06;
+  border-color: rgba(255, 193, 7, 0.18);
 }
 
+/* OCCUPÉ → gris vif */
 .historiqueBadge.OCCUPÉ {
-  background: rgba(239, 71, 111, 0.12);
-  color: #d63357;
-  border-color: rgba(239, 71, 111, 0.18);
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+  border-color: rgba(100, 116, 139, 0.18);
 }
 
+/* RÉPONDEUR → bleu clair */
 .historiqueBadge.RÉPONDEUR {
-  background: rgba(184, 220, 231, 0.12);
-  color: #7eb8c9;
-  border-color: rgba(184, 220, 231, 0.18);
+  background: rgba(56, 189, 248, 0.12);
+  color: #0284c7;
+  border-color: rgba(56, 189, 248, 0.18);
 }
-
+/* PAS_INTÉRESSÉ → bg-danger (rouge) */
 .historiqueBadge.PAS_INTÉRESSÉ {
-  background: rgba(127, 191, 89, 0.12);
-  color: #5f9c3d;
-  border-color: rgba(127, 191, 89, 0.18);
+  background: rgba(220, 53, 69, 0.12);
+  color: #b02a37;
+  border-color: rgba(220, 53, 69, 0.18);
 }
-
 .historiqueBadge.default {
   background: rgba(148, 163, 184, 0.15);
   color: #64748b;

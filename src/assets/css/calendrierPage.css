@@ -50,3 +50,14 @@
         max-width: 100%;
     }
 }
+
+.bg-gris {
+  background-color: #64748b !important;
+  color: white !important;
+}
+
+.btn-gris {
+  background-color: #64748b !important;
+  border-color: #64748b !important;
+  color: white !important;
+}
