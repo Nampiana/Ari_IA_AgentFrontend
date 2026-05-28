@@ -42,6 +42,7 @@ function formatDuration(billsec) {
 
 const REASON_COLOR = {
   RAPPEL: "bg-warning",
+  CALLBACK: "bg-warning",   // ← alias MongoDB
   NI: "bg-danger",
   OCCUPE: "bg-gris",
   REPONDEUR: "bg-info",
@@ -50,19 +51,20 @@ const REASON_COLOR = {
 
 const REASON_LABEL = {
   RAPPEL: "Rappel",
+  CALLBACK: "Rappel",       // ← alias MongoDB
   NI: "Non intéressé",
   OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
   SALE: "Vente / RDV",
 };
-
 // status MongoDB : 1=NI, 2=SALE, 3=CALLBACK, 4=OCCUPE, 5=REPONDEUR
 const STATUS_LABEL = {
-  1: { label: "NI", cls: "bg-danger", reason: "NI" },
+  1: { label: "Non intéressé", cls: "bg-danger", reason: "NI" },
   2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
   3: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
   4: { label: "Occupé", cls: "bg-gris", reason: "OCCUPE" },
   5: { label: "Répondeur", cls: "bg-info", reason: "REPONDEUR" },
+  CALLBACK: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" }, // ← alias
 };
 
 const FILTER_CHIPS = [
