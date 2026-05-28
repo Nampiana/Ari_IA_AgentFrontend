@@ -197,7 +197,7 @@ export default function CalendrierPage() {
 
       return true;
     },
-    [searchQuery, statusFilter, agentFilter, campagneFilter]
+    [searchQuery, statusFilter, agentFilter, campagneFilter],
   );
 
   // ── Calcul du mois ────────────────────────────────────────
@@ -291,12 +291,17 @@ export default function CalendrierPage() {
     <div className="calendrierPage bg-light min-vh-100">
       <HeaderBar />
 
-      <div className="container-fluid p-5">
-        {/* ── BARRE RECHERCHE + FILTRES ── */}
-        <div className="card border-0 shadow-sm mb-4 p-3">
-          {/* Ligne 1 : recherche textuelle + selects */}
-          <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
-            <div className="input-group" style={{ maxWidth: 300 }}>
+      <div className="container-fluid p-1 p-md-5">
+        <div
+          className="card border-0 shadow-sm mb-4 p-3"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div className="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center mb-3">
+            <div className="input-group mobile-min-width">
               <span className="input-group-text bg-white">
                 <i className="bi bi-search" />
               </span>
@@ -319,8 +324,8 @@ export default function CalendrierPage() {
             </div>
 
             <select
-              className="form-select"
-              style={{ maxWidth: 200 }}
+              className="form-select mobile-min-width"
+              style={{ flex: 1 }}
               value={agentFilter}
               onChange={(e) => setAgentFilter(e.target.value)}
             >
@@ -333,8 +338,8 @@ export default function CalendrierPage() {
             </select>
 
             <select
-              className="form-select"
-              style={{ maxWidth: 220 }}
+              className="form-select mobile-min-width"
+              style={{ flex: 1 }}
               value={campagneFilter}
               onChange={(e) => setCampagneFilter(e.target.value)}
             >
@@ -599,7 +604,7 @@ export default function CalendrierPage() {
                       day: "numeric",
                       month: "long",
                       year: "numeric",
-                    }
+                    },
                   )}
                 </h5>
                 <button
@@ -631,7 +636,7 @@ export default function CalendrierPage() {
                     {
                       hour: "2-digit",
                       minute: "2-digit",
-                    }
+                    },
                   );
 
                   return (
@@ -714,7 +719,7 @@ export default function CalendrierPage() {
                     cls: "bg-secondary",
                   };
                   const recordUrl = buildRecordUrl(s.pathRecord); // 👈 calculé ici
-                  
+
                   return (
                     <div
                       key={s._id}
@@ -753,7 +758,7 @@ export default function CalendrierPage() {
                               🕐{" "}
                               {new Date(s.scheduledAt).toLocaleTimeString(
                                 "fr-FR",
-                                { hour: "2-digit", minute: "2-digit" }
+                                { hour: "2-digit", minute: "2-digit" },
                               )}
                             </div>
                             <div className="small text-muted">
