@@ -19,6 +19,16 @@
     white-space: nowrap;
 }
 
+.mobile-min-width {
+  flex: 1;
+}
+
+@media (max-width: 767px) {
+  .mobile-min-width {
+    min-width: 250px;
+  }
+}
+
 
 @media (max-width: 1200px) {
     .historiqueRow {
