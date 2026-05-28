@@ -113,23 +113,23 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedAgentIa, setSelectedAgentIa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
-  const fetchHistoriques = async () => {
+  const fetchHistoriques = async (page = currentPage) => {
     try {
       setLoading(true);
 
-      const res = await getHistoriques();
+      const res = await getHistoriques({
+        page,
+        limit: ITEMS_PER_PAGE,
+      });
 
-      const data =
-        Array.isArray(res?.data?.data)
-          ? res.data.data
-          : Array.isArray(res?.data?.historiques)
-            ? res.data.historiques
-            : Array.isArray(res?.data)
-              ? res.data
-              : [];
+      const data = Array.isArray(res?.data?.data) ? res.data.data : [];
 
       setHistoriques(data);
+      setTotalPages(res?.data?.totalPages || 1);
+      setTotalResults(res?.data?.totalResults || 0);
     } catch (error) {
       console.error("Erreur récupération historiques :", error);
       showToast?.("Erreur lors du chargement des historiques", "danger");
@@ -143,8 +143,8 @@ export default function HistoriquesPage({ showToast }) {
   };
 
   useEffect(() => {
-    fetchHistoriques();
-  }, []);
+    fetchHistoriques(currentPage);
+  }, [currentPage]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -223,11 +223,8 @@ export default function HistoriquesPage({ showToast }) {
   }, [filteredHistoriques]);
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredHistoriques.length / ITEMS_PER_PAGE));
-  const paginatedHistoriques = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredHistoriques.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredHistoriques, currentPage]);
+ // const totalPages = Math.max(1, Math.ceil(filteredHistoriques.length / ITEMS_PER_PAGE));
+  const paginatedHistoriques = filteredHistoriques;
 
   const filtersActive = hasActiveFilters(search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd);
 
