@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import HeaderBar from "../../components/agents/HeaderBar";
 import useHistoriqueIa from "../../hooks/useHistoriqueIa";
+import useCompagne from "../../hooks/useCompagne";
+import useAgent from "../../hooks/useAgent";
 import HistoriqueDetailModal from "../../components/historique/HistoriqueDetailModal.jsx";
 import "../../assets/css/HistoriquesPage.css";
 
@@ -8,25 +10,21 @@ const ITEMS_PER_PAGE = 10;
 
 const getStatusLabel = (status) => {
   const value = Number(status);
-
   if (value === 2) return "RÉUSSI";
   if (value === 3) return "RAPPEL";
   if (value === 4) return "OCCUPÉ";
   if (value === 1) return "PAS_INTÉRESSÉ";
   if (value === 5) return "RÉPONDEUR";
-
   return "INCONNU";
 };
 
 const getStatusClass = (status) => {
   const value = Number(status);
-
   if (value === 2) return "RÉUSSI";
   if (value === 3) return "RAPPEL";
   if (value === 4) return "OCCUPÉ";
   if (value === 1) return "PAS_INTÉRESSÉ";
   if (value === 5) return "RÉPONDEUR";
-
   return "default";
 };
 
@@ -50,17 +48,12 @@ const formatDuration = (seconds) => {
 
 const formatTotalDuration = (seconds) => {
   const sec = Math.floor(Number(seconds || 0));
-
   const hours = Math.floor(sec / 3600);
   const minutes = Math.floor((sec % 3600) / 60);
   const remainingSeconds = sec % 60;
-
   if (hours > 0) {
-    return `${hours} h ${String(minutes).padStart(2, "0")} min ${String(
-      remainingSeconds
-    ).padStart(2, "0")} s`;
+    return `${hours} h ${String(minutes).padStart(2, "0")} min ${String(remainingSeconds).padStart(2, "0")} s`;
   }
-
   return `${minutes} min ${String(remainingSeconds).padStart(2, "0")} s`;
 };
 
@@ -91,16 +84,18 @@ const isSameOrBefore = (itemDate, endDate) => {
   return current <= end;
 };
 
-const hasActiveFilters = (search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd) =>
+// 1. Dans hasActiveFilters — ajouter filtersArchive
+const hasActiveFilters = (search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd, filtersArchive) =>
   search.trim() !== "" ||
   selectedStatus !== "all" ||
   selectedCampagne !== "all" ||
   selectedAgentIa !== "all" ||
   dateStart !== "" ||
-  dateEnd !== "";
+  dateEnd !== "" ||
+  filtersArchive !== "all";
 
 export default function HistoriquesPage({ showToast }) {
-  const { getHistoriques } = useHistoriqueIa();
+  const { getHistoriques, archiveManyHistoriques } = useHistoriqueIa();
 
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -112,63 +107,165 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedHistorique, setSelectedHistorique] = useState(null);
   const [selectedAgentIa, setSelectedAgentIa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtersArchive, setFiltersArchive] = useState("all");
+  const [agentIas, setAgentIas] = useState([]);
+  const [campagnes, setCampagnes] = useState([]);
 
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
 
-  const fetchHistoriques = async (page = currentPage) => {
+  // ── Sélection multiple ──────────────────────────────────────────────────────
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  const { getAgents } = useAgent();
+  const { getCompagnes } = useCompagne();
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const fetchAgentsIa = async () => {
+      try {
+        const res = await getAgents();
+        setAgentIas(res?.data?.data || []);
+      } catch (error) {
+        console.error(error);
+        showToast?.("Erreur chargement agents IA", "danger");
+      }
+    };
+
+    const fetchCampagnes = async () => {
+      try {
+        const res = await getCompagnes();
+        setCampagnes(res?.data?.data || []);
+      } catch (error) {
+        console.error(error);
+        showToast?.("Erreur chargement campagnes", "danger");
+      }
+    };
+
+    fetchAgentsIa();
+    fetchCampagnes();
+  }, []);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [currentPage, search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd]);
+
+  const handleArchiveSelected = async () => {
+    const ids =
+      selectedIds.size > 0
+        ? [...selectedIds]
+        : paginatedHistoriques.map((item) => item._id);
+
+    if (ids.length === 0) {
+      return showToast?.("Aucun historique à archiver", "warning");
+    }
+
+    try {
+      await archiveManyHistoriques(ids);
+      showToast?.(
+        selectedIds.size > 0
+          ? `${ids.length} historique(s) archivé(s) avec succès`
+          : "Page archivée avec succès",
+        "success"
+      );
+      setSelectedIds(new Set());
+      fetchHistoriques(currentPage);
+    } catch (error) {
+      console.error(error);
+      showToast?.("Erreur lors de l'archivage", "danger");
+    }
+  };
+
+
+  const handleArchiveCurrentPage = handleArchiveSelected;
+
+  const fetchHistoriques = async (page = 1) => {
     try {
       setLoading(true);
 
-      const res = await getHistoriques({
+      const params = {
         page,
         limit: ITEMS_PER_PAGE,
-      });
+      };
 
-      const data = Array.isArray(res?.data?.data) ? res.data.data : [];
+      if (search.trim()) {
+        params.search = search.trim();
+      }
 
-      setHistoriques(data);
+      if (selectedStatus !== "all") {
+        params.status = selectedStatus;
+      }
+
+      if (selectedCampagne !== "all") {
+        params.campagneId = selectedCampagne;
+      }
+
+      if (selectedAgentIa !== "all") {
+        params.agentIaId = selectedAgentIa;
+      }
+
+      if (dateStart) {
+        params.dateStart = dateStart;
+      }
+
+      if (dateEnd) {
+        params.dateEnd = dateEnd;
+      }
+
+      if (filtersArchive !== "all") {
+        params.archive = filtersArchive;
+      }
+
+      const res = await getHistoriques(params);
+
+      setHistoriques(res?.data?.data || []);
       setTotalPages(res?.data?.totalPages || 1);
       setTotalResults(res?.data?.totalResults || 0);
     } catch (error) {
-      console.error("Erreur récupération historiques :", error);
-      showToast?.("Erreur lors du chargement des historiques", "danger");
+      console.error(error);
+      showToast?.("Erreur chargement historiques", "danger");
     } finally {
       setLoading(false);
     }
   };
 
-  const getDurationValue = (item) => {
-    return Number(item?.callDuration ?? item?.billsec ?? 0);
-  };
+  const getDurationValue = (item) => Number(item?.callDuration ?? item?.billsec ?? 0);
 
   useEffect(() => {
     fetchHistoriques(currentPage);
-  }, [currentPage]);
+  }, [
+    currentPage,
+    search,
+    selectedStatus,
+    selectedCampagne,
+    selectedAgentIa,
+    dateStart,
+    dateEnd,
+    filtersArchive
+  ]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd]);
+
+  // ── Options ─────────────────────────────────────────────────────────────────
 
   const agentsIaOptions = useMemo(() => {
     const map = new Map();
     historiques.forEach((item) => {
       const agent = item?.agentIaId;
-      if (agent?._id) {
-        map.set(agent._id, { _id: agent._id, nomAgent: agent.nomAgent || "Sans nom" });
-      }
-    });
-    return Array.from(map.values());
-  }, [historiques]);
-
-  const campagnesOptions = useMemo(() => {
-    const map = new Map();
-    historiques.forEach((item) => {
-      const campagne = item?.campagneId;
-      if (campagne?._id) {
-        map.set(campagne._id, { _id: campagne._id, nomCompagne: campagne.nomCompagne || "Sans nom" });
-      }
+      if (agent?._id) map.set(agent._id, { _id: agent._id, nomAgent: agent.nomAgent || "Sans nom" });
     });
     return Array.from(map.values());
   }, [historiques]);
@@ -180,59 +277,51 @@ export default function HistoriquesPage({ showToast }) {
     setSelectedAgentIa("all");
     setDateStart("");
     setDateEnd("");
+    setFiltersArchive("all");
   };
 
-  const filteredHistoriques = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    return historiques.filter((item) => {
-      const statusValue = Number(item.status);
-      const campagneId = item?.campagneId?._id || item?.campagneId;
-      const agentIaId = item?.agentIaId?._id || item?.agentIaId;
+  const totalCallDuration = useMemo(
+    () => historiques.reduce((total, item) => total + getDurationValue(item), 0),
+    [historiques]
+  );
 
-      const matchesStatus = selectedStatus === "all" || statusValue === Number(selectedStatus);
-      const matchesCampagne = selectedCampagne === "all" || String(campagneId) === String(selectedCampagne);
-      const matchesAgentIa = selectedAgentIa === "all" || String(agentIaId) === String(selectedAgentIa);
+  const paginatedHistoriques = historiques;
 
-      const text = [
-        item.calledNumber,
-        item.callerNumber,
-        item.agentIaId?.nomAgent,
-        item?.campagneId?.nomCompagne,
-        item.channelId,
-        item?.aiResponse?.description,
-        item?.aiResponse?.nameUser,
-        item?.aiResponse?.phoneUser,
-        item?.aiResponse?.mailUser,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+  const pageIds = useMemo(
+    () => paginatedHistoriques?.map((item) => item._id) ?? [],
+    [historiques, search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd]
+  );
 
-      const matchesSearch = !keyword || text.includes(keyword);
-      const matchesDateStart = isSameOrAfter(item.callDate, dateStart);
-      const matchesDateEnd = isSameOrBefore(item.callDate, dateEnd);
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const somePageSelected =
+    !allPageSelected && pageIds.some((id) => selectedIds.has(id));
 
-      return matchesStatus && matchesCampagne && matchesAgentIa && matchesSearch && matchesDateStart && matchesDateEnd;
-    });
-  }, [historiques, search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd]);
+  const toggleSelectAll = () => {
+    if (allPageSelected) {
+      // Décocher tous ceux de la page courante
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        pageIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    } else {
+      // Cocher tous ceux de la page courante
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        pageIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  };
 
-  const totalCallDuration = useMemo(() => {
-    return filteredHistoriques.reduce((total, item) => {
-      return total + getDurationValue(item);
-    }, 0);
-  }, [filteredHistoriques]);
 
-  // Pagination
- // const totalPages = Math.max(1, Math.ceil(filteredHistoriques.length / ITEMS_PER_PAGE));
-  const paginatedHistoriques = filteredHistoriques;
 
-  const filtersActive = hasActiveFilters(search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd);
+  const filtersActive = hasActiveFilters(search, selectedStatus, selectedCampagne, selectedAgentIa, dateStart, dateEnd, filtersArchive);
 
-  // Build a readable label for what is filtered
   const getCounterLabel = () => {
     if (!filtersActive) return `${historiques.length} appel${historiques.length !== 1 ? "s" : ""} au total`;
-
-    const count = filteredHistoriques.length;
+    const count = historiques.length;
     const parts = [];
     if (selectedCampagne !== "all") {
       const c = campagnesOptions.find((x) => x._id === selectedCampagne);
@@ -243,29 +332,22 @@ export default function HistoriquesPage({ showToast }) {
       if (a) parts.push(a.nomAgent);
     }
     if (selectedStatus !== "all") parts.push(getStatusLabel(selectedStatus));
-
     const suffix = parts.length > 0 ? ` — ${parts.join(", ")}` : "";
     return `${count} appel${count !== 1 ? "s" : ""} trouvé${count !== 1 ? "s" : ""}${suffix}`;
   };
 
-  // Generate page numbers to display (max 5 visible)
   const getPageNumbers = () => {
     const pages = [];
     const delta = 2;
     const left = Math.max(1, currentPage - delta);
     const right = Math.min(totalPages, currentPage + delta);
-
-    if (left > 1) {
-      pages.push(1);
-      if (left > 2) pages.push("...");
-    }
+    if (left > 1) { pages.push(1); if (left > 2) pages.push("..."); }
     for (let i = left; i <= right; i++) pages.push(i);
-    if (right < totalPages) {
-      if (right < totalPages - 1) pages.push("...");
-      pages.push(totalPages);
-    }
+    if (right < totalPages) { if (right < totalPages - 1) pages.push("..."); pages.push(totalPages); }
     return pages;
   };
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="historiquesPage">
@@ -273,11 +355,11 @@ export default function HistoriquesPage({ showToast }) {
 
       <div className="historiquesContainer">
         <div className="historiquesCard">
+          {/* ── En-tête ── */}
           <div className="historiquesHeader">
             <div>
               <h1>Journal des appels</h1>
               <p>Consultez l'historique détaillé des appels IA.</p>
-              {/* ── Counter ── */}
               <div className="historiquesCounter">
                 <i className="bi bi-telephone-fill" />
                 <span>{getCounterLabel()}</span>
@@ -289,6 +371,28 @@ export default function HistoriquesPage({ showToast }) {
             </div>
 
             <div className="historiquesActions">
+              {/* ── Bouton d'archivage contextuel ── */}
+              <button
+                type="button"
+                className={`historiquesArchiveBtn${selectedIds.size > 0 ? " has-selection" : ""}`}
+                onClick={handleArchiveSelected}
+              >
+                <i className="bi bi-archive" />
+                {selectedIds.size > 0
+                  ? `Archiver la sélection (${selectedIds.size})`
+                  : "Archiver la page"}
+              </button>
+
+              <select
+                className="historiquesFilterSelect"
+                value={filtersArchive}
+                onChange={(e) => setFiltersArchive(e.target.value)}
+              >
+                <option value="all">Tous les archives</option>
+                <option value="1">Archivés</option>
+                <option value="2">Non archivés</option>
+              </select>
+
               <select
                 className="historiquesFilterSelect"
                 value={selectedStatus}
@@ -308,7 +412,7 @@ export default function HistoriquesPage({ showToast }) {
                 onChange={(e) => setSelectedCampagne(e.target.value)}
               >
                 <option value="all">Toutes les campagnes</option>
-                {campagnesOptions.map((campagne) => (
+                {campagnes.map((campagne) => (
                   <option key={campagne._id} value={campagne._id}>
                     {campagne.nomCompagne}
                   </option>
@@ -321,7 +425,7 @@ export default function HistoriquesPage({ showToast }) {
                 onChange={(e) => setSelectedAgentIa(e.target.value)}
               >
                 <option value="all">Tous les agents IA</option>
-                {agentsIaOptions.map((agent) => (
+                {agentIas.map((agent) => (
                   <option key={agent._id} value={agent._id}>
                     {agent.nomAgent}
                   </option>
@@ -329,29 +433,14 @@ export default function HistoriquesPage({ showToast }) {
               </select>
 
               <div className="historiquesDateFilter">
-                <input
-                  type="date"
-                  className="historiquesDateInput"
-                  value={dateStart}
-                  onChange={(e) => setDateStart(e.target.value)}
-                />
+                <input type="date" className="historiquesDateInput" value={dateStart} onChange={(e) => setDateStart(e.target.value)} />
                 <span className="historiquesDateSeparator">—</span>
-                <input
-                  type="date"
-                  className="historiquesDateInput"
-                  value={dateEnd}
-                  onChange={(e) => setDateEnd(e.target.value)}
-                />
+                <input type="date" className="historiquesDateInput" value={dateEnd} onChange={(e) => setDateEnd(e.target.value)} />
               </div>
 
               <div className="historiquesSearch">
                 <i className="bi bi-search" />
-                <input
-                  type="text"
-                  placeholder="Recherche"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <input type="text" placeholder="Recherche" value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
 
               <button type="button" className="historiquesResetBtn" onClick={resetFilters}>
@@ -362,76 +451,156 @@ export default function HistoriquesPage({ showToast }) {
 
           {loading ? (
             <div className="historiquesEmpty">Chargement des historiques...</div>
-          ) : filteredHistoriques.length === 0 ? (
+          ) : historiques.length === 0 ? (
             <div className="historiquesEmpty">Aucun historique trouvé.</div>
           ) : (
             <>
-              <div className="historiquesList">
-                {paginatedHistoriques.map((item) => {
-                  const recordUrl = buildRecordUrl(item.pathRecord);
+              {/* ── Barre de sélection groupée ── */}
+              <div className="historiquesSelectBar">
+                <label className="historiquesSelectAllLabel" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    className="historiquesCheckbox"
+                    checked={allPageSelected}
+                    ref={(el) => { if (el) el.indeterminate = somePageSelected; }}
+                    onChange={toggleSelectAll}
+                  />
+                  <span>
+                    {allPageSelected
+                      ? "Tout désélectionner"
+                      : somePageSelected
+                        ? `${[...selectedIds].filter((id) => pageIds.includes(id)).length} sélectionné(s)`
+                        : "Tout sélectionner la page"}
+                  </span>
+                </label>
 
-                  return (
-                    <div
-                      key={item._id}
-                      className="historiqueRow"
-                      onClick={() => setSelectedHistorique(item)}
-                    >
-                      <div className="historiqueCol historiqueNumber">
-                        <div className="historiqueMain">
-                          <i className="bi bi-telephone-outbound" />
-                          <span>{item.calledNumber || "-"}</span>
-                        </div>
-                        <div className="historiqueSub">Canal : {item.channelId || "-"}</div>
-                      </div>
+                {selectedIds.size > 0 && (
+                  <span className="historiquesSelectionCount">
+                    <i className="bi bi-check2-square" />
+                    {selectedIds.size} élément{selectedIds.size > 1 ? "s" : ""} sélectionné{selectedIds.size > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
 
-                      <div className="historiqueCol historiqueCampagne">
-                        <div className="historiqueMain">
-                          <i className="bi bi-megaphone" />
-                          <span>{item?.campagneId?.nomCompagne || "Campagne"}</span>
-                        </div>
-                        <div className="historiqueSub">{item.callerNumber || "-"}</div>
-                      </div>
+              {/* ── Liste ── */}
+              <div className="table-responsive">
+                <table className="table table-hover align-middle">
+                  <thead className="table-light">
+                    <tr>
+                      <th>
+                        <input
+                          type="checkbox"
+                          checked={
+                            paginatedHistoriques.length > 0 &&
+                            paginatedHistoriques.every((item) => selectedIds.has(item._id))
+                          }
+                          onChange={toggleSelectAll}
+                        />
+                      </th>
+                      <th>Numéro appelé</th>
+                      <th>Campagne</th>
+                      <th>Agent IA</th>
+                      <th>Date</th>
+                      <th>Statut</th>
+                      <th>Audio</th>
+                    </tr>
+                  </thead>
 
-                      <div className="historiqueCol historiqueAgent">
-                        <div className="historiqueMain">
-                          <i className="bi bi-person-badge" />
-                          <span>{item.agentIaId?.nomAgent || "Agent IA"}</span>
-                        </div>
-                        <div className="historiqueSub">Agent vocal</div>
-                      </div>
+                  <tbody>
+                    {paginatedHistoriques.map((item) => {
+                      const recordUrl = buildRecordUrl(item.pathRecord);
+                      const isSelected = selectedIds.has(item._id);
 
-                      <div className="historiqueCol historiqueDate">
-                        <div className="historiqueMain">{formatDate(item.callDate)}</div>
-                        <div className="historiqueSub">
-                          <i className="bi bi-clock" />{" "}
-                          {formatDuration(getDurationValue(item))}
-                        </div>
-                      </div>
+                      return (
+                        <tr
+                          key={item._id}
+                          className={isSelected ? "table-active" : ""}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => setSelectedHistorique(item)}
+                        >
+                          {/* Checkbox */}
+                          <td
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelectOne(item._id);
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectOne(item._id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </td>
 
-                      <div className="historiqueCol historiqueBadgeCol">
-                        <span className={`historiqueBadge ${getStatusClass(item.status)}`}>
-                          {getStatusLabel(item.status)}
-                        </span>
-                      </div>
+                          {/* Numéro appelé */}
+                          <td>
+                            <div className="fw-semibold">
+                              <i className="bi bi-telephone-outbound me-2"></i>
+                              {item.calledNumber || "-"}
+                            </div>
+                            <small className="text-muted">
+                              Canal : {item.channelId || "-"}
+                            </small>
+                          </td>
 
-                      <div
-                        className="historiqueCol historiqueAudioCol"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {recordUrl ? (
-                          <audio controls className="historiqueAudio">
-                            <source src={recordUrl} />
-                            Votre navigateur ne supporte pas l'audio.
-                          </audio>
-                        ) : (
-                          <span className="historiqueNoAudio">
-                            <i className="bi bi-volume-mute" /> Pas d'audio
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                          {/* Campagne */}
+                          <td>
+                            <div className="fw-semibold">
+                              <i className="bi bi-megaphone me-2"></i>
+                              {item?.campagneId?.nomCompagne || "Campagne"}
+                            </div>
+                            <small className="text-muted">
+                              {item.callerNumber || "-"}
+                            </small>
+                          </td>
+
+                          {/* Agent IA */}
+                          <td>
+                            <div className="fw-semibold">
+                              <i className="bi bi-person-badge me-2"></i>
+                              {item.agentIaId?.nomAgent || "Agent IA"}
+                            </div>
+                            <small className="text-muted">Agent vocal</small>
+                          </td>
+
+                          {/* Date */}
+                          <td>
+                            <div className="fw-semibold">
+                              {formatDate(item.callDate)}
+                            </div>
+                            <small className="text-muted">
+                              <i className="bi bi-clock me-1"></i>
+                              {formatDuration(getDurationValue(item))}
+                            </small>
+                          </td>
+
+                          {/* Statut */}
+                          <td>
+                            <span className={`historiqueBadge ${getStatusClass(item.status)}`}>
+                              {getStatusLabel(item.status)}
+                            </span>
+                          </td>
+
+                          {/* Audio */}
+                          <td onClick={(e) => e.stopPropagation()}>
+                            {recordUrl ? (
+                              <audio controls style={{ maxWidth: "220px" }}>
+                                <source src={recordUrl} />
+                                Votre navigateur ne supporte pas l'audio.
+                              </audio>
+                            ) : (
+                              <span className="text-muted">
+                                <i className="bi bi-volume-mute me-1"></i>
+                                Pas d'audio
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
 
               {/* ── Pagination ── */}
@@ -448,9 +617,7 @@ export default function HistoriquesPage({ showToast }) {
 
                   {getPageNumbers().map((page, idx) =>
                     page === "..." ? (
-                      <span key={`ellipsis-${idx}`} className="historiquesPaginationEllipsis">
-                        …
-                      </span>
+                      <span key={`ellipsis-${idx}`} className="historiquesPaginationEllipsis">…</span>
                     ) : (
                       <button
                         key={page}
@@ -475,8 +642,8 @@ export default function HistoriquesPage({ showToast }) {
                     Page {currentPage} / {totalPages}
                     {" · "}
                     {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredHistoriques.length)}{" "}
-                    sur {filteredHistoriques.length}
+                    {Math.min(currentPage * ITEMS_PER_PAGE, historiques.length)}{" "}
+                    sur {historiques.length}
                   </span>
                 </div>
               )}

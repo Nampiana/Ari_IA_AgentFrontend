@@ -724,3 +724,83 @@
   margin-left: 8px;
   white-space: nowrap;
 }
+
+/* ── À ajouter dans HistoriquesPage.css ──────────────────────────── */
+
+/* Barre "tout sélectionner / compteur" au-dessus de la liste */
+.historiquesSelectBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-subtle, #f8f9fa);
+  border: 1px solid var(--border-color, #e2e6ea);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.historiquesSelectAllLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary, #6c757d);
+  user-select: none;
+}
+
+.historiquesSelectAllLabel:hover {
+  color: var(--text-primary, #212529);
+}
+
+.historiquesSelectionCount {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary, #0d6efd);
+  background: var(--primary-subtle, #e7f1ff);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+/* Colonne checkbox dans chaque ligne */
+.historiqueCheckboxCol {
+  flex: 0 0 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Style commun des checkboxes */
+.historiquesCheckbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary, #0d6efd);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Ligne sélectionnée */
+.historiqueRow.selected {
+  background: var(--primary-subtle, #e7f1ff);
+  border-color: var(--primary, #0d6efd);
+}
+
+.historiqueRow.selected:hover {
+  background: color-mix(in srgb, var(--primary, #0d6efd) 12%, transparent);
+}
+
+/* Bouton d'archivage avec sélection active */
+.historiquesArchiveBtn.has-selection {
+  background: var(--primary, #0d6efd);
+  color: #fff;
+  border-color: var(--primary, #0d6efd);
+}
+
+.historiquesArchiveBtn.has-selection:hover {
+  background: color-mix(in srgb, var(--primary, #0d6efd) 85%, black);
+}
