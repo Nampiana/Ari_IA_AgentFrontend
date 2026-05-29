@@ -26,6 +26,14 @@ class HistoriqueIaServices {
   delete(id) {
     return axios.delete(`${ApiUrl}historiques/${id}`, header());
   }
+
+  archiveMany(ids) {
+    return axios.put(
+      `${ApiUrl}historiques/archive/many`,
+      { ids },
+      header()
+    );
+  }
 }
 
 export default new HistoriqueIaServices();

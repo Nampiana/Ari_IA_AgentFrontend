@@ -21,11 +21,16 @@ export default function useHistoriqueIa() {
     return HistoriqueIaServices.delete(id);
   };
 
+  const archiveManyHistoriques = async (ids) => {
+    return HistoriqueIaServices.archiveMany(ids);
+  };
+
   return {
     getHistoriques,
     getHistorique,
     createHistorique,
     updateHistorique,
     deleteHistorique,
+    archiveManyHistoriques,
   };
 }
