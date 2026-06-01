@@ -10,7 +10,7 @@ export default function useScheduledCall() {
     };
 
     const createScheduledCall = async (data) => {
-        return ScheduledCallServices.create(data);
+        return ScheduledCallServices.createManual(data);
     };
 
     const updateScheduledCall = async (id, data) => {
@@ -21,21 +21,9 @@ export default function useScheduledCall() {
         return ScheduledCallServices.delete(id);
     };
 
-    const getByReason = async (reason, params = {}) => {
-        return ScheduledCallServices.getByReason(reason, params);
-    };
-
-    const getByPhone = async (calledNumber) => {
-        return ScheduledCallServices.getByPhone(calledNumber);
-    };
-
-    const getByAgent = async (agentIaId, params = {}) => {
-        return ScheduledCallServices.getByAgent(agentIaId, params);
-    };
-
-    const getByCampagne = async (campagneId, params = {}) => {
-        return ScheduledCallServices.getByCampagne(campagneId, params);
-    };
+    const getScheduledCallsByHistorique = async (historiqueId) => {
+        return ScheduledCallServices.getByHistorique(historiqueId);
+    }
 
     return {
         getScheduledCalls,
@@ -43,9 +31,6 @@ export default function useScheduledCall() {
         createScheduledCall,
         updateScheduledCall,
         deleteScheduledCall,
-        getByReason,
-        getByPhone,
-        getByAgent,
-        getByCampagne,
+        getScheduledCallsByHistorique
     };
 }

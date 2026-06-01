@@ -1,0 +1,1207 @@
+/* ══════════════════════════════════════════════
+   SCHEDULED CALLS DRAWER
+   ══════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────── */
+.scd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  z-index: 1040;
+  animation: scdFadeIn 0.2s ease;
+}
+
+/* ── Drawer ──────────────────────────────────── */
+.scd-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: 420px;
+  max-width: 100vw;
+  background: #ffffff;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12);
+  animation: scdSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scdSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scdFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Header ──────────────────────────────────── */
+.scd-header {
+  padding: 20px 20px 0;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.scd-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.scd-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scd-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #e6f1fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #185fa5;
+  flex-shrink: 0;
+}
+
+.scd-header-title h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.scd-header-title p {
+  font-size: 13px;
+  color: #888;
+  margin: 2px 0 0;
+  font-family: monospace;
+}
+
+.scd-close {
+  background: none;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.scd-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+/* ── Stats / filtre ──────────────────────────── */
+.scd-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.scd-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s;
+  gap: 2px;
+}
+
+.scd-stat:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: #f5f5f5;
+}
+
+.scd-stat--active {
+  border-color: #185fa5;
+  background: #e6f1fb;
+}
+
+.scd-stat--active .scd-stat-num {
+  color: #185fa5;
+}
+
+.scd-stat--active .scd-stat-label {
+  color: #185fa5;
+}
+
+.scd-stat-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.scd-stat-label {
+  font-size: 10px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.scd-stat--warning.scd-stat--active {
+  border-color: #854f0b;
+  background: #faeeda;
+}
+
+.scd-stat--warning.scd-stat--active .scd-stat-num,
+.scd-stat--warning.scd-stat--active .scd-stat-label {
+  color: #854f0b;
+}
+
+.scd-stat--success.scd-stat--active {
+  border-color: #3b6d11;
+  background: #eaf3de;
+}
+
+.scd-stat--success.scd-stat--active .scd-stat-num,
+.scd-stat--success.scd-stat--active .scd-stat-label {
+  color: #3b6d11;
+}
+
+.scd-stat--danger.scd-stat--active {
+  border-color: #a32d2d;
+  background: #fcebeb;
+}
+
+.scd-stat--danger.scd-stat--active .scd-stat-num,
+.scd-stat--danger.scd-stat--active .scd-stat-label {
+  color: #a32d2d;
+}
+
+/* ── Body ────────────────────────────────────── */
+.scd-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+
+.scd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Empty / Loading ─────────────────────────── */
+.scd-empty,
+.scd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 20px;
+  color: #aaa;
+  text-align: center;
+}
+
+.scd-empty i,
+.scd-loading i {
+  font-size: 36px;
+}
+
+.scd-empty p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.scd-btn-link {
+  background: none;
+  border: none;
+  color: #185fa5;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ── Card ────────────────────────────────────── */
+.scd-card {
+  background: #ffffff;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+
+.scd-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.scd-card--editing {
+  border-color: #185fa5;
+  box-shadow: 0 0 0 2px rgba(24, 95, 165, 0.12);
+}
+
+.scd-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+  gap: 8px;
+}
+
+.scd-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.scd-card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Badges ──────────────────────────────────── */
+.scd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.scd-badge i {
+  font-size: 11px;
+}
+
+.reason-callback {
+  background: #e6f1fb;
+  color: #0c447c;
+  border-color: #b5d4f4;
+}
+
+.reason-occupe {
+  background: #faeeda;
+  color: #633806;
+  border-color: #fac775;
+}
+
+.reason-repondeur {
+  background: #eeedfe;
+  color: #3c3489;
+  border-color: #cecbf6;
+}
+
+.reason-ni {
+  background: #fcebeb;
+  color: #791f1f;
+  border-color: #f7c1c1;
+}
+
+.reason-sale {
+  background: #eaf3de;
+  color: #27500a;
+  border-color: #c0dd97;
+}
+
+.status-pending {
+  background: #faeeda;
+  color: #633806;
+  border-color: #fac775;
+}
+
+.status-running {
+  background: #e6f1fb;
+  color: #0c447c;
+  border-color: #b5d4f4;
+}
+
+.status-done {
+  background: #eaf3de;
+  color: #27500a;
+  border-color: #c0dd97;
+}
+
+.status-failed {
+  background: #fcebeb;
+  color: #791f1f;
+  border-color: #f7c1c1;
+}
+
+/* ── Icon buttons ────────────────────────────── */
+.scd-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.scd-icon-btn--edit:hover {
+  background: #e6f1fb;
+  color: #185fa5;
+  border-color: #b5d4f4;
+}
+
+.scd-icon-btn--delete:hover {
+  background: #fcebeb;
+  color: #a32d2d;
+  border-color: #f7c1c1;
+}
+
+.scd-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Card body ───────────────────────────────── */
+.scd-card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scd-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.scd-info-row>i {
+  font-size: 14px;
+  color: #aaa;
+  margin-top: 1px;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.scd-info-row>div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.scd-info-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.scd-info-value {
+  color: #1a1a1a;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.scd-info-value--muted {
+  color: #666;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.scd-relative {
+  font-style: normal;
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 400;
+}
+
+.scd-notes {
+  display: flex;
+  gap: 8px;
+  background: #fffbf0;
+  border: 0.5px solid #fac775;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 2px;
+}
+
+.scd-notes i {
+  color: #854f0b;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.scd-notes p {
+  font-size: 12px;
+  color: #633806;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Card footer ─────────────────────────────── */
+.scd-card-footer {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: #bbb;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.05);
+  background: #fafafa;
+}
+
+/* ── Edit form ───────────────────────────────── */
+.scd-edit-form {
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scd-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.scd-edit-field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.scd-edit-field input,
+.scd-edit-field select,
+.scd-edit-field textarea {
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #1a1a1a;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.scd-edit-field input:focus,
+.scd-edit-field select:focus,
+.scd-edit-field textarea:focus {
+  border-color: #185fa5;
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
+  background: #afacac;
+}
+
+.scd-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.scd-btn-cancel {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.scd-btn-cancel:hover {
+  background: #f5f5f5;
+}
+
+.scd-btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #185fa5;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.scd-btn-save:hover {
+  background: #0c447c;
+}
+
+.scd-btn-save:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* ── Footer drawer ───────────────────────────── */
+.scd-footer {
+  padding: 12px 16px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.scd-btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  width: 100%;
+  justify-content: center;
+}
+
+.scd-btn-refresh:hover {
+  background: #f0f0f0;
+}
+
+/* ── Spin animation ──────────────────────────── */
+.scd-spin {
+  display: inline-block;
+  animation: scdSpin 0.7s linear infinite;
+}
+
+@keyframes scdSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Responsive mobile ───────────────────────── */
+@media (max-width: 480px) {
+  .scd-drawer {
+    width: 100vw;
+  }
+
+  .scd-stats {
+    gap: 5px;
+  }
+
+  .scd-stat-num {
+    font-size: 17px;
+  }
+}
+
+/* ── Dark mode ───────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .scd-drawer {
+    background: #1a1a1a;
+  }
+
+  .scd-header {
+    background: #141414;
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+
+  .scd-header-title h2 {
+    color: #f0f0f0;
+  }
+
+  .scd-header-title p {
+    color: #666;
+  }
+
+  .scd-close {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+  }
+
+  .scd-close:hover {
+    background: rgba(220, 38, 38, 0.15);
+    color: #fca5a5;
+  }
+
+  .scd-stat {
+    background: #242424;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .scd-stat:hover {
+    background: #2e2e2e;
+  }
+
+  .scd-stat-num {
+    color: #f0f0f0;
+  }
+
+  .scd-stat-label {
+    color: #666;
+  }
+
+  .scd-card {
+    background: #1e1e1e;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .scd-card-header {
+    background: #141414;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .scd-card-footer {
+    background: #141414;
+  }
+
+  .scd-info-value {
+    color: #e8e8e8;
+  }
+
+  .scd-info-value--muted {
+    color: #888;
+  }
+
+  .scd-info-label {
+    color: #555;
+  }
+
+  .scd-info-row>i {
+    color: #555;
+  }
+
+  .scd-relative {
+    color: #555;
+  }
+
+  .scd-notes {
+    background: rgba(186, 117, 23, 0.1);
+    border-color: rgba(186, 117, 23, 0.3);
+  }
+
+  .scd-notes p {
+    color: #fac775;
+  }
+
+  .scd-notes i {
+    color: #fac775;
+  }
+
+  .scd-edit-field input,
+  .scd-edit-field select,
+  .scd-edit-field textarea {
+    background: #242424;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e8e8e8;
+  }
+
+  .scd-edit-field label {
+    color: #888;
+  }
+
+  .scd-btn-cancel {
+    background: #242424;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+  }
+
+  .scd-btn-cancel:hover {
+    background: #2e2e2e;
+  }
+
+  .scd-footer {
+    background: #141414;
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+
+  .scd-btn-refresh {
+    background: #1e1e1e;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+  }
+
+  .scd-btn-refresh:hover {
+    background: #2a2a2a;
+  }
+
+  .scd-icon-btn {
+    background: #242424;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+  }
+
+  .scd-icon-btn--edit:hover {
+    background: rgba(24, 95, 165, 0.2);
+    color: #b5d4f4;
+  }
+
+  .scd-icon-btn--delete:hover {
+    background: rgba(163, 45, 45, 0.2);
+    color: #f7c1c1;
+  }
+
+  .scd-empty,
+  .scd-loading {
+    color: #555;
+  }
+}
+
+/* ── Audio panel dans la carte ───────────────── */
+.scd-audio-panel {
+  border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+  padding: 10px 12px;
+  background: #f8faff;
+  animation: scdFadeIn 0.18s ease;
+}
+
+/* ── Bloc audio réutilisable ─────────────────── */
+.scd-audio-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scd-audio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.scd-audio-label i {
+  font-size: 12px;
+  color: #185fa5;
+}
+
+.scd-audio {
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Style natif audio dans Chrome/Edge */
+.scd-audio::-webkit-media-controls-panel {
+  background: #edf4ff;
+  border-radius: 8px;
+}
+
+.scd-audio-empty {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #aaa;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.scd-audio-empty i {
+  font-size: 15px;
+}
+
+/* ── Audio racine dans le header ─────────────── */
+.scd-root-audio {
+  background: #f0f6ff;
+  border: 0.5px solid #b5d4f4;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scd-root-audio-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #185fa5;
+}
+
+.scd-root-audio-label i {
+  font-size: 13px;
+}
+
+.scd-root-audio-date {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: #5a8fc4;
+}
+
+/* ── Séparateur numéroté ─────────────────────── */
+.scd-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  margin-top: 4px;
+}
+
+.scd-item-index {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #185fa5;
+  border-radius: 20px;
+  padding: 2px 7px;
+  letter-spacing: 0.3px;
+}
+
+.scd-item-date {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* ── Monospace pour les numéros ──────────────── */
+.scd-mono {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Bouton audio actif ──────────────────────── */
+.scd-icon-btn--audio {
+  color: #185fa5;
+  border-color: #b5d4f4;
+  background: #e6f1fb;
+}
+
+.scd-icon-btn--audio.active {
+  background: #185fa5;
+  color: #ffffff;
+  border-color: #185fa5;
+}
+
+/* ── Dark mode compléments ───────────────────── */
+@media (prefers-color-scheme: dark) {
+  .scd-audio-panel {
+    background: rgba(24, 95, 165, 0.06);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .scd-audio-label {
+    color: #888;
+  }
+
+  .scd-root-audio {
+    background: rgba(24, 95, 165, 0.12);
+    border-color: rgba(24, 95, 165, 0.35);
+  }
+
+  .scd-root-audio-label {
+    color: #b5d4f4;
+  }
+
+  .scd-root-audio-date {
+    color: #7aabdd;
+  }
+
+  .scd-item-index {
+    background: #0c447c;
+  }
+
+  .scd-icon-btn--audio {
+    background: rgba(24, 95, 165, 0.15);
+    color: #b5d4f4;
+    border-color: rgba(24, 95, 165, 0.3);
+  }
+
+  .scd-icon-btn--audio.active {
+    background: #185fa5;
+    color: #fff;
+  }
+}
+
+/* ── Bouton Ajouter dans le header ───────────── */
+.scd-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: #185fa5;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.scd-add-btn:hover {
+  background: #e6f1fb;
+  border-color: #b5d4f4;
+}
+
+.scd-add-btn--active {
+  background: #fcebeb;
+  color: #a32d2d;
+  border-color: #f7c1c1;
+}
+
+.scd-add-btn--active:hover {
+  background: #f7c1c1;
+}
+
+.scd-add-btn i {
+  font-size: 13px;
+}
+
+/* ── Formulaire d'ajout ──────────────────────── */
+.scd-add-form-wrap {
+  background: #f0f7ff;
+  border: 0.5px solid #b5d4f4;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  animation: scdFadeIn 0.18s ease;
+}
+
+.scd-add-form-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: #e6f1fb;
+  border-bottom: 0.5px solid #b5d4f4;
+  font-size: 13px;
+  font-weight: 600;
+  color: #185fa5;
+}
+
+.scd-add-form-header i {
+  font-size: 15px;
+}
+
+.scd-add-form-wrap .scd-edit-form {
+  padding: 12px 14px;
+  background: transparent;
+}
+
+.scd-add-form-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 0.5px solid #b5d4f4;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: #185fa5;
+}
+
+.scd-add-form-info i {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.scd-add-form-info strong {
+  font-weight: 600;
+}
+
+/* Variante verte pour le bouton "Créer" */
+.scd-btn-add {
+  background: #3b6d11 !important;
+}
+
+.scd-btn-add:hover {
+  background: #27500a !important;
+}
+
+.scd-btn-add:disabled {
+  background: #c0dd97 !important;
+}
+
+/* ── Confirmation suppression ────────────────── */
+.scd-delete-confirm {
+  padding: 16px 14px 12px;
+  animation: scdFadeIn 0.15s ease;
+}
+
+.scd-delete-confirm-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.scd-delete-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fcebeb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #a32d2d;
+  margin-bottom: 4px;
+}
+
+.scd-delete-confirm-body p {
+  font-size: 13px;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.scd-delete-sub {
+  font-size: 11px !important;
+  color: #aaa !important;
+}
+
+.scd-delete-confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.scd-btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #a32d2d;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.scd-btn-delete:hover {
+  background: #791f1f;
+}
+
+.scd-btn-delete:disabled {
+  background: #f7c1c1;
+  cursor: not-allowed;
+}
+
+/* ── Carte en mode suppression ───────────────── */
+.scd-card--deleting {
+  border-color: #f7c1c1;
+  box-shadow: 0 0 0 2px rgba(163, 45, 45, 0.1);
+}
+
+.scd-card--deleting .scd-card-header {
+  background: #fcebeb;
+  border-color: #f7c1c1;
+}
+
+/* ── Dark mode compléments ───────────────────── */
+@media (prefers-color-scheme: dark) {
+  .scd-add-btn {
+    background: #1e1e1e;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #b5d4f4;
+  }
+
+  .scd-add-btn:hover {
+    background: rgba(24, 95, 165, 0.2);
+  }
+
+  .scd-add-btn--active {
+    background: rgba(163, 45, 45, 0.15);
+    color: #f7c1c1;
+    border-color: rgba(163, 45, 45, 0.3);
+  }
+
+  .scd-add-btn--active:hover {
+    background: rgba(163, 45, 45, 0.25);
+  }
+
+  .scd-add-form-wrap {
+    background: rgba(24, 95, 165, 0.08);
+    border-color: rgba(24, 95, 165, 0.3);
+  }
+
+  .scd-add-form-header {
+    background: rgba(24, 95, 165, 0.15);
+    border-color: rgba(24, 95, 165, 0.25);
+    color: #b5d4f4;
+  }
+
+  .scd-add-form-info {
+    background: rgba(24, 95, 165, 0.1);
+    border-color: rgba(24, 95, 165, 0.25);
+    color: #b5d4f4;
+  }
+
+  .scd-add-form-wrap .scd-edit-form input,
+  .scd-add-form-wrap .scd-edit-form select,
+  .scd-add-form-wrap .scd-edit-form textarea {
+    background: #1e1e1e;
+  }
+
+  .scd-delete-icon {
+    background: rgba(163, 45, 45, 0.2);
+    color: #f7c1c1;
+  }
+
+  .scd-delete-confirm-body p {
+    color: #e8e8e8;
+  }
+
+  .scd-card--deleting {
+    border-color: rgba(163, 45, 45, 0.4);
+  }
+
+  .scd-card--deleting .scd-card-header {
+    background: rgba(163, 45, 45, 0.1);
+    border-color: rgba(163, 45, 45, 0.2);
+  }
+}

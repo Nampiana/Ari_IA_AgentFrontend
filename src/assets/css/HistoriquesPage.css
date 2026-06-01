@@ -37,61 +37,231 @@
   font-size: 0.97rem;
 }
 
+/* ── Rangées d'actions ───────────────────────────────────── */
 .historiquesActions {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
-.historiquesFilterSelect {
-  min-width: 140px;
-  height: 42px;
-  border: 1px solid #e3e8f2;
-  background: #6cc56f;
-  color: #ffffff;
-  border-radius: 10px;
-  padding: 0 14px;
-  outline: none;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(108, 197, 111, 0.2);
-}
-
-.historiquesFilterSelect option {
-  color: #1f2937;
-  background: #ffffff;
-}
-
-.historiquesSearch {
+.historiquesActionsRow {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 42px;
-  min-width: 220px;
+  flex-wrap: wrap;
+}
+
+.historiquesActionsRow--top {
+  justify-content: space-between;
+}
+
+.historiquesActionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Rangée filtres ──────────────────────────────────────── */
+.historiquesActionsRow--filters {
+  background: #f8f9fb;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  padding: 10px 14px;
+  gap: 0;
+}
+
+.historiquesFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   padding: 0 14px;
-  border-radius: 12px;
-  background: #f3f6fb;
-  border: 1px solid #e7edf6;
+}
+
+.historiquesFilterGroup:first-child {
+  padding-left: 0;
+}
+
+.historiquesFilterGroup:last-child {
+  padding-right: 0;
+}
+
+.historiquesFilterLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a93a2;
+  white-space: nowrap;
+}
+
+.historiquesFilterDivider {
+  width: 1px;
+  height: 32px;
+  background: #dde1e9;
+  flex-shrink: 0;
+}
+
+/* ── Recherche ───────────────────────────────────────────── */
+.historiquesSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #dde1e9;
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-width: 240px;
+  flex: 1;
+  max-width: 380px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.historiquesSearch:focus-within {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
 }
 
 .historiquesSearch i {
-  color: #8b5cf6;
-  font-size: 1rem;
+  color: #8a93a2;
+  font-size: 0.85rem;
 }
 
 .historiquesSearch input {
   border: none;
   outline: none;
   background: transparent;
+  font-size: 0.875rem;
   width: 100%;
-  color: #344054;
-  font-size: 0.95rem;
+  color: #1a1f2e;
 }
 
-.historiquesSearch input::placeholder {
-  color: #98a2b3;
+/* ── Selects ─────────────────────────────────────────────── */
+.historiquesFilterSelect {
+  border: 1px solid #dde1e9;
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  color: #1a1f2e;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  height: 34px;
+}
+
+.historiquesFilterSelect:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+/* ── Date inputs ─────────────────────────────────────────── */
+.historiquesDateFilter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.historiquesDateInput {
+  border: 1px solid #dde1e9;
+  border-radius: 7px;
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  color: #1a1f2e;
+  background: #fff;
+  height: 34px;
+  transition: border-color 0.2s;
+}
+
+.historiquesDateInput:focus {
+  outline: none;
+  border-color: #0d6efd;
+}
+
+.historiquesDateSeparator {
+  color: #8a93a2;
+  font-size: 0.85rem;
+}
+
+/* ── Bouton reset ────────────────────────────────────────── */
+.historiquesResetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid #f0ad4e;
+  border-radius: 7px;
+  background: transparent;
+  color: #e07b00;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  height: 34px;
+}
+
+.historiquesResetBtn:hover {
+  background: #fff3cd;
+}
+
+/* ── Bouton refresh ──────────────────────────────────────── */
+.historiquesRefreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid #0d6efd;
+  border-radius: 7px;
+  background: transparent;
+  color: #0d6efd;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  height: 34px;
+}
+
+.historiquesRefreshBtn:hover:not(:disabled) {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.historiquesRefreshBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .historiquesActionsRow--filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .historiquesFilterDivider {
+    width: 100%;
+    height: 1px;
+    margin: 6px 0;
+  }
+
+  .historiquesFilterGroup {
+    padding: 0;
+  }
 }
 
 .historiquesEmpty {
@@ -258,12 +428,14 @@
   color: #0284c7;
   border-color: rgba(56, 189, 248, 0.18);
 }
+
 /* PAS_INTÉRESSÉ → bg-danger (rouge) */
 .historiqueBadge.PAS_INTÉRESSÉ {
   background: rgba(220, 53, 69, 0.12);
   color: #b02a37;
   border-color: rgba(220, 53, 69, 0.18);
 }
+
 .historiqueBadge.default {
   background: rgba(148, 163, 184, 0.15);
   color: #64748b;
@@ -655,12 +827,12 @@
   font-weight: 500;
   letter-spacing: 0.01em;
 }
- 
+
 .historiquesDuration i {
   font-size: 0.78rem;
   opacity: 0.85;
 }
- 
+
 .historiquesDuration strong {
   font-weight: 700;
 }
@@ -803,4 +975,69 @@
 
 .historiquesArchiveBtn.has-selection:hover {
   background: color-mix(in srgb, var(--primary, #0d6efd) 85%, black);
+}
+
+.scd-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: #444;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.scd-trigger-btn:hover {
+  background: #e6f1fb;
+  color: #185fa5;
+  border-color: #b5d4f4;
+}
+
+.scd-trigger-btn i {
+  font-size: 13px;
+}
+
+.historiquesRefreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #0d6efd;
+  border-radius: 6px;
+  background: transparent;
+  color: #0d6efd;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.historiquesRefreshBtn:hover:not(:disabled) {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.historiquesRefreshBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
 }
