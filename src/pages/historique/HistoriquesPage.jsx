@@ -69,7 +69,6 @@ const isSameOrBefore = (itemDate, endDate) => {
   return current <= end;
 };
 
-// 1. Dans hasActiveFilters — ajouter filtersArchive
 const hasActiveFilters = (
   search,
   selectedStatus,
@@ -78,6 +77,8 @@ const hasActiveFilters = (
   dateStart,
   dateEnd,
   filtersArchive,
+  timeStart,
+  timeEnd,
 ) =>
   search.trim() !== "" ||
   selectedStatus !== "all" ||
@@ -85,7 +86,9 @@ const hasActiveFilters = (
   selectedAgentIa !== "all" ||
   dateStart !== "" ||
   dateEnd !== "" ||
-  filtersArchive !== "all";
+  filtersArchive !== "all" ||
+  timeStart !== "" ||
+  timeEnd !== "";
 
 export default function HistoriquesPage({ showToast }) {
   const { getHistoriques, archiveManyHistoriques, updateHistorique } =
@@ -98,6 +101,8 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedCampagne, setSelectedCampagne] = useState("all");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
+  const [timeStart, setTimeStart] = useState("");
+  const [timeEnd, setTimeEnd] = useState("");
   const [selectedHistorique, setSelectedHistorique] = useState(null);
   const [selectedAgentIa, setSelectedAgentIa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,7 +115,6 @@ export default function HistoriquesPage({ showToast }) {
   const [drawerHistorique, setDrawerHistorique] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // ── Sélection multiple ──────────────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState(new Set());
 
   const { getAgents } = useAgent();
@@ -170,6 +174,8 @@ export default function HistoriquesPage({ showToast }) {
     selectedAgentIa,
     dateStart,
     dateEnd,
+    timeStart,
+    timeEnd,
   ]);
 
   const handleArchiveSelected = async () => {
@@ -209,33 +215,15 @@ export default function HistoriquesPage({ showToast }) {
         limit: ITEMS_PER_PAGE,
       };
 
-      if (search.trim()) {
-        params.search = search.trim();
-      }
-
-      if (selectedStatus !== "all") {
-        params.status = selectedStatus;
-      }
-
-      if (selectedCampagne !== "all") {
-        params.campagneId = selectedCampagne;
-      }
-
-      if (selectedAgentIa !== "all") {
-        params.agentIaId = selectedAgentIa;
-      }
-
-      if (dateStart) {
-        params.dateStart = dateStart;
-      }
-
-      if (dateEnd) {
-        params.dateEnd = dateEnd;
-      }
-
-      if (filtersArchive !== "all") {
-        params.archive = filtersArchive;
-      }
+      if (search.trim()) params.search = search.trim();
+      if (selectedStatus !== "all") params.status = selectedStatus;
+      if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
+      if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
+      if (dateStart) params.dateStart = dateStart;
+      if (dateEnd) params.dateEnd = dateEnd;
+      if (timeStart) params.timeStart = timeStart;
+      if (timeEnd) params.timeEnd = timeEnd;
+      if (filtersArchive !== "all") params.archive = filtersArchive;
 
       const res = await getHistoriques(params);
 
@@ -269,6 +257,8 @@ export default function HistoriquesPage({ showToast }) {
     selectedAgentIa,
     dateStart,
     dateEnd,
+    timeStart,
+    timeEnd,
     filtersArchive,
   ]);
 
@@ -281,6 +271,8 @@ export default function HistoriquesPage({ showToast }) {
     selectedAgentIa,
     dateStart,
     dateEnd,
+    timeStart,
+    timeEnd,
   ]);
 
   const agentsIaOptions = useMemo(() => {
@@ -303,6 +295,8 @@ export default function HistoriquesPage({ showToast }) {
     setSelectedAgentIa("all");
     setDateStart("");
     setDateEnd("");
+    setTimeStart("");
+    setTimeEnd("");
     setFiltersArchive("all");
   };
 
@@ -324,6 +318,8 @@ export default function HistoriquesPage({ showToast }) {
       selectedAgentIa,
       dateStart,
       dateEnd,
+      timeStart,
+      timeEnd,
     ],
   );
 
@@ -334,14 +330,12 @@ export default function HistoriquesPage({ showToast }) {
 
   const toggleSelectAll = () => {
     if (allPageSelected) {
-      // Décocher tous ceux de la page courante
       setSelectedIds((prev) => {
         const next = new Set(prev);
         pageIds.forEach((id) => next.delete(id));
         return next;
       });
     } else {
-      // Cocher tous ceux de la page courante
       setSelectedIds((prev) => {
         const next = new Set(prev);
         pageIds.forEach((id) => next.add(id));
@@ -358,6 +352,8 @@ export default function HistoriquesPage({ showToast }) {
     dateStart,
     dateEnd,
     filtersArchive,
+    timeStart,
+    timeEnd,
   );
 
   const getCounterLabel = () => {
@@ -394,8 +390,6 @@ export default function HistoriquesPage({ showToast }) {
     }
     return pages;
   };
-
-  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="historiquesPage">
@@ -563,6 +557,33 @@ export default function HistoriquesPage({ showToast }) {
                     />
                   </div>
                 </div>
+
+                {/* Séparateur vertical */}
+                <div className="historiquesFilterDivider" />
+
+                {/* Groupe : Heures */}
+                <div className="historiquesFilterGroup">
+                  <span className="historiquesFilterLabel">
+                    <i className="bi bi-clock" /> Heure
+                  </span>
+                  <div className="historiquesDateFilter">
+                    <input
+                      type="time"
+                      className="historiquesTimeInput"
+                      value={timeStart}
+                      onChange={(e) => setTimeStart(e.target.value)}
+                      placeholder="00:00"
+                    />
+                    <span className="historiquesDateSeparator">→</span>
+                    <input
+                      type="time"
+                      className="historiquesTimeInput"
+                      value={timeEnd}
+                      onChange={(e) => setTimeEnd(e.target.value)}
+                      placeholder="23:59"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -647,7 +668,6 @@ export default function HistoriquesPage({ showToast }) {
                           style={{ cursor: "pointer" }}
                           onClick={() => setSelectedHistorique(item)}
                         >
-                          {/* Checkbox */}
                           <td
                             onClick={(e) => {
                               e.stopPropagation();
@@ -662,7 +682,6 @@ export default function HistoriquesPage({ showToast }) {
                             />
                           </td>
 
-                          {/* Numéro appelé */}
                           <td>
                             <div className="fw-semibold">
                               <i className="bi bi-telephone-outbound me-2"></i>
@@ -673,7 +692,6 @@ export default function HistoriquesPage({ showToast }) {
                             </small>
                           </td>
 
-                          {/* Campagne */}
                           <td>
                             <div className="fw-semibold">
                               <i className="bi bi-megaphone me-2"></i>
@@ -684,7 +702,6 @@ export default function HistoriquesPage({ showToast }) {
                             </small>
                           </td>
 
-                          {/* Agent IA */}
                           <td>
                             <div className="fw-semibold">
                               <i className="bi bi-person-badge me-2"></i>
@@ -693,7 +710,6 @@ export default function HistoriquesPage({ showToast }) {
                             <small className="text-muted">Agent vocal</small>
                           </td>
 
-                          {/* Date */}
                           <td>
                             <div className="fw-semibold">
                               {formatDate(item.callDate)}
@@ -704,7 +720,6 @@ export default function HistoriquesPage({ showToast }) {
                             </small>
                           </td>
 
-                          {/* Statut */}
                           <td>
                             <StatusDropdown
                               itemId={item._id}
@@ -713,7 +728,6 @@ export default function HistoriquesPage({ showToast }) {
                             />
                           </td>
 
-                          {/* Audio */}
                           <td onClick={(e) => e.stopPropagation()}>
                             {recordUrl ? (
                               <audio controls style={{ maxWidth: "220px" }}>
@@ -727,6 +741,7 @@ export default function HistoriquesPage({ showToast }) {
                               </span>
                             )}
                           </td>
+
                           <td onClick={(e) => e.stopPropagation()}>
                             <button
                               className="scd-trigger-btn"
