@@ -1061,11 +1061,6 @@
   border-color: #adb5bd;
 }
 
-.historiquesTimeInput:focus {
-  outline: none;
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
-}
 
 /* Indicateur contextuel sous les champs heure */
 .historiquesTimeHint {
@@ -1079,8 +1074,5 @@
   white-space: nowrap;
 }
 
-.historiquesTimeHint i {
-  font-size: 0.75rem;
-  color: #0d6efd;
-}
+
 

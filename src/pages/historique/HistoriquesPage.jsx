@@ -213,6 +213,7 @@ export default function HistoriquesPage({ showToast }) {
       const params = {
         page,
         limit: ITEMS_PER_PAGE,
+        timezoneOffset: new Date().getTimezoneOffset(),
       };
 
       if (search.trim()) params.search = search.trim();
@@ -583,14 +584,6 @@ export default function HistoriquesPage({ showToast }) {
                       placeholder="23:59"
                     />
                   </div>
-                  {(timeStart || timeEnd) && (
-                    <span className="historiquesTimeHint">
-                      <i className="bi bi-info-circle" />
-                      {!dateStart && !dateEnd
-                        ? "Tous les jours"
-                        : "Combiné avec la période"}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
