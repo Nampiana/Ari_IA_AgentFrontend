@@ -559,10 +559,9 @@ export default function HistoriquesPage({ showToast }) {
                   </div>
                 </div>
 
-                {/* Séparateur vertical */}
+                                {/*
                 <div className="historiquesFilterDivider" />
 
-                {/* Groupe : Heures */}
                 <div className="historiquesFilterGroup">
                   <span className="historiquesFilterLabel">
                     <i className="bi bi-clock" /> Heure
@@ -585,6 +584,7 @@ export default function HistoriquesPage({ showToast }) {
                     />
                   </div>
                 </div>
+                */}
               </div>
             </div>
           </div>
