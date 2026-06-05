@@ -69,6 +69,7 @@ const isSameOrBefore = (itemDate, endDate) => {
   return current <= end;
 };
 
+// 1. Dans hasActiveFilters — ajouter filtersArchive
 const hasActiveFilters = (
   search,
   selectedStatus,
@@ -77,8 +78,6 @@ const hasActiveFilters = (
   dateStart,
   dateEnd,
   filtersArchive,
-  timeStart,
-  timeEnd,
 ) =>
   search.trim() !== "" ||
   selectedStatus !== "all" ||
@@ -86,9 +85,7 @@ const hasActiveFilters = (
   selectedAgentIa !== "all" ||
   dateStart !== "" ||
   dateEnd !== "" ||
-  filtersArchive !== "all" ||
-  timeStart !== "" ||
-  timeEnd !== "";
+  filtersArchive !== "all";
 
 export default function HistoriquesPage({ showToast }) {
   const { getHistoriques, archiveManyHistoriques, updateHistorique } =
@@ -101,8 +98,6 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedCampagne, setSelectedCampagne] = useState("all");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
-  const [timeStart, setTimeStart] = useState("");
-  const [timeEnd, setTimeEnd] = useState("");
   const [selectedHistorique, setSelectedHistorique] = useState(null);
   const [selectedAgentIa, setSelectedAgentIa] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,6 +110,7 @@ export default function HistoriquesPage({ showToast }) {
   const [drawerHistorique, setDrawerHistorique] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // ── Sélection multiple ──────────────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState(new Set());
 
   const { getAgents } = useAgent();
@@ -174,8 +170,6 @@ export default function HistoriquesPage({ showToast }) {
     selectedAgentIa,
     dateStart,
     dateEnd,
-    timeStart,
-    timeEnd,
   ]);
 
   const handleArchiveSelected = async () => {
@@ -206,46 +200,55 @@ export default function HistoriquesPage({ showToast }) {
 
   const handleArchiveCurrentPage = handleArchiveSelected;
 
-const fetchHistoriques = async (page = 1) => {
-  try {
-    setLoading(true);
+  const fetchHistoriques = async (page = 1) => {
+    try {
+      setLoading(true);
 
-    // ── Validation heure : fin < début → résultat vide immédiat ──
-    if (timeStart && timeEnd && timeStart > timeEnd) {
-      setHistoriques([]);
-      setTotalPages(1);
-      setTotalResults(0);
+      const params = {
+        page,
+        limit: ITEMS_PER_PAGE,
+      };
+
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+
+      if (selectedStatus !== "all") {
+        params.status = selectedStatus;
+      }
+
+      if (selectedCampagne !== "all") {
+        params.campagneId = selectedCampagne;
+      }
+
+      if (selectedAgentIa !== "all") {
+        params.agentIaId = selectedAgentIa;
+      }
+
+      if (dateStart) {
+        params.dateStart = dateStart;
+      }
+
+      if (dateEnd) {
+        params.dateEnd = dateEnd;
+      }
+
+      if (filtersArchive !== "all") {
+        params.archive = filtersArchive;
+      }
+
+      const res = await getHistoriques(params);
+
+      setHistoriques(res?.data?.data || []);
+      setTotalPages(res?.data?.totalPages || 1);
+      setTotalResults(res?.data?.totalResults || 0);
+    } catch (error) {
+      console.error(error);
+      showToast?.("Erreur chargement historiques", "danger");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const params = {
-      page,
-      limit: ITEMS_PER_PAGE,
-    };
-
-    if (search.trim()) params.search = search.trim();
-    if (selectedStatus !== "all") params.status = selectedStatus;
-    if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
-    if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
-    if (dateStart) params.dateStart = dateStart;
-    if (dateEnd) params.dateEnd = dateEnd;
-    if (timeStart) params.timeStart = timeStart;
-    if (timeEnd) params.timeEnd = timeEnd;
-    if (filtersArchive !== "all") params.archive = filtersArchive;
-
-    const res = await getHistoriques(params);
-
-    setHistoriques(res?.data?.data || []);
-    setTotalPages(res?.data?.totalPages || 1);
-    setTotalResults(res?.data?.totalResults || 0);
-  } catch (error) {
-    console.error(error);
-    showToast?.("Erreur chargement historiques", "danger");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -266,8 +269,6 @@ const fetchHistoriques = async (page = 1) => {
     selectedAgentIa,
     dateStart,
     dateEnd,
-    timeStart,
-    timeEnd,
     filtersArchive,
   ]);
 
@@ -280,8 +281,6 @@ const fetchHistoriques = async (page = 1) => {
     selectedAgentIa,
     dateStart,
     dateEnd,
-    timeStart,
-    timeEnd,
   ]);
 
   const agentsIaOptions = useMemo(() => {
@@ -304,8 +303,6 @@ const fetchHistoriques = async (page = 1) => {
     setSelectedAgentIa("all");
     setDateStart("");
     setDateEnd("");
-    setTimeStart("");
-    setTimeEnd("");
     setFiltersArchive("all");
   };
 
@@ -327,8 +324,6 @@ const fetchHistoriques = async (page = 1) => {
       selectedAgentIa,
       dateStart,
       dateEnd,
-      timeStart,
-      timeEnd,
     ],
   );
 
@@ -339,12 +334,14 @@ const fetchHistoriques = async (page = 1) => {
 
   const toggleSelectAll = () => {
     if (allPageSelected) {
+      // Décocher tous ceux de la page courante
       setSelectedIds((prev) => {
         const next = new Set(prev);
         pageIds.forEach((id) => next.delete(id));
         return next;
       });
     } else {
+      // Cocher tous ceux de la page courante
       setSelectedIds((prev) => {
         const next = new Set(prev);
         pageIds.forEach((id) => next.add(id));
@@ -361,8 +358,6 @@ const fetchHistoriques = async (page = 1) => {
     dateStart,
     dateEnd,
     filtersArchive,
-    timeStart,
-    timeEnd,
   );
 
   const getCounterLabel = () => {
@@ -399,6 +394,8 @@ const fetchHistoriques = async (page = 1) => {
     }
     return pages;
   };
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="historiquesPage">
@@ -566,33 +563,6 @@ const fetchHistoriques = async (page = 1) => {
                     />
                   </div>
                 </div>
-
-                {/* Séparateur vertical */}
-                <div className="historiquesFilterDivider" />
-
-                {/* Groupe : Heures */}
-                <div className="historiquesFilterGroup">
-                  <span className="historiquesFilterLabel">
-                    <i className="bi bi-clock" /> Heure
-                  </span>
-                  <div className="historiquesDateFilter">
-                    <input
-                      type="time"
-                      className="historiquesTimeInput"
-                      value={timeStart}
-                      onChange={(e) => setTimeStart(e.target.value)}
-                      placeholder="00:00"
-                    />
-                    <span className="historiquesDateSeparator">→</span>
-                    <input
-                      type="time"
-                      className="historiquesTimeInput"
-                      value={timeEnd}
-                      onChange={(e) => setTimeEnd(e.target.value)}
-                      placeholder="23:59"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -677,6 +647,7 @@ const fetchHistoriques = async (page = 1) => {
                           style={{ cursor: "pointer" }}
                           onClick={() => setSelectedHistorique(item)}
                         >
+                          {/* Checkbox */}
                           <td
                             onClick={(e) => {
                               e.stopPropagation();
@@ -691,6 +662,7 @@ const fetchHistoriques = async (page = 1) => {
                             />
                           </td>
 
+                          {/* Numéro appelé */}
                           <td>
                             <div className="fw-semibold">
                               <i className="bi bi-telephone-outbound me-2"></i>
@@ -701,6 +673,7 @@ const fetchHistoriques = async (page = 1) => {
                             </small>
                           </td>
 
+                          {/* Campagne */}
                           <td>
                             <div className="fw-semibold">
                               <i className="bi bi-megaphone me-2"></i>
@@ -711,6 +684,7 @@ const fetchHistoriques = async (page = 1) => {
                             </small>
                           </td>
 
+                          {/* Agent IA */}
                           <td>
                             <div className="fw-semibold">
                               <i className="bi bi-person-badge me-2"></i>
@@ -719,6 +693,7 @@ const fetchHistoriques = async (page = 1) => {
                             <small className="text-muted">Agent vocal</small>
                           </td>
 
+                          {/* Date */}
                           <td>
                             <div className="fw-semibold">
                               {formatDate(item.callDate)}
@@ -729,6 +704,7 @@ const fetchHistoriques = async (page = 1) => {
                             </small>
                           </td>
 
+                          {/* Statut */}
                           <td>
                             <StatusDropdown
                               itemId={item._id}
@@ -737,6 +713,7 @@ const fetchHistoriques = async (page = 1) => {
                             />
                           </td>
 
+                          {/* Audio */}
                           <td onClick={(e) => e.stopPropagation()}>
                             {recordUrl ? (
                               <audio controls style={{ maxWidth: "220px" }}>
@@ -750,7 +727,6 @@ const fetchHistoriques = async (page = 1) => {
                               </span>
                             )}
                           </td>
-
                           <td onClick={(e) => e.stopPropagation()}>
                             <button
                               className="scd-trigger-btn"
