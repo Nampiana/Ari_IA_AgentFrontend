@@ -206,37 +206,46 @@ export default function HistoriquesPage({ showToast }) {
 
   const handleArchiveCurrentPage = handleArchiveSelected;
 
-  const fetchHistoriques = async (page = 1) => {
-    try {
-      setLoading(true);
+const fetchHistoriques = async (page = 1) => {
+  try {
+    setLoading(true);
 
-      const params = {
-        page,
-        limit: ITEMS_PER_PAGE,
-      };
-
-      if (search.trim()) params.search = search.trim();
-      if (selectedStatus !== "all") params.status = selectedStatus;
-      if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
-      if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
-      if (dateStart) params.dateStart = dateStart;
-      if (dateEnd) params.dateEnd = dateEnd;
-      if (timeStart) params.timeStart = timeStart;
-      if (timeEnd) params.timeEnd = timeEnd;
-      if (filtersArchive !== "all") params.archive = filtersArchive;
-
-      const res = await getHistoriques(params);
-
-      setHistoriques(res?.data?.data || []);
-      setTotalPages(res?.data?.totalPages || 1);
-      setTotalResults(res?.data?.totalResults || 0);
-    } catch (error) {
-      console.error(error);
-      showToast?.("Erreur chargement historiques", "danger");
-    } finally {
+    // ── Validation heure : fin < début → résultat vide immédiat ──
+    if (timeStart && timeEnd && timeStart > timeEnd) {
+      setHistoriques([]);
+      setTotalPages(1);
+      setTotalResults(0);
       setLoading(false);
+      return;
     }
-  };
+
+    const params = {
+      page,
+      limit: ITEMS_PER_PAGE,
+    };
+
+    if (search.trim()) params.search = search.trim();
+    if (selectedStatus !== "all") params.status = selectedStatus;
+    if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
+    if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
+    if (dateStart) params.dateStart = dateStart;
+    if (dateEnd) params.dateEnd = dateEnd;
+    if (timeStart) params.timeStart = timeStart;
+    if (timeEnd) params.timeEnd = timeEnd;
+    if (filtersArchive !== "all") params.archive = filtersArchive;
+
+    const res = await getHistoriques(params);
+
+    setHistoriques(res?.data?.data || []);
+    setTotalPages(res?.data?.totalPages || 1);
+    setTotalResults(res?.data?.totalResults || 0);
+  } catch (error) {
+    console.error(error);
+    showToast?.("Erreur chargement historiques", "danger");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
