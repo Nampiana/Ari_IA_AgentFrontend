@@ -213,7 +213,7 @@ export default function HistoriquesPage({ showToast }) {
       const params = {
         page,
         limit: ITEMS_PER_PAGE,
-        clientOffset: new Date().getTimezoneOffset(),
+        
         
       };
 
