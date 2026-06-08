@@ -206,39 +206,52 @@ export default function HistoriquesPage({ showToast }) {
 
   const handleArchiveCurrentPage = handleArchiveSelected;
 
-  const fetchHistoriques = async (page = 1) => {
-    try {
-      setLoading(true);
+ const toUtcTime = (localTimeStr) => {
+  // localTimeStr = "HH:MM" en heure locale
+  // retourne "HH:MM" converti en UTC
+  const [h, m] = localTimeStr.split(":").map(Number);
+  const offsetMin = new Date().getTimezoneOffset(); // positif si UTC-, négatif si UTC+
+  const totalMin = h * 60 + m + offsetMin;
+  // Ramener dans [0, 1440[
+  const utcTotal = ((totalMin % 1440) + 1440) % 1440;
+  const utcH = Math.floor(utcTotal / 60);
+  const utcM = utcTotal % 60;
+  return `${String(utcH).padStart(2, "0")}:${String(utcM).padStart(2, "0")}`;
+};
 
-      const params = {
-        page,
-        limit: ITEMS_PER_PAGE,
-        //clientOffset: new Date().getTimezoneOffset(),
-      };
+const fetchHistoriques = async (page = 1) => {
+  try {
+    setLoading(true);
 
-      if (search.trim()) params.search = search.trim();
-      if (selectedStatus !== "all") params.status = selectedStatus;
-      if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
-      if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
-      if (dateStart) params.dateStart = dateStart;
-      if (dateEnd) params.dateEnd = dateEnd;
-      if (timeStart) params.timeStart = timeStart;
-      if (timeEnd) params.timeEnd = timeEnd;
-      if (filtersArchive !== "all") params.archive = filtersArchive;
+    const params = {
+      page,
+      limit: ITEMS_PER_PAGE,
+    };
 
-      const res = await getHistoriques(params);
+    if (search.trim())                params.search      = search.trim();
+    if (selectedStatus !== "all")     params.status      = selectedStatus;
+    if (selectedCampagne !== "all")   params.campagneId  = selectedCampagne;
+    if (selectedAgentIa !== "all")    params.agentIaId   = selectedAgentIa;
+    if (dateStart)                    params.dateStart   = dateStart;
+    if (dateEnd)                      params.dateEnd     = dateEnd;
+    if (filtersArchive !== "all")     params.archive     = filtersArchive;
 
-      setHistoriques(res?.data?.data || []);
-      setTotalPages(res?.data?.totalPages || 1);
-      setTotalResults(res?.data?.totalResults || 0);
-    } catch (error) {
-      console.error(error);
-      showToast?.("Erreur chargement historiques", "danger");
-    } finally {
-      setLoading(false);
-    }
+    // Conversion des heures locales → UTC avant envoi
+    if (timeStart) params.timeStart = toUtcTime(timeStart);
+    if (timeEnd)   params.timeEnd   = toUtcTime(timeEnd);
 
-  };
+    const res = await getHistoriques(params);
+
+    setHistoriques(res?.data?.data || []);
+    setTotalPages(res?.data?.totalPages || 1);
+    setTotalResults(res?.data?.totalResults || 0);
+  } catch (error) {
+    console.error(error);
+    showToast?.("Erreur chargement historiques", "danger");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
