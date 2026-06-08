@@ -237,12 +237,7 @@ export default function HistoriquesPage({ showToast }) {
     } finally {
       setLoading(false);
     }
-    console.log({
-  startMinutes,
-  endMinutes,
-  timeStart,
-  timeEnd,
-});
+
   };
 
   const handleRefresh = async () => {
