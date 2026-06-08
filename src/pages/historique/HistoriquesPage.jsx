@@ -228,15 +228,14 @@ const fetchHistoriques = async (page = 1) => {
       limit: ITEMS_PER_PAGE,
     };
 
-    if (search.trim())                params.search      = search.trim();
-    if (selectedStatus !== "all")     params.status      = selectedStatus;
-    if (selectedCampagne !== "all")   params.campagneId  = selectedCampagne;
-    if (selectedAgentIa !== "all")    params.agentIaId   = selectedAgentIa;
-    if (dateStart)                    params.dateStart   = dateStart;
-    if (dateEnd)                      params.dateEnd     = dateEnd;
-    if (filtersArchive !== "all")     params.archive     = filtersArchive;
+    if (search.trim())              params.search     = search.trim();
+    if (selectedStatus !== "all")   params.status     = selectedStatus;
+    if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
+    if (selectedAgentIa !== "all")  params.agentIaId  = selectedAgentIa;
+    if (dateStart)                  params.dateStart  = dateStart;
+    if (dateEnd)                    params.dateEnd    = dateEnd;
+    if (filtersArchive !== "all")   params.archive    = filtersArchive;
 
-    // Conversion des heures locales → UTC avant envoi
     if (timeStart) params.timeStart = toUtcTime(timeStart);
     if (timeEnd)   params.timeEnd   = toUtcTime(timeEnd);
 
@@ -245,6 +244,7 @@ const fetchHistoriques = async (page = 1) => {
     setHistoriques(res?.data?.data || []);
     setTotalPages(res?.data?.totalPages || 1);
     setTotalResults(res?.data?.totalResults || 0);
+    setTotalCallDuration(res?.data?.totalDuration ?? 0); // <-- ajout
   } catch (error) {
     console.error(error);
     showToast?.("Erreur chargement historiques", "danger");
@@ -252,7 +252,6 @@ const fetchHistoriques = async (page = 1) => {
     setLoading(false);
   }
 };
-
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await fetchHistoriques(currentPage);
@@ -315,11 +314,7 @@ const fetchHistoriques = async (page = 1) => {
     setFiltersArchive("all");
   };
 
-  const totalCallDuration = useMemo(
-    () =>
-      historiques.reduce((total, item) => total + getDurationValue(item), 0),
-    [historiques],
-  );
+const [totalCallDuration, setTotalCallDuration] = useState(0);
 
   const paginatedHistoriques = historiques;
 
