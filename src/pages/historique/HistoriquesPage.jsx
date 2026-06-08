@@ -559,7 +559,7 @@ export default function HistoriquesPage({ showToast }) {
                   </div>
                 </div>
 
-                                {/*
+                          
                 <div className="historiquesFilterDivider" />
 
                 <div className="historiquesFilterGroup">
@@ -584,7 +584,7 @@ export default function HistoriquesPage({ showToast }) {
                     />
                   </div>
                 </div>
-                */}
+                
               </div>
             </div>
           </div>
