@@ -206,25 +206,25 @@ export default function HistoriquesPage({ showToast }) {
 
   const handleArchiveCurrentPage = handleArchiveSelected;
 
-const fetchHistoriques = async (page = 1) => {
+  const fetchHistoriques = async (page = 1) => {
     try {
       setLoading(true);
 
       const params = {
         page,
         limit: ITEMS_PER_PAGE,
-        clientOffset: new Date().getTimezoneOffset(), // ex: -180 pour Madagascar UTC+3
+        //clientOffset: new Date().getTimezoneOffset(),
       };
 
-      if (search.trim())              params.search      = search.trim();
-      if (selectedStatus !== "all")   params.status      = selectedStatus;
-      if (selectedCampagne !== "all") params.campagneId  = selectedCampagne;
-      if (selectedAgentIa !== "all")  params.agentIaId   = selectedAgentIa;
-      if (dateStart)                  params.dateStart   = dateStart;
-      if (dateEnd)                    params.dateEnd     = dateEnd;
-      if (timeStart)                  params.timeStart   = timeStart;
-      if (timeEnd)                    params.timeEnd     = timeEnd;
-      if (filtersArchive !== "all")   params.archive     = filtersArchive;
+      if (search.trim()) params.search = search.trim();
+      if (selectedStatus !== "all") params.status = selectedStatus;
+      if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
+      if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
+      if (dateStart) params.dateStart = dateStart;
+      if (dateEnd) params.dateEnd = dateEnd;
+      if (timeStart) params.timeStart = timeStart;
+      if (timeEnd) params.timeEnd = timeEnd;
+      if (filtersArchive !== "all") params.archive = filtersArchive;
 
       const res = await getHistoriques(params);
 
