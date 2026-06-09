@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import useLists from "../../hooks/useLists";
 import HeaderBar from "../../components/agents/HeaderBar";
 import Papa from "papaparse";
@@ -176,6 +176,11 @@ export default function ListsPage({ showToast }) {
       },
     });
   };
+  const callStats = useMemo(() => {
+  const called = fiches.filter(f => f.isAlreadyCalled == 1).length;
+  const notCalled = fiches.filter(f => f.isAlreadyCalled != 1).length;
+  return { called, notCalled, total: fiches.length };
+}, [fiches]);
 
   const handleUpdateName = async () => {
     if (!editList || !newName.trim()) {
@@ -424,6 +429,20 @@ export default function ListsPage({ showToast }) {
                 <i className="bi bi-x-lg"></i>
               </button>
             </div>
+            <div className="callStatsBar">
+            <div className="callStatItem callStatItem--total">
+              <span className="callStatNumber">{callStats.total}</span>
+              <span className="callStatLabel">Total</span>
+            </div>
+                        <div className="callStatItem callStatItem--notCalled">
+              <span className="callStatNumber">{callStats.notCalled}</span>
+              <span className="callStatLabel">Non appelés</span>
+            </div>
+            <div className="callStatItem callStatItem--called">
+              <span className="callStatNumber">{callStats.called}</span>
+              <span className="callStatLabel">Autres</span>
+            </div>
+          </div>
             <div className="card shadow-sm mb-3">
               <div
                 className="card-header d-flex justify-content-between align-items-center"

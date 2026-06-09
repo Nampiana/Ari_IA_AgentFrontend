@@ -16,9 +16,17 @@ const formatDate = (date) => {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "-";
   return (
-    d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) +
+    d.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      timeZone: "Europe/Paris",
+    }) +
     " " +
-    d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+    d.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Paris",
+    })
   );
 };
 
@@ -206,18 +214,7 @@ export default function HistoriquesPage({ showToast }) {
 
   const handleArchiveCurrentPage = handleArchiveSelected;
 
- const toUtcTime = (localTimeStr) => {
-  // localTimeStr = "HH:MM" en heure locale
-  // retourne "HH:MM" converti en UTC
-  const [h, m] = localTimeStr.split(":").map(Number);
-  const offsetMin = new Date().getTimezoneOffset(); // positif si UTC-, négatif si UTC+
-  const totalMin = h * 60 + m + offsetMin;
-  // Ramener dans [0, 1440[
-  const utcTotal = ((totalMin % 1440) + 1440) % 1440;
-  const utcH = Math.floor(utcTotal / 60);
-  const utcM = utcTotal % 60;
-  return `${String(utcH).padStart(2, "0")}:${String(utcM).padStart(2, "0")}`;
-};
+
 
 const fetchHistoriques = async (page = 1) => {
   try {
@@ -236,8 +233,8 @@ const fetchHistoriques = async (page = 1) => {
     if (dateEnd)                    params.dateEnd    = dateEnd;
     if (filtersArchive !== "all")   params.archive    = filtersArchive;
 
-    if (timeStart) params.timeStart = toUtcTime(timeStart);
-    if (timeEnd)   params.timeEnd   = toUtcTime(timeEnd);
+    if (timeStart) params.timeStart = timeStart;
+    if (timeEnd)   params.timeEnd   = timeEnd;
 
     const res = await getHistoriques(params);
 
