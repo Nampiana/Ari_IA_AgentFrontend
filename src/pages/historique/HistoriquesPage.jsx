@@ -18,12 +18,19 @@ const formatDate = (date) => {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "-";
   return (
-    d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) +
+    d.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      timeZone: "Europe/Paris", // ✅
+    }) +
     " " +
-    d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+    d.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Paris", // ✅
+    })
   );
 };
-
 const formatDuration = (seconds) => {
   const sec = Number(seconds || 0);
   const mm = String(Math.floor(sec / 60)).padStart(2, "0");
@@ -53,13 +60,6 @@ const buildRecordUrl = (pathRecord) => {
   return `${base}/files/${pathRecord}`;
 };
 
-const toUtcTime = (localTimeStr) => {
-  const [h, m] = localTimeStr.split(":").map(Number);
-  const offsetMin = new Date().getTimezoneOffset();
-  const totalMin = h * 60 + m + offsetMin;
-  const utcTotal = ((totalMin % 1440) + 1440) % 1440;
-  return `${String(Math.floor(utcTotal / 60)).padStart(2, "0")}:${String(utcTotal % 60).padStart(2, "0")}`;
-};
 
 const hasActiveFilters = (
   search,
@@ -297,9 +297,8 @@ export default function HistoriquesPage({ showToast }) {
       if (dateStart) params.dateStart = dateStart;
       if (dateEnd) params.dateEnd = dateEnd;
       if (filtersArchive !== "all") params.archive = filtersArchive;
-      if (timeStart) params.timeStart = toUtcTime(timeStart);
-      if (timeEnd) params.timeEnd = toUtcTime(timeEnd);
-
+      if (timeStart) params.timeStart = timeStart; // heure France brute → back gère la conversion
+      if (timeEnd)   params.timeEnd   = timeEnd;
       const res = await getHistoriques(params);
 
       setHistoriques(res?.data?.data || []);
