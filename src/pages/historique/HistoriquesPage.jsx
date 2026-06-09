@@ -787,7 +787,8 @@ export default function HistoriquesPage({ showToast }) {
 
                       {/* ⚡ En-tête Date — cliquable pour basculer asc/desc */}
                       <th>
-                        <button
+                        Date
+                        {/* <button
                           type="button"
                           onClick={() => {
                             setSortOrder((p) =>
@@ -831,14 +832,15 @@ export default function HistoriquesPage({ showToast }) {
                                   : "inherit",
                             }}
                           />
-                        </button>
+                        </button> */}
                       </th>
 
                       <th>Statut</th>
 
                       {/* ⚡ En-tête Durée — cliquable pour basculer asc/desc */}
                       <th>
-                        <button
+                        Audio / Durée
+                        {/* <button
                           type="button"
                           onClick={() => {
                             setSortOrder((p) =>
@@ -888,7 +890,7 @@ export default function HistoriquesPage({ showToast }) {
                                   : "inherit",
                             }}
                           />
-                        </button>
+                        </button> */}
                       </th>
 
                       <th>Rappels</th>
