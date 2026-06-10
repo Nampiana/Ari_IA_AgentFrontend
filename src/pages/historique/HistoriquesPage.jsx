@@ -299,6 +299,7 @@ export default function HistoriquesPage({ showToast }) {
       if (filtersArchive !== "all") params.archive = filtersArchive;
       if (timeStart) params.timeStart = timeStart; // heure France brute → back gère la conversion
       if (timeEnd)   params.timeEnd   = timeEnd;
+      
       const res = await getHistoriques(params);
 
       setHistoriques(res?.data?.data || []);
@@ -657,14 +658,16 @@ export default function HistoriquesPage({ showToast }) {
                       type="date"
                       className="historiquesDateInput"
                       value={dateStart}
-                      onChange={(e) => setDateStart(e.target.value)}
+                      onChange={(e) => {
+                        setDateStart(e.target.value)}}
                     />
                     <span className="historiquesDateSeparator">→</span>
                     <input
                       type="date"
                       className="historiquesDateInput"
                       value={dateEnd}
-                      onChange={(e) => setDateEnd(e.target.value)}
+                      onChange={(e) => {
+                        setDateEnd(e.target.value)}}
                     />
                   </div>
                 </div>
