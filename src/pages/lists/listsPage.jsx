@@ -25,6 +25,8 @@ export default function ListsPage({ showToast }) {
   const [listName, setListName] = useState("");
   const [csvData, setCsvData] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [filterBlackList, setFilterBlackList] = useState("");
+  const [filterCalled, setFilterCalled] = useState("");
   const [mapping, setMapping] = useState({
     nom: "",
     phone: "",
@@ -79,12 +81,24 @@ export default function ListsPage({ showToast }) {
     "entreprise",
     "pays",
     "commentaire",
-    "isAlreadyCalled",
-    "isBlackList",
+    // "isAlreadyCalled",
+    // "isBlackList",
   ];
 
   const [search, setSearch] = useState("");
-  const [filterFields, setFilterFields] = useState(["nom"]);
+  const [filterFields, setFilterFields] = useState([
+    "nom",
+    "phone",
+    "email",
+    "ville",
+    "habitation",
+    "age",
+    "codePostale",
+    "entreprise",
+    "pays",
+    "commentaire",
+    "isBlackList",
+  ]);
 
   const [fiches, setFiches] = useState([]);
   const [editFiche, setEditFiche] = useState(null);
@@ -136,8 +150,8 @@ export default function ListsPage({ showToast }) {
         prev.map((fiche) =>
           dirtyFiches[fiche._id]
             ? { ...fiche, ...dirtyFiches[fiche._id] }
-            : fiche
-        )
+            : fiche,
+        ),
       );
 
       setDirtyFiches({});
@@ -177,10 +191,10 @@ export default function ListsPage({ showToast }) {
     });
   };
   const callStats = useMemo(() => {
-  const called = fiches.filter(f => f.isAlreadyCalled == 1).length;
-  const notCalled = fiches.filter(f => f.isAlreadyCalled != 1).length;
-  return { called, notCalled, total: fiches.length };
-}, [fiches]);
+    const called = fiches.filter((f) => f.isAlreadyCalled == 1).length;
+    const notCalled = fiches.filter((f) => f.isAlreadyCalled != 1).length;
+    return { called, notCalled, total: fiches.length };
+  }, [fiches]);
 
   const handleUpdateName = async () => {
     if (!editList || !newName.trim()) {
@@ -338,14 +352,24 @@ export default function ListsPage({ showToast }) {
   ];
 
   const filteredFiches = fiches.filter((row) => {
-    const searchValue = search.toLowerCase();
+    if (search) {
+      const searchValue = search.toLowerCase();
+      const matchSearch = filterFields.some((field) => {
+        const value = row[field]?.toString().toLowerCase() || "";
+        return value.includes(searchValue);
+      });
+      if (!matchSearch) return false;
+    }
 
-    if (!searchValue) return true;
+    if (filterBlackList !== "") {
+      if (String(row.isBlackList ?? 1) !== filterBlackList) return false;
+    }
 
-    return filterFields.some((field) => {
-      const value = row[field]?.toString().toLowerCase() || "";
-      return value.includes(searchValue);
-    });
+    if (filterCalled !== "") {
+      if (String(row.isAlreadyCalled ?? 0) !== filterCalled) return false;
+    }
+
+    return true;
   });
 
   return (
@@ -387,7 +411,9 @@ export default function ListsPage({ showToast }) {
                   <td>
                     <button
                       className="btn btn-primary"
-                      onClick={() => setSelectedList(list)}
+                      onClick={() => {
+                        setSelectedList(list);
+                      }}
                     >
                       Voir
                     </button>
@@ -420,7 +446,9 @@ export default function ListsPage({ showToast }) {
         {selectedList && (
           <div className="listDetails">
             <div className="listDetailsHeader">
-              <h2>Détails de la liste</h2>
+              <span>
+                <h2>Détails de la liste</h2>({selectedList?.nomFiche})
+              </span>
 
               <button
                 className="closeBtn"
@@ -430,19 +458,19 @@ export default function ListsPage({ showToast }) {
               </button>
             </div>
             <div className="callStatsBar">
-            <div className="callStatItem callStatItem--total">
-              <span className="callStatNumber">{callStats.total}</span>
-              <span className="callStatLabel">Total</span>
+              <div className="callStatItem callStatItem--total">
+                <span className="callStatNumber">{callStats.total}</span>
+                <span className="callStatLabel">Total</span>
+              </div>
+              <div className="callStatItem callStatItem--notCalled">
+                <span className="callStatNumber">{callStats.notCalled}</span>
+                <span className="callStatLabel">Non appelés</span>
+              </div>
+              <div className="callStatItem callStatItem--called">
+                <span className="callStatNumber">{callStats.called}</span>
+                <span className="callStatLabel">Appelés</span>
+              </div>
             </div>
-                        <div className="callStatItem callStatItem--notCalled">
-              <span className="callStatNumber">{callStats.notCalled}</span>
-              <span className="callStatLabel">Non appelés</span>
-            </div>
-            <div className="callStatItem callStatItem--called">
-              <span className="callStatNumber">{callStats.called}</span>
-              <span className="callStatLabel">Autres</span>
-            </div>
-          </div>
             <div className="card shadow-sm mb-3">
               <div
                 className="card-header d-flex justify-content-between align-items-center"
@@ -452,8 +480,9 @@ export default function ListsPage({ showToast }) {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                    }`}
+                  className={`bi ${
+                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                  }`}
                 />
               </div>
 
@@ -472,19 +501,41 @@ export default function ListsPage({ showToast }) {
                       />
                     </div>
 
-                    {/* RESET */}
                     <button
-                      className="btn btn-outline-secondary btn-sm"
+                      className="btn btn-secondary btn-sm"
                       onClick={() => {
                         setSearch("");
                         setFilterFields(["nom"]);
+                        setFilterBlackList("");
+                        setFilterCalled("");
                       }}
                     >
                       Reset
                     </button>
+
+                    <select
+                      className="form-select form-select-sm"
+                      style={{ width: "200px" }}
+                      value={filterBlackList}
+                      onChange={(e) => setFilterBlackList(e.target.value)}
+                    >
+                      <option value="">Liste noire : tous</option>
+                      <option value="1">Whitelist</option>
+                      <option value="2">Blacklist</option>
+                    </select>
+
+                    <select
+                      className="form-select form-select-sm"
+                      style={{ width: "160px" }}
+                      value={filterCalled}
+                      onChange={(e) => setFilterCalled(e.target.value)}
+                    >
+                      <option value="">Appel : tous</option>
+                      <option value="0">Non appelé</option>
+                      <option value="1">Appelé</option>
+                    </select>
                   </div>
 
-                  {/* SECOND ROW : FILTER + COLUMNS TOGGLE (compact) */}
                   <div className="d-flex flex-wrap gap-3">
                     {/* FILTER COLUMNS (compact pills style) */}
                     <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -494,10 +545,11 @@ export default function ListsPage({ showToast }) {
                         {ALL_COLUMNS.map((col) => (
                           <label
                             key={col}
-                            className={`badge rounded-pill border px-2 py-1 ${filterFields.includes(col)
-                              ? "bg-primary text-white"
-                              : "bg-light text-dark"
-                              }`}
+                            className={`badge rounded-pill border px-2 py-1 ${
+                              filterFields.includes(col)
+                                ? "bg-primary text-white"
+                                : "bg-light text-dark"
+                            }`}
                             style={{ cursor: "pointer", fontSize: "11px" }}
                           >
                             <input
@@ -798,17 +850,22 @@ export default function ListsPage({ showToast }) {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                                editingCell?.field === key ? (
+                              editingCell?.field === key ? (
                                 <>
-                                  {key === "isAlreadyCalled" || key === "isBlackList" ? (
+                                  {key === "isAlreadyCalled" ||
+                                  key === "isBlackList" ? (
                                     <select
                                       style={{
                                         width: "100%",
                                         minWidth: "120px",
                                         padding: "2px 24px 2px 6px",
-                                        appearance: "auto"
+                                        appearance: "auto",
                                       }}
-                                      value={String(dirtyFiches[row._id]?.[key] ?? row[key] ?? (key === "isBlackList" ? 1 : 0))}
+                                      value={String(
+                                        dirtyFiches[row._id]?.[key] ??
+                                          row[key] ??
+                                          (key === "isBlackList" ? 1 : 0),
+                                      )}
                                       onChange={(e) => {
                                         const value = Number(e.target.value);
 
@@ -875,14 +932,18 @@ export default function ListsPage({ showToast }) {
                               ) : (
                                 <>
                                   {key === "isAlreadyCalled"
-                                    ? (dirtyFiches[row._id]?.[key] ?? row[key]) == 1
+                                    ? (dirtyFiches[row._id]?.[key] ??
+                                        row[key]) == 1
                                       ? "Appelé"
                                       : "Non appelé"
                                     : key === "isBlackList"
-                                      ? (dirtyFiches[row._id]?.[key] ?? row[key] ?? 1) == 2
+                                      ? (dirtyFiches[row._id]?.[key] ??
+                                          row[key] ??
+                                          1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
-                                      : (dirtyFiches[row._id]?.[key] ?? row[key])}
+                                      : (dirtyFiches[row._id]?.[key] ??
+                                        row[key])}
                                 </>
                               )}
                             </td>
