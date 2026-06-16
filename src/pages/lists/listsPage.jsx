@@ -117,6 +117,11 @@ export default function ListsPage({ showToast }) {
   });
   const [showToolsPanel, setShowToolsPanel] = useState(false);
 
+  const [fichePage, setFichePage] = useState(1);
+  const [ficheLimit, setFicheLimit] = useState(10);
+  const [ficheTotalPages, setFicheTotalPages] = useState(1);
+  const [ficheTotalResults, setFicheTotalResults] = useState(0);
+
   const fetchLists = async () => {
     try {
       setLoading(true);
@@ -135,7 +140,8 @@ export default function ListsPage({ showToast }) {
 
   useEffect(() => {
     if (selectedList) {
-      fetchFiches(selectedList._id);
+      setFichePage(1);
+      fetchFiches(selectedList._id, 1, ficheLimit);
     }
   }, [selectedList]);
 
@@ -162,11 +168,16 @@ export default function ListsPage({ showToast }) {
       showToast("Erreur sauvegarde", "danger");
     }
   };
-  const fetchFiches = async (id) => {
+  const fetchFiches = async (id, page = fichePage, limit = ficheLimit) => {
     try {
       setLoadingFiche(true);
-      const res = await getFiches(id);
-      setFiches(res.data.data);
+
+      const res = await getFiches(id, page, limit);
+
+      setFiches(res.data.data || []);
+      setFicheTotalPages(res.data.totalPages || 1);
+      setFicheTotalResults(res.data.totalResults || 0);
+      setFichePage(res.data.currentPage || page);
     } catch (err) {
       showToast("Erreur chargement fiches", "danger");
     } finally {
@@ -480,9 +491,8 @@ export default function ListsPage({ showToast }) {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${
-                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                  }`}
+                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                    }`}
                 />
               </div>
 
@@ -545,11 +555,10 @@ export default function ListsPage({ showToast }) {
                         {ALL_COLUMNS.map((col) => (
                           <label
                             key={col}
-                            className={`badge rounded-pill border px-2 py-1 ${
-                              filterFields.includes(col)
-                                ? "bg-primary text-white"
-                                : "bg-light text-dark"
-                            }`}
+                            className={`badge rounded-pill border px-2 py-1 ${filterFields.includes(col)
+                              ? "bg-primary text-white"
+                              : "bg-light text-dark"
+                              }`}
                             style={{ cursor: "pointer", fontSize: "11px" }}
                           >
                             <input
@@ -850,10 +859,10 @@ export default function ListsPage({ showToast }) {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                              editingCell?.field === key ? (
+                                editingCell?.field === key ? (
                                 <>
                                   {key === "isAlreadyCalled" ||
-                                  key === "isBlackList" ? (
+                                    key === "isBlackList" ? (
                                     <select
                                       style={{
                                         width: "100%",
@@ -863,8 +872,8 @@ export default function ListsPage({ showToast }) {
                                       }}
                                       value={String(
                                         dirtyFiches[row._id]?.[key] ??
-                                          row[key] ??
-                                          (key === "isBlackList" ? 1 : 0),
+                                        row[key] ??
+                                        (key === "isBlackList" ? 1 : 0),
                                       )}
                                       onChange={(e) => {
                                         const value = Number(e.target.value);
@@ -933,13 +942,13 @@ export default function ListsPage({ showToast }) {
                                 <>
                                   {key === "isAlreadyCalled"
                                     ? (dirtyFiches[row._id]?.[key] ??
-                                        row[key]) == 1
+                                      row[key]) == 1
                                       ? "Appelé"
                                       : "Non appelé"
                                     : key === "isBlackList"
                                       ? (dirtyFiches[row._id]?.[key] ??
-                                          row[key] ??
-                                          1) == 2
+                                        row[key] ??
+                                        1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
                                       : (dirtyFiches[row._id]?.[key] ??
@@ -966,6 +975,49 @@ export default function ListsPage({ showToast }) {
                       ))}
                     </tbody>
                   </table>
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                      Total : {ficheTotalResults} fiches
+                    </div>
+
+                    <div className="d-flex align-items-center gap-2">
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        disabled={fichePage <= 1}
+                        onClick={() => fetchFiches(selectedList._id, fichePage - 1, ficheLimit)}
+                      >
+                        Précédent
+                      </button>
+
+                      <span>
+                        Page {fichePage} / {ficheTotalPages}
+                      </span>
+
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        disabled={fichePage >= ficheTotalPages}
+                        onClick={() => fetchFiches(selectedList._id, fichePage + 1, ficheLimit)}
+                      >
+                        Suivant
+                      </button>
+
+                      <select
+                        className="form-select form-select-sm"
+                        style={{ width: "90px" }}
+                        value={ficheLimit}
+                        onChange={(e) => {
+                          const newLimit = Number(e.target.value);
+                          setFicheLimit(newLimit);
+                          fetchFiches(selectedList._id, 1, newLimit);
+                        }}
+                      >
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </>
             )}

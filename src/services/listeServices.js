@@ -23,8 +23,11 @@ class ListeServices {
   }
 
   // CRUD POUR LES FICHES
-  getFiches(listId) {
-    return axios.get(ApiUrl + `lists/${listId}/fiches`, header());
+  getFiches(listId, page = 1, limit = 10) {
+    return axios.get(
+      ApiUrl + `lists/${listId}/fiches?page=${page}&limit=${limit}`,
+      header()
+    );
   }
 
   updateFiche(listId, ficheId, data) {
