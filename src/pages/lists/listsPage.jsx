@@ -27,6 +27,7 @@ export default function ListsPage({ showToast }) {
   const [columns, setColumns] = useState([]);
   const [filterBlackList, setFilterBlackList] = useState("");
   const [filterCalled, setFilterCalled] = useState("");
+  const [loadingCreate, setLoadingCreate] = useState(false);
   const [mapping, setMapping] = useState({
     nom: "",
     phone: "",
@@ -49,6 +50,7 @@ export default function ListsPage({ showToast }) {
     ville: "",
     habitation: "",
     age: "",
+    effectif: "",
     codePostale: "",
     entreprise: "",
     pays: "",
@@ -244,6 +246,7 @@ export default function ListsPage({ showToast }) {
   };
 
   const handleCreate = async () => {
+    setLoadingCreate(true);
     if (!listName.trim()) {
       return showToast("Le nom de la fiche est obligatoire", "warning");
     }
@@ -256,7 +259,7 @@ export default function ListsPage({ showToast }) {
       return showToast("Veuillez importer un fichier CSV", "warning");
     }
 
-    try {
+    try {      
       const formattedData = csvData.map((row) => ({
         nom: mapping.nom ? row[mapping.nom] || "" : "",
         phone: mapping.phone ? row[mapping.phone] || "" : "",
@@ -264,6 +267,7 @@ export default function ListsPage({ showToast }) {
         habitation: mapping.habitation ? row[mapping.habitation] || "" : "",
         ville: mapping.ville ? row[mapping.ville] || "" : "",
         age: mapping.age ? row[mapping.age] || "" : "",
+        effectif: mapping.effectif ? row[mapping.effectif] || "" : "",
         codePostale: mapping.codePostale ? row[mapping.codePostale] || "" : "",
         email: mapping.email ? row[mapping.email] || "" : "",
         entreprise: mapping.entreprise ? row[mapping.entreprise] || "" : "",
@@ -279,7 +283,7 @@ export default function ListsPage({ showToast }) {
       });
 
       showToast("Liste créée avec succès", "success");
-
+      setLoadingCreate(false);
       setModalOpen(false);
       setListName("");
       setCsvData([]);
@@ -291,6 +295,7 @@ export default function ListsPage({ showToast }) {
         habitation: "",
         ville: "",
         age: "",
+        effectif: "",
         codePostale: "",
         email: "",
         entreprise: "",
@@ -303,6 +308,7 @@ export default function ListsPage({ showToast }) {
       fetchLists();
     } catch (err) {
       console.error(err);
+      setLoadingCreate(false);
       showToast("Erreur création", "danger");
     }
   };
@@ -355,6 +361,7 @@ export default function ListsPage({ showToast }) {
       habitation: "",
       ville: "",
       age: "",
+      effectif: "",
       codePostale: "",
       email: "",
       entreprise: "",
@@ -371,6 +378,7 @@ export default function ListsPage({ showToast }) {
     { key: "habitation", label: "Habitation" },
     { key: "ville", label: "Ville" },
     { key: "age", label: "Âge" },
+    { key: "effectif", label: "Effectif" },
     { key: "codePostale", label: "Code postal" },
     { key: "email", label: "Email" },
     { key: "entreprise", label: "Entreprise" },
@@ -745,6 +753,18 @@ export default function ListsPage({ showToast }) {
                     </div>
 
                     <div className="col-md-6">
+                      <label className="form-label">Effectif</label>
+                      <input
+                        className="form-control"
+                        placeholder="Effectif"
+                        value={newFiche.effectif}
+                        onChange={(e) =>
+                          setNewFiche({ ...newFiche, effectif: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
                       <label className="form-label">Code postal</label>
                       <input
                         className="form-control"
@@ -823,6 +843,7 @@ export default function ListsPage({ showToast }) {
                           ville: "",
                           habitation: "",
                           age: "",
+                          effectif: "",
                           codePostale: "",
                           entreprise: "",
                           pays: "",
@@ -1092,11 +1113,11 @@ export default function ListsPage({ showToast }) {
 
                       <select
                         value={mapping[field.key]}
-                        onChange={(e) =>
+                        onChange={(e) =>{                          
                           setMapping({
                             ...mapping,
                             [field.key]: e.target.value,
-                          })
+                          })}
                         }
                         className="compactStyles_select"
                       >
@@ -1111,12 +1132,14 @@ export default function ListsPage({ showToast }) {
                   ))}
                 </div>
 
+                {/*Ajout un loader pendant le traitement*/}
                 <div className="compactStyles_actionRow">
                   <button
                     onClick={handleCreate}
                     className="compactStyles_createButton"
+                    disabled={loadingCreate}
                   >
-                    Créer la liste
+                    {loadingCreate ? "Création..." : "Créer la liste"}
                   </button>
                 </div>
               </>
