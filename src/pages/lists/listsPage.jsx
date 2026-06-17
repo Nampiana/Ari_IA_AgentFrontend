@@ -122,6 +122,12 @@ export default function ListsPage({ showToast }) {
   const [ficheTotalPages, setFicheTotalPages] = useState(1);
   const [ficheTotalResults, setFicheTotalResults] = useState(0);
 
+  const [statsFiches, setStatsFiches] = useState({
+    total: 0,
+    called: 0,
+    notCalled: 0,
+  });
+
   const fetchLists = async () => {
     try {
       setLoading(true);
@@ -178,6 +184,12 @@ export default function ListsPage({ showToast }) {
       setFicheTotalPages(res.data.totalPages || 1);
       setFicheTotalResults(res.data.totalResults || 0);
       setFichePage(res.data.currentPage || page);
+
+      setStatsFiches({
+        total: res.data.totalResults || 0,
+        called: res.data.totalCalled || 0,
+        notCalled: res.data.totalNotCalled || 0,
+      });
     } catch (err) {
       showToast("Erreur chargement fiches", "danger");
     } finally {
@@ -470,15 +482,15 @@ export default function ListsPage({ showToast }) {
             </div>
             <div className="callStatsBar">
               <div className="callStatItem callStatItem--total">
-                <span className="callStatNumber">{callStats.total}</span>
+                <span className="callStatNumber">{statsFiches.total}</span>
                 <span className="callStatLabel">Total</span>
               </div>
               <div className="callStatItem callStatItem--notCalled">
-                <span className="callStatNumber">{callStats.notCalled}</span>
+                <span className="callStatNumber">{statsFiches.notCalled}</span>
                 <span className="callStatLabel">Non appelés</span>
               </div>
               <div className="callStatItem callStatItem--called">
-                <span className="callStatNumber">{callStats.called}</span>
+                <span className="callStatNumber">{statsFiches.called}</span>
                 <span className="callStatLabel">Appelés</span>
               </div>
             </div>
