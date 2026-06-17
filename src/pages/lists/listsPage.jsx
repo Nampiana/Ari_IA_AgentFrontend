@@ -39,7 +39,7 @@ export default function ListsPage({ showToast }) {
     entreprise: "",
     pays: "",
     commentaire: "",
-
+    effectif: "",
     isBlackList: 1,
   });
   const [newFiche, setNewFiche] = useState({
@@ -52,6 +52,7 @@ export default function ListsPage({ showToast }) {
     codePostale: "",
     entreprise: "",
     pays: "",
+    effectif: "",
     commentaire: "",
   });
 
@@ -62,6 +63,7 @@ export default function ListsPage({ showToast }) {
     "ville",
     "habitation",
     "age",
+    "effectif",
     "codePostale",
     "entreprise",
     "pays",
@@ -77,6 +79,7 @@ export default function ListsPage({ showToast }) {
     "ville",
     "habitation",
     "age",
+    "effectif",
     "codePostale",
     "entreprise",
     "pays",
@@ -96,8 +99,9 @@ export default function ListsPage({ showToast }) {
     "codePostale",
     "entreprise",
     "pays",
+    "effectif",
     "commentaire",
-    "isBlackList",
+    "isBlackList"
   ]);
 
   const [fiches, setFiches] = useState([]);
