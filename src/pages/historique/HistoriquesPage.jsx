@@ -48,6 +48,11 @@ const formatTotalDuration = (seconds) => {
   return `${minutes} min ${String(remainingSeconds).padStart(2, "0")} s`;
 };
 
+const formatTelecomCost = (cost) => {
+  const value = Number(cost || 0);
+  return `${value.toFixed(4).replace(".", ",")} €`;
+};
+
 const buildRecordUrl = (pathRecord) => {
   if (!pathRecord) return "";
   if (pathRecord.startsWith("http://") || pathRecord.startsWith("https://"))
@@ -199,6 +204,7 @@ export default function HistoriquesPage({ showToast }) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [totalCallDuration, setTotalCallDuration] = useState(0);
+  const [totalTelecomCost,   setTotalTelecomCost]   = useState(0);
   const [drawerHistorique, setDrawerHistorique] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -306,6 +312,7 @@ export default function HistoriquesPage({ showToast }) {
       setTotalPages(res?.data?.totalPages || 1);
       setTotalResults(res?.data?.totalResults || 0);
       setTotalCallDuration(res?.data?.totalDuration ?? 0);
+      setTotalTelecomCost(res?.data?.totalTelecomCost ?? 0);
       // ⚡ FIX : normaliser les clés avant de stocker
       setStatusCounts(normalizeStatusCounts(res?.data?.statusCounts));
     } catch {
@@ -510,6 +517,10 @@ export default function HistoriquesPage({ showToast }) {
                 <span>
                   Durée totale : {formatTotalDuration(totalCallDuration)}
                 </span>
+              </div>
+              <div className="historiquesCounter">
+                <i className="bi bi-cash-coin" />
+                <span>Coût télécom estimé : {formatTelecomCost(totalTelecomCost)}</span>
               </div>
 
               {/* ⚡ Badges qualification avec comptages ── */}

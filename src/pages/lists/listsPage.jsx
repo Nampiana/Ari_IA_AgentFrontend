@@ -103,7 +103,7 @@ export default function ListsPage({ showToast }) {
     "pays",
     "effectif",
     "commentaire",
-    "isBlackList"
+    "isBlackList",
   ]);
 
   const [fiches, setFiches] = useState([]);
@@ -180,28 +180,50 @@ export default function ListsPage({ showToast }) {
       showToast("Erreur sauvegarde", "danger");
     }
   };
+
+  // ── Remplacez fetchFiches ──────────────────────────────────────────────────
   const fetchFiches = async (id, page = fichePage, limit = ficheLimit) => {
     try {
       setLoadingFiche(true);
 
-      const res = await getFiches(id, page, limit);
+      // Construit les params de filtre actifs
+      const params = { page, limit };
+      if (search.trim()) params.search = search.trim();
+      if (filterBlackList !== "") params.isBlackList = filterBlackList;
+      if (filterCalled !== "") params.isAlreadyCalled = filterCalled;
+
+      const res = await getFiches(id, params); // ← signature modifiée (voir hook)
 
       setFiches(res.data.data || []);
       setFicheTotalPages(res.data.totalPages || 1);
-      setFicheTotalResults(res.data.totalResults || 0);
+      setFicheTotalResults(
+        res.data.filteredTotal || res.data.totalResults || 0,
+      );
       setFichePage(res.data.currentPage || page);
 
+      // Stats globales — stables peu importe les filtres
       setStatsFiches({
         total: res.data.totalResults || 0,
         called: res.data.totalCalled || 0,
         notCalled: res.data.totalNotCalled || 0,
       });
     } catch (err) {
+      console.log(err);
+      
       showToast("Erreur chargement fiches", "danger");
     } finally {
       setLoadingFiche(false);
     }
   };
+
+  // ── Relance la recherche dès que les filtres changent ─────────────────────
+  useEffect(() => {
+    if (!selectedList) return;
+    // Remet à la page 1 quand un filtre change
+    setFichePage(1);
+    fetchFiches(selectedList._id, 1, ficheLimit);
+  }, [search, filterBlackList, filterCalled]);
+
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -219,6 +241,7 @@ export default function ListsPage({ showToast }) {
       },
     });
   };
+
   const callStats = useMemo(() => {
     const called = fiches.filter((f) => f.isAlreadyCalled == 1).length;
     const notCalled = fiches.filter((f) => f.isAlreadyCalled != 1).length;
@@ -259,7 +282,7 @@ export default function ListsPage({ showToast }) {
       return showToast("Veuillez importer un fichier CSV", "warning");
     }
 
-    try {      
+    try {
       const formattedData = csvData.map((row) => ({
         nom: mapping.nom ? row[mapping.nom] || "" : "",
         phone: mapping.phone ? row[mapping.phone] || "" : "",
@@ -386,27 +409,6 @@ export default function ListsPage({ showToast }) {
     { key: "commentaire", label: "Commentaire" },
   ];
 
-  const filteredFiches = fiches.filter((row) => {
-    if (search) {
-      const searchValue = search.toLowerCase();
-      const matchSearch = filterFields.some((field) => {
-        const value = row[field]?.toString().toLowerCase() || "";
-        return value.includes(searchValue);
-      });
-      if (!matchSearch) return false;
-    }
-
-    if (filterBlackList !== "") {
-      if (String(row.isBlackList ?? 1) !== filterBlackList) return false;
-    }
-
-    if (filterCalled !== "") {
-      if (String(row.isAlreadyCalled ?? 0) !== filterCalled) return false;
-    }
-
-    return true;
-  });
-
   return (
     <div className="listsPage">
       <HeaderBar />
@@ -515,8 +517,9 @@ export default function ListsPage({ showToast }) {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                    }`}
+                  className={`bi ${
+                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                  }`}
                 />
               </div>
 
@@ -572,17 +575,18 @@ export default function ListsPage({ showToast }) {
 
                   <div className="d-flex flex-wrap gap-3">
                     {/* FILTER COLUMNS (compact pills style) */}
-                    <div className="d-flex align-items-center gap-2 flex-wrap">
+                    {/* <div className="d-flex align-items-center gap-2 flex-wrap">
                       <span className="text-muted small">Recherche dans :</span>
 
                       <div className="d-flex flex-wrap gap-1">
                         {ALL_COLUMNS.map((col) => (
                           <label
                             key={col}
-                            className={`badge rounded-pill border px-2 py-1 ${filterFields.includes(col)
-                              ? "bg-primary text-white"
-                              : "bg-light text-dark"
-                              }`}
+                            className={`badge rounded-pill border px-2 py-1 ${
+                              filterFields.includes(col)
+                                ? "bg-primary text-white"
+                                : "bg-light text-dark"
+                            }`}
                             style={{ cursor: "pointer", fontSize: "11px" }}
                           >
                             <input
@@ -603,7 +607,7 @@ export default function ListsPage({ showToast }) {
                           </label>
                         ))}
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* VISIBILITY (dropdown style compact) */}
                     <div>
@@ -877,7 +881,7 @@ export default function ListsPage({ showToast }) {
                     </thead>
 
                     <tbody>
-                      {filteredFiches.map((row) => (
+                      {fiches.map((row) => (
                         <tr key={row._id}>
                           {visibleColumns.map((key) => (
                             <td
@@ -896,10 +900,10 @@ export default function ListsPage({ showToast }) {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                                editingCell?.field === key ? (
+                              editingCell?.field === key ? (
                                 <>
                                   {key === "isAlreadyCalled" ||
-                                    key === "isBlackList" ? (
+                                  key === "isBlackList" ? (
                                     <select
                                       style={{
                                         width: "100%",
@@ -909,8 +913,8 @@ export default function ListsPage({ showToast }) {
                                       }}
                                       value={String(
                                         dirtyFiches[row._id]?.[key] ??
-                                        row[key] ??
-                                        (key === "isBlackList" ? 1 : 0),
+                                          row[key] ??
+                                          (key === "isBlackList" ? 1 : 0),
                                       )}
                                       onChange={(e) => {
                                         const value = Number(e.target.value);
@@ -979,13 +983,13 @@ export default function ListsPage({ showToast }) {
                                 <>
                                   {key === "isAlreadyCalled"
                                     ? (dirtyFiches[row._id]?.[key] ??
-                                      row[key]) == 1
+                                        row[key]) == 1
                                       ? "Appelé"
                                       : "Non appelé"
                                     : key === "isBlackList"
                                       ? (dirtyFiches[row._id]?.[key] ??
-                                        row[key] ??
-                                        1) == 2
+                                          row[key] ??
+                                          1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
                                       : (dirtyFiches[row._id]?.[key] ??
@@ -1013,15 +1017,19 @@ export default function ListsPage({ showToast }) {
                     </tbody>
                   </table>
                   <div className="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                      Total : {ficheTotalResults} fiches
-                    </div>
+                    <div>Total : {ficheTotalResults} fiches</div>
 
                     <div className="d-flex align-items-center gap-2">
                       <button
                         className="btn btn-secondary btn-sm"
                         disabled={fichePage <= 1}
-                        onClick={() => fetchFiches(selectedList._id, fichePage - 1, ficheLimit)}
+                        onClick={() =>
+                          fetchFiches(
+                            selectedList._id,
+                            fichePage - 1,
+                            ficheLimit,
+                          )
+                        }
                       >
                         Précédent
                       </button>
@@ -1033,7 +1041,13 @@ export default function ListsPage({ showToast }) {
                       <button
                         className="btn btn-secondary btn-sm"
                         disabled={fichePage >= ficheTotalPages}
-                        onClick={() => fetchFiches(selectedList._id, fichePage + 1, ficheLimit)}
+                        onClick={() =>
+                          fetchFiches(
+                            selectedList._id,
+                            fichePage + 1,
+                            ficheLimit,
+                          )
+                        }
                       >
                         Suivant
                       </button>
@@ -1113,12 +1127,12 @@ export default function ListsPage({ showToast }) {
 
                       <select
                         value={mapping[field.key]}
-                        onChange={(e) =>{                          
+                        onChange={(e) => {
                           setMapping({
                             ...mapping,
                             [field.key]: e.target.value,
-                          })}
-                        }
+                          });
+                        }}
                         className="compactStyles_select"
                       >
                         <option value="">Choisir une colonne</option>
