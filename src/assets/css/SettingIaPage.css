@@ -1,0 +1,39 @@
+.settingIaPage {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.settingIaWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.settingIaCard {
+  width: 100%;
+  max-width: 650px;
+  border-radius: 14px;
+}
+
+.settingIaCard .card-body {
+  padding: 30px;
+}
+
+.settingIaSaveBtn {
+  background: #4caf50;
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.settingIaSaveBtn:hover:not(:disabled) {
+  background: #43a047;
+}
+
+.settingIaSaveBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

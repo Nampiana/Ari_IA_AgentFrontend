@@ -40,7 +40,7 @@ export default function HeaderBar() {
     <>
       <header className="headerBar">
         <div className="headerBarLeft">
-          <div className="agentLogo"><img src="favicon.ico" alt="Logo" style={{width:"40px", height:"40px"}}/> AI Agent Manager</div>
+          <div className="agentLogo"><img src="favicon.ico" alt="Logo" style={{ width: "40px", height: "40px" }} /> AI Agent Manager</div>
         </div>
 
         <div className="burger" onClick={toggleMenu}>
@@ -96,6 +96,14 @@ export default function HeaderBar() {
             className={`headerLink ${location.pathname === "/calendrier" ? "active" : ""}`}
           >
             Calendrier
+          </Link>
+
+          <Link
+            to="/settings-ia"
+            onClick={() => setOpen(false)}
+            className={`headerLink ${location.pathname === "/settings-ia" ? "active" : ""}`}
+          >
+            Paramètres
           </Link>
 
 
