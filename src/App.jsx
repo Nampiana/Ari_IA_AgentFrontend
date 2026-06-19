@@ -10,6 +10,7 @@ import CalendrierPage from "./pages/calendrier/calendrierPage.jsx";
 import ListsPage from "./pages/lists/listsPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import Historique from "./pages/historique/HistoriquesPage.jsx";
+import SettingsIAPage from "./pages/settingIA/SettingIaPage.jsx";
 import CrmLeadPage from "./pages/crmLead/crmLeadPage.jsx";
 
 import ToastMessage from "./components/alert/toastMessage.js";
@@ -76,6 +77,15 @@ function AppRoutes({ showToast }) {
         element={
           <PrivateRoute>
             <CalendrierPage showToast={showToast} />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/settings-ia"
+        element={
+          <PrivateRoute>
+            <SettingsIAPage showToast={showToast} />
           </PrivateRoute>
         }
       />

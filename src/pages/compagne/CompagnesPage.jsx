@@ -91,25 +91,58 @@ export default function CompagnesPage({ showToast }) {
 
   const lancerCampagne = async (compagne) => {
     try {
-      const statusRunning = compagne.isRunning == 1 ? 0 : 1;
+      if (compagne.isRunning == 1) {
+        const res = await updateCompagne(compagne._id, {
+          isRunning: 0,
+        });
 
-      const res = await updateCompagne(compagne._id, {
-        isRunning: statusRunning,
-      });
-      const updated = res?.data?.data;
+        const updated = res?.data?.data;
 
-      setCompagnes((prev) =>
-        prev.map((c) => (c._id === compagne._id ? updated : c)),
-      );
-      if (statusRunning == 1) {
-        showToast("Campagne lancée", "success");
-        await lancerAppelCompagne(compagne._id);
-      } else {
+        setCompagnes((prev) =>
+          prev.map((c) => (c._id === compagne._id ? updated : c)),
+        );
+
         showToast("Campagne arrêtée", "info");
+        return;
       }
+
+      const resLaunch = await lancerAppelCompagne(compagne._id);
+
+      await fetchCompagnes();
+
+      showToast(resLaunch?.data?.message || "Campagne lancée", "success");
     } catch (error) {
       console.error("Erreur lancement campagne :", error);
-      showToast("Erreur lors du lancement de la campagne", "danger");
+
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || "";
+
+      try {
+        await updateCompagne(compagne._id, {
+          isRunning: 0,
+        });
+      } catch (resetError) {
+        console.error("Erreur reset isRunning :", resetError);
+      }
+
+      await fetchCompagnes();
+
+      if (
+        status === 403 ||
+        message.includes("plage") ||
+        message.includes("Impossible de lancer")
+      ) {
+        showToast(
+          "Les appels sont autorisés uniquement pendant la plage horaire configurée.",
+          "warning",
+        );
+        return;
+      }
+
+      showToast(
+        message || "Erreur lors du lancement de la campagne",
+        "danger",
+      );
     }
   };
 
