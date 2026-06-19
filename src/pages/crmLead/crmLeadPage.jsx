@@ -41,8 +41,34 @@ const formatDate = (date) => {
   });
 };
 
-// ── Carte individuelle d'un lead ─────────────────────────────────────────────
+function buildRecordUrl(pathRecord) {
+  if (!pathRecord) return "";
+  if (pathRecord.startsWith("http://") || pathRecord.startsWith("https://"))
+    return pathRecord;
+  const base = (
+    process.env.REACT_APP_HOST_API || "http://localhost:4000/api/v1/"
+  )
+    .replace("/api/v1/", "")
+    .replace(/\/$/, "");
+  return `${base}/files/${pathRecord}`;
+}
+
+function formatDateTime(date) {
+  if (!date) return "-";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "-";
+  return d.toLocaleString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
+}
+
 function LeadCard({ lead, onDragStart, onOpen, onArchive }) {
+  const recordUrl = buildRecordUrl(lead.historiqueId?.pathRecord);
+
   return (
     <div
       className="crmCard"
@@ -61,8 +87,6 @@ function LeadCard({ lead, onDragStart, onOpen, onArchive }) {
             {formatDate(lead.callbackDate)}
           </span>
         )}
-        {/* Icon pour archiver */}
-
         <i
           className="bi bi-archive"
           onClick={(e) => {
@@ -85,7 +109,30 @@ function LeadCard({ lead, onDragStart, onOpen, onArchive }) {
         </div>
       )}
 
+      {/* ── Date de qualification (appel d'origine) ── */}
+      {lead.historiqueId?.callDate && (
+        <div className="crmCardQualifDate">
+          <i className="bi bi-clock-history me-1" />
+          Qualifié le {formatDateTime(lead.historiqueId.callDate)}
+        </div>
+      )}
+
       {lead.note && <div className="crmCardNote">{lead.note}</div>}
+
+      {/* ── Audio de l'appel ── */}
+      <div className="crmCardAudio" onClick={(e) => e.stopPropagation()}>
+        {recordUrl ? (
+          <audio controls className="crmCardAudioPlayer">
+            <source src={recordUrl} />
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        ) : (
+          <span className="crmCardNoAudio">
+            <i className="bi bi-volume-mute me-1" />
+            Pas d'enregistrement
+          </span>
+        )}
+      </div>
 
       <div className="crmCardFooter">
         <span className="crmCardCampagne">
@@ -111,16 +158,33 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
     lead?.callbackDate ? lead.callbackDate.slice(11, 16) : "",
   );
   const [saving, setSaving] = useState(false);
+  const [dateTimeTouched, setDateTimeTouched] = useState(false);
 
   useEffect(() => {
     setCrmStatus(lead?.crmStatus ?? 3);
     setNote(lead?.note ?? "");
     setCallbackDate(lead?.callbackDate ? lead.callbackDate.slice(0, 10) : "");
+    setDateTimeTouched(false);
   }, [lead]);
 
   if (!lead) return null;
+  const recordUrl = buildRecordUrl(lead.historiqueId?.pathRecord);
+  const isDateTimeIncomplete =
+    dateTimeTouched && (!callbackDate || !callbackTime);
+  const canSave = !isDateTimeIncomplete;
+
+  const handleDateChange = (e) => {
+    setCallbackDate(e.target.value);
+    setDateTimeTouched(true);
+  };
+
+  const handleTimeChange = (e) => {
+    setCallbackTime(e.target.value);
+    setDateTimeTouched(true);
+  };
 
   const handleSave = async () => {
+    if (!canSave) return;
     setSaving(true);
     try {
       await onSave(lead._id, {
@@ -131,8 +195,8 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
       });
       showToast?.("Lead mis à jour", "success");
       onClose();
-    } catch {
-      showToast?.("Erreur lors de la mise à jour", "danger");
+    } catch (error) {
+      showToast?.("La date de rappel doit être dans le futur", "danger");
     } finally {
       setSaving(false);
     }
@@ -152,10 +216,31 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
         </div>
 
         <div className="crmModalBody">
-          <div className="crmModalRow">
-            <i className="bi bi-telephone-fill" />
-            <span>{lead.telephone || "-"}</span>
-          </div>
+          {lead.historiqueId && (
+            <div className="crmModalCallOrigin">
+              <div className="crmModalCallOriginHeader">
+                <i className="bi bi-telephone-fill" />
+                <span>Appel d'origine</span>
+                <span className="crmModalCallOriginDate">
+                  {formatDateTime(lead.historiqueId.callDate)}
+                </span>
+                <span className="crmModalCallOriginDuration">
+                  ({lead.telephone || "-"})
+                </span>
+              </div>
+              {recordUrl ? (
+                <audio controls className="crmModalAudioPlayer">
+                  <source src={recordUrl} />
+                  Votre navigateur ne supporte pas l'audio.
+                </audio>
+              ) : (
+                <span className="crmCardNoAudio">
+                  <i className="bi bi-volume-mute me-1" />
+                  Pas d'enregistrement
+                </span>
+              )}
+            </div>
+          )}
           {lead.email && (
             <div className="crmModalRow">
               <i className="bi bi-envelope-fill" />
@@ -175,42 +260,63 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
 
           <div className="crmModalDivider" />
 
-          <label className="crmModalLabel">Qualification CRM</label>
-          <div className="crmModalStatusGroup">
-            {COLUMNS.map((col) => (
-              <button
-                key={col.key}
-                type="button"
-                className={`crmStatusBtn ${crmStatus === col.key ? "active" : ""}`}
-                style={{
-                  borderColor:
-                    crmStatus === col.key ? col.color : "transparent",
-                  background: col.bg,
-                  color: col.color,
-                }}
-                onClick={() => setCrmStatus(col.key)}
-              >
-                <i className={`bi ${col.icon} me-1`} />
-                {col.title}
-              </button>
-            ))}
-          </div>
+          {lead.crmStatus === 2 && (
+            <>
+              <label className="crmModalLabel">Qualification CRM</label>
+              <div className="crmModalStatusGroup">
+                {COLUMNS.map((col) => (
+                  <button
+                    key={col.key}
+                    type="button"
+                    className={`crmStatusBtn ${crmStatus === col.key ? "active" : ""}`}
+                    style={{
+                      borderColor:
+                        crmStatus === col.key ? col.color : "transparent",
+                      background: col.bg,
+                      color: col.color,
+                    }}
+                    onClick={() => setCrmStatus(col.key)}
+                  >
+                    <i className={`bi ${col.icon} me-1`} />
+                    {col.title}
+                  </button>
+                ))}
+              </div>
 
-          <label className="crmModalLabel">Date de rappel</label>
-          <input
-            type="date"
-            className="crmModalInput"
-            value={callbackDate}
-            onChange={(e) => setCallbackDate(e.target.value)}
-          />
+              <label className="crmModalLabel">
+                Date de rappel
+                {dateTimeTouched && (
+                  <span className="crmModalRequired"> *</span>
+                )}
+              </label>
+              <input
+                type="date"
+                className={`crmModalInput ${isDateTimeIncomplete && !callbackDate ? "crmModalInput--error" : ""}`}
+                value={callbackDate}
+                onChange={handleDateChange}
+              />
 
-          <label className="crmModalLabel">Heure de rappel</label>
-          <input
-            type="time"
-            className="crmModalInput"
-            value={callbackTime}
-            onChange={(e) => setCallbackTime(e.target.value)}
-          />
+              <label className="crmModalLabel">
+                Heure de rappel
+                {dateTimeTouched && (
+                  <span className="crmModalRequired"> *</span>
+                )}
+              </label>
+              <input
+                type="time"
+                className={`crmModalInput ${isDateTimeIncomplete && !callbackTime ? "crmModalInput--error" : ""}`}
+                value={callbackTime}
+                onChange={handleTimeChange}
+              />
+
+              {isDateTimeIncomplete && (
+                <div className="crmModalWarning">
+                  <i className="bi bi-exclamation-triangle-fill me-1" />
+                  Veuillez renseigner à la fois la date et l'heure du rappel.
+                </div>
+              )}
+            </>
+          )}
 
           <label className="crmModalLabel">Note</label>
           <textarea
@@ -232,7 +338,8 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
           <button
             className="btn btn-primary btn-sm"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !canSave}
+            title={!canSave ? "Complétez la date et l'heure du rappel" : ""}
           >
             {saving ? "Enregistrement…" : "Enregistrer"}
           </button>

@@ -416,3 +416,62 @@
     padding: 14px 20px;
     border-top: 1px solid var(--border);
 }
+
+/* ── Date de qualification (carte) ── */
+.crmCardQualifDate {
+    font-size: 0.72rem;
+    color: var(--gray-secondaire);
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+/* ── Audio sur la carte ── */
+.crmCardAudio {
+    margin-bottom: 8px;
+}
+
+.crmCardAudioPlayer {
+    width: 100%;
+    height: 32px;
+}
+
+.crmCardNoAudio {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--gray-secondaire);
+    font-style: italic;
+}
+
+/* ── Bloc appel d'origine (modal) ── */
+.crmModalCallOrigin {
+    background: var(--info-soft);
+    border: 1px solid var(--info);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+}
+
+.crmModalCallOriginHeader {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--info);
+    margin-bottom: 8px;
+}
+
+.crmModalCallOriginDate {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--info);
+    opacity: 0.85;
+}
+
+.crmModalAudioPlayer {
+    width: 100%;
+    height: 34px;
+}

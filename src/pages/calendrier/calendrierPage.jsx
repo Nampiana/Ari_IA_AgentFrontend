@@ -28,16 +28,32 @@ const SOURCE_DEFS = {
 
 const getSourceDef = (source) => SOURCE_DEFS[source] || SOURCE_DEFS[1];
 
-/**
- * Convertit getDay() (0=Dim … 6=Sam) en index lundi-first (0=Lun … 6=Dim)
- */
+// Codes couleur CRM — alignés sur ceux déjà utilisés dans CrmKanbanPage
+const CRM_STATUS_DEFS = {
+  1: {
+    label: "Confirmé",
+    color: "#16a34a",
+    bg: "#dcfce7",
+    icon: "bi-check-circle-fill",
+  },
+  2: {
+    label: "Non confirmé",
+    color: "#6b7280",
+    bg: "#f3f4f6",
+    icon: "bi-x-circle-fill",
+  },
+  3: {
+    label: "À relancer",
+    color: "#2563eb",
+    bg: "#dbeafe",
+    icon: "bi-arrow-repeat",
+  },
+};
+
 function mondayFirstIndex(date) {
   return (date.getDay() + 6) % 7;
 }
 
-/**
- * Retourne "YYYY-MM-DD" dans le fuseau LOCAL
- */
 function toLocalDateKey(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -45,9 +61,6 @@ function toLocalDateKey(date) {
   return `${y}-${m}-${d}`;
 }
 
-/**
- * Formate la durée en secondes → "Xmin Ys"
- */
 function formatDuration(billsec) {
   if (!billsec && billsec !== 0) return "—";
   const min = Math.floor(billsec / 60);
@@ -60,7 +73,7 @@ function formatDuration(billsec) {
 
 const REASON_COLOR = {
   RAPPEL: "bg-warning",
-  CALLBACK: "bg-warning", // ← alias MongoDB
+  CALLBACK: "bg-warning",
   NI: "bg-danger",
   OCCUPE: "bg-gris",
   REPONDEUR: "bg-info",
@@ -69,37 +82,27 @@ const REASON_COLOR = {
 
 const REASON_LABEL = {
   RAPPEL: "Rappel",
-  CALLBACK: "Rappel", // ← alias MongoDB
+  CALLBACK: "Rappel",
   NI: "Non intéressé",
   OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
   SALE: "Vente / RDV",
 };
-// status MongoDB : 1=NI, 2=SALE, 3=CALLBACK, 4=OCCUPE, 5=REPONDEUR
+
 const STATUS_LABEL = {
   1: { label: "Non intéressé", cls: "bg-danger", reason: "NI" },
   2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
   3: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
   4: { label: "Occupé", cls: "bg-gris", reason: "OCCUPE" },
   5: { label: "Répondeur", cls: "bg-info", reason: "REPONDEUR" },
-  CALLBACK: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" }, // ← alias
+  CALLBACK: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
 };
 
 const FILTER_CHIPS = [
   { key: "ALL", label: "Tous", cls: "btn-outline-secondary" },
-  {
-    key: "RAPPEL",
-    label: "Rappel",
-    cls: "btn-warning",
-    dotCls: "bg-warning",
-  },
+  { key: "RAPPEL", label: "Rappel", cls: "btn-warning", dotCls: "bg-warning" },
   { key: "NI", label: "Non intéressé", cls: "btn-danger", dotCls: "bg-danger" },
-  {
-    key: "OCCUPE",
-    label: "Occupé",
-    cls: "btn-gris",
-    dotCls: "bg-gris",
-  },
+  { key: "OCCUPE", label: "Occupé", cls: "btn-gris", dotCls: "bg-gris" },
   { key: "REPONDEUR", label: "Répondeur", cls: "btn-info", dotCls: "bg-info" },
   {
     key: "SALE",
@@ -116,6 +119,66 @@ const SCHEDULED_STATUS = {
   failed: { label: "Échec", cls: "bg-danger" },
 };
 
+// ── Composant carte unifié — même structure, couleurs différentes ──────────
+const UnifiedCard = ({
+  sourceBadge,
+  accentColor,
+  title,
+  subtitle,
+  description,
+  metaItems,
+  statusBadges,
+  audioPath,
+  actions,
+}) => {
+  const recordUrl = buildRecordUrl(audioPath);
+
+  return (
+    <div className="unifiedCard" style={{ borderLeftColor: accentColor }}>
+      <div className="unifiedCardTop">
+        <div className="unifiedCardLeft">
+          <div className="unifiedCardBadgeRow">{sourceBadge}</div>
+          <div className="unifiedCardTitle">{title}</div>
+          {subtitle && <div className="unifiedCardSubtitle">{subtitle}</div>}
+          {description && (
+            <div className="unifiedCardDescription">{description}</div>
+          )}
+          {metaItems?.length > 0 && (
+            <div className="unifiedCardMeta">
+              {metaItems.map((m, i) => (
+                <span key={i} className="unifiedCardMetaItem">
+                  <i className={`bi ${m.icon}`} />
+                  {m.text}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="unifiedCardRight">
+          {statusBadges}
+          {actions}
+        </div>
+      </div>
+
+      {/* Audio toujours présent dans la même position pour tous les types */}
+      <div className="unifiedCardAudio" onClick={(e) => e.stopPropagation()}>
+        {recordUrl ? (
+          <audio controls className="w-100" style={{ height: 34 }}>
+            <source src={recordUrl} />
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        ) : (
+          <span className="unifiedCardNoAudio">
+            <i className="bi bi-volume-mute me-1" />
+            Pas d'enregistrement
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── Composant principal ───────────────────────────────────────────────────────
 
 export default function CalendrierPage() {
@@ -130,14 +193,12 @@ export default function CalendrierPage() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ── Filtres ──────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL"); // clé reason ou "ALL"
-  const [agentFilter, setAgentFilter] = useState(""); // _id agentIaId
-  const [campagneFilter, setCampagneFilter] = useState(""); // _id campagneId
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [agentFilter, setAgentFilter] = useState("");
+  const [campagneFilter, setCampagneFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("ALL");
 
-  // ── Chargement ────────────────────────────────────────────
   useEffect(() => {
     loadData();
   }, []);
@@ -145,22 +206,25 @@ export default function CalendrierPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      // const [scheduledRes, historiquesRes] = await Promise.all([
-      //   getScheduledCalls(),
-      //   getHistoriques({ status: 2 }),
-      // ]);
-      const [scheduledRes, historiquesRes, crmLeadListeConfirmer] =
+      const [scheduledRes, historiquesRes, crmLeadStatus1, crmLeadStatus2] =
         await Promise.all([
           getScheduledCalls(),
           [],
-          getCrmLeads({ crmStatus: 1 }),
+          getCrmLeads({ crmStatus: 1, isArchived: false }),
+          getCrmLeads({ crmStatus: 2, isArchived: false }),
         ]);
       setScheduledCalls(scheduledRes?.data?.data || []);
       setHistoriques(historiquesRes?.data?.data || []);
-      const confirmedWithDate = (crmLeadsRes?.data?.data || []).filter(
-        (lead) => !!lead.callbackDate,
+
+      const confirmed = (crmLeadStatus1?.data?.data || []).filter(
+        (l) => l.crmStatus == 1,
       );
-      setCrmLeads(confirmedWithDate);
+      const nonConfirmed = (crmLeadStatus2?.data?.data || []).filter(
+        (l) => l.crmStatus == 2,
+      );
+
+      // Un seul tableau global, distribué ensuite par crmStatus dans groupedData
+      setCrmLeads([...confirmed, ...nonConfirmed]);
     } catch (err) {
       console.error("Erreur chargement calendrier:", err);
     } finally {
@@ -176,7 +240,6 @@ export default function CalendrierPage() {
     setSourceFilter("ALL");
   };
 
-  // ── Listes d'agents / campagnes uniques pour les selects ──
   const agentOptions = useMemo(() => {
     const map = new Map();
     [...historiques, ...scheduledCalls].forEach((item) => {
@@ -202,12 +265,10 @@ export default function CalendrierPage() {
     }));
   }, [historiques, scheduledCalls]);
 
-  // ── Filtre générique ──────────────────────────────────────
   const matchesFilters = useCallback(
     (item, type) => {
       const q = searchQuery.trim().toLowerCase();
 
-      // Recherche textuelle : numéro ou nom
       if (q) {
         const num =
           type === "crm"
@@ -220,7 +281,6 @@ export default function CalendrierPage() {
         if (!num.includes(q) && !name.includes(q)) return false;
       }
 
-      // Filtre statut/reason — ne s'applique pas aux leads CRM (pas de "reason")
       if (statusFilter !== "ALL" && type !== "crm") {
         const reason =
           type === "historique"
@@ -229,22 +289,18 @@ export default function CalendrierPage() {
         if (reason !== statusFilter) return false;
       }
 
-      // Filtre agent — non applicable directement aux leads CRM bruts
       if (agentFilter && type !== "crm") {
         const itemAgentId = item.agentIaId?._id || item.agentIaId;
         if (String(itemAgentId) !== agentFilter) return false;
       }
 
-      // Filtre campagne
       if (campagneFilter) {
         const itemCampagneId = item.campagneId?._id || item.campagneId;
         if (String(itemCampagneId) !== campagneFilter) return false;
       }
 
-      // ⚡ Filtre source — uniquement pertinent pour les scheduledCalls
-      // (les historiques n'ont pas de "source", les leads CRM comptent comme source=3)
       if (sourceFilter !== "ALL") {
-        if (type === "historique") return false; // les historiques ne matchent aucune source
+        if (type === "historique") return false;
         const itemSource = type === "crm" ? 3 : item.source || 1;
         if (String(itemSource) !== String(sourceFilter)) return false;
       }
@@ -254,7 +310,6 @@ export default function CalendrierPage() {
     [searchQuery, statusFilter, agentFilter, campagneFilter, sourceFilter],
   );
 
-  // ── Calcul du mois ────────────────────────────────────────
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
 
@@ -274,45 +329,87 @@ export default function CalendrierPage() {
 
   const todayKey = toLocalDateKey(new Date());
 
-  // ── Groupement filtré par date locale ─────────────────────
+  // Les leads CRM sans callbackDate ne sont PAS groupés ici — section dédiée plus bas.
   const groupedData = useMemo(() => {
     const map = {};
 
     historiques
-      .filter((h) => matchesFilters(h, true))
+      .filter((h) => matchesFilters(h, "historique"))
       .forEach((h) => {
         if (!h.callDate) return;
         const key = toLocalDateKey(new Date(h.callDate));
-        if (!map[key]) map[key] = { historiques: [], scheduled: [] };
+        if (!map[key])
+          map[key] = { historiques: [], scheduled: [], crmLeads: [] };
         map[key].historiques.push(h);
       });
 
     scheduledCalls
-      .filter((s) => matchesFilters(s, false))
+      .filter((s) => matchesFilters(s, "scheduled"))
       .forEach((s) => {
         if (!s.scheduledAt) return;
         const key = toLocalDateKey(new Date(s.scheduledAt));
-        if (!map[key]) map[key] = { historiques: [], scheduled: [] };
+        if (!map[key])
+          map[key] = { historiques: [], scheduled: [], crmLeads: [] };
         map[key].scheduled.push(s);
       });
 
+    // ── crmStatus 1 (Confirmé) → section CRM, peu importe la date ──────────────
     crmLeads
-      .filter((l) => matchesFilters(l, "crm"))
-      .forEach((l) => {
-        if (!l.callbackDate) return;
-        const key = toLocalDateKey(new Date(l.callbackDate));
+      .filter((l) => l.crmStatus === 1 && matchesFilters(l, "crm"))
+      .forEach((l) => {        
+        if (!l.historiqueId.callDate) return; // sans date → section dédiée plus bas
+        const key = toLocalDateKey(new Date(l.historiqueId.callDate)); // ← corrigé
         if (!map[key])
           map[key] = { historiques: [], scheduled: [], crmLeads: [] };
         map[key].crmLeads.push(l);
       });
 
+    // ── crmStatus 2 (Non confirmé) avec date → traité comme un rappel ──────────
+    crmLeads
+      .filter(
+        (l) => l.crmStatus === 2 && l.callbackDate && matchesFilters(l, "crm"),
+      )
+      .forEach((l) => {
+        const key = toLocalDateKey(new Date(l.callbackDate));
+        if (!map[key])
+          map[key] = { historiques: [], scheduled: [], crmLeads: [] };
+        // Normalise le format pour ressembler à un ScheduledCall — réutilise UnifiedCard
+        map[key].scheduled.push({
+          _id: `crm-${l._id}`,
+          _isCrmReminder: true, // marqueur pour distinguer dans le rendu
+          _crmLead: l,
+          calledNumber: l.telephone,
+          callerNumber: l.historiqueId?.calledNumber || "—",
+          scheduledAt: l.callbackDate,
+          reason: "RAPPEL",
+          status: "pending",
+          source: 3,
+          aiResponse: { nameUser: l.nom, description: l.note },
+          _pathRecord: l.historiqueId?.pathRecord,
+        });
+      });
+
+    console.log(crmLeads);
+
     return map;
   }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
 
-  // Compte total des résultats filtrés (tous mois confondus)
+  // Leads CRM confirmés SANS callbackDate — section dédiée hors grille calendrier
+  const crmLeadsWithoutDate = useMemo(
+    () =>
+      crmLeads.filter(
+        (l) => l.crmStatus === 1 && matchesFilters(l, "crm") && !l.callbackDate,
+      ),
+    [crmLeads, matchesFilters],
+  );
+
   const filteredTotal = useMemo(() => {
-    const fH = historiques.filter((h) => matchesFilters(h, true)).length;
-    const fS = scheduledCalls.filter((s) => matchesFilters(s, false)).length;
+    const fH = historiques.filter((h) =>
+      matchesFilters(h, "historique"),
+    ).length;
+    const fS = scheduledCalls.filter((s) =>
+      matchesFilters(s, "scheduled"),
+    ).length;
     const fC = crmLeads.filter((l) => matchesFilters(l, "crm")).length;
     return fH + fS + fC;
   }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
@@ -321,21 +418,18 @@ export default function CalendrierPage() {
     searchQuery.trim() !== "" ||
     statusFilter !== "ALL" ||
     agentFilter !== "" ||
-    campagneFilter !== "";
-  sourceFilter !== "ALL";
+    campagneFilter !== "" ||
+    sourceFilter !== "ALL";
 
-  // ── Navigation ────────────────────────────────────────────
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
   const goToday = () => setCurrentDate(new Date());
 
-  // ── Suppression rappel ────────────────────────────────────
   const handleDelete = async (id) => {
     if (!window.confirm("Supprimer ce rappel planifié ?")) return;
     try {
       await deleteScheduledCall(id);
       setScheduledCalls((prev) => prev.filter((item) => item._id !== id));
-      // Met à jour la modale si elle est ouverte sur ce même jour
       setSelectedDay((prev) => {
         if (!prev) return prev;
         return {
@@ -352,11 +446,12 @@ export default function CalendrierPage() {
     }
   };
 
-  const renderSourceBadge = (source) => {
+  // Badge de source réutilisable — icône + couleur + libellé
+  const renderSourceBadge = (source, size) => {
     const def = getSourceDef(source);
     return (
       <span
-        className="calSourceBadge"
+        className={`calSourceBadge ${size === "lg" ? "calSourceBadgeLg" : ""}`}
         style={{ color: def.color, background: def.bg }}
         title={`Source : ${def.label}`}
       >
@@ -366,14 +461,6 @@ export default function CalendrierPage() {
     );
   };
 
-  const renderScheduledItem = (item) => (
-    <div key={item._id} className="calItem calItemScheduled">
-      {renderSourceBadge(item.source)}
-      <span className="calItemPhone">{item.calledNumber}</span>
-      <span className="calItemReason">{item.reason}</span>
-    </div>
-  );
-
   const renderCrmLeadItem = (lead) => (
     <div key={lead._id} className="calItem calItemCrm">
       {renderSourceBadge(3)}
@@ -382,7 +469,91 @@ export default function CalendrierPage() {
     </div>
   );
 
-  // ── Rendu ─────────────────────────────────────────────────
+  // Carte détaillée d'un lead CRM — section dédiée + modale jour
+  const renderCrmLeadCard = (lead) => {
+    const statusDef = CRM_STATUS_DEFS[lead.crmStatus] || CRM_STATUS_DEFS[1];
+    const recordUrl = lead.historiqueId?.pathRecord
+      ? buildRecordUrl(lead.historiqueId.pathRecord)
+      : "";
+
+    return (
+      <div key={lead._id} className="crmLeadCard">
+        <div className="crmLeadCardHeader">
+          <div className="crmLeadCardIdentity">
+            {renderSourceBadge(3)}
+            <span
+              className="crmLeadStatusDot"
+              style={{ background: statusDef.color }}
+              title={statusDef.label}
+            />
+            <strong className="crmLeadName">
+              {lead.nom || "Lead sans nom"}
+            </strong>
+          </div>
+          <span
+            className="crmLeadStatusBadge"
+            style={{ color: statusDef.color, background: statusDef.bg }}
+          >
+            <i className={`bi ${statusDef.icon} me-1`} />
+            {statusDef.label}
+          </span>
+        </div>
+
+        <div className="crmLeadCardBody">
+          <div className="crmLeadCardRow">
+            <i className="bi bi-telephone-fill" />
+            {lead.telephone || "—"}
+          </div>
+          {lead.entreprise && (
+            <div className="crmLeadCardRow">
+              <i className="bi bi-building" />
+              {lead.entreprise}
+            </div>
+          )}
+          {lead.email && (
+            <div className="crmLeadCardRow">
+              <i className="bi bi-envelope-fill" />
+              {lead.email}
+            </div>
+          )}
+          <div className="crmLeadCardRow text-muted">
+            <i className="bi bi-megaphone" />
+            {lead.campagneId?.nomCompagne || "Campagne inconnue"}
+          </div>
+
+          {lead.note && <div className="crmLeadCardNote">{lead.note}</div>}
+
+          {recordUrl && (
+            <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+              <audio controls className="w-100" style={{ height: 32 }}>
+                <source src={recordUrl} />
+                Votre navigateur ne supporte pas l'audio.
+              </audio>
+            </div>
+          )}
+        </div>
+
+        <div className="crmLeadCardFooter">
+          <span>
+            <i className="bi bi-calendar-event me-1" />
+            {lead.historiqueId?.callDate
+              ? new Date(lead.historiqueId.callDate).toLocaleDateString(
+                  "fr-FR",
+                  {
+                    day: "numeric",
+                    month: "short",
+                  },
+                )
+              : "—"}
+          </span>
+          {lead.assignedTo && (
+            <span className="crmLeadCardAssigned">{lead.assignedTo}</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="calendrierPage bg-light min-vh-100">
       <HeaderBar />
@@ -469,7 +640,6 @@ export default function CalendrierPage() {
             )}
           </div>
 
-          {/* Ligne 2 : chips statut */}
           <div className="d-flex flex-wrap gap-2 align-items-center">
             {FILTER_CHIPS.map(({ key, label, cls, dotCls }) => (
               <button
@@ -481,9 +651,7 @@ export default function CalendrierPage() {
               >
                 {dotCls && (
                   <span
-                    className={`rounded-circle ${
-                      statusFilter === key ? "bg-white" : dotCls
-                    }`}
+                    className={`rounded-circle ${statusFilter === key ? "bg-white" : dotCls}`}
                     style={{
                       width: 8,
                       height: 8,
@@ -496,7 +664,6 @@ export default function CalendrierPage() {
               </button>
             ))}
 
-            {/* Compteur résultats */}
             {hasActiveFilter && (
               <span className="ms-2 text-muted small">
                 {filteredTotal} résultat{filteredTotal > 1 ? "s" : ""}
@@ -522,6 +689,15 @@ export default function CalendrierPage() {
               <small className="text-muted">{label}</small>
             </div>
           ))}
+
+          <div className="d-flex align-items-center gap-3 ms-md-auto">
+            {Object.entries(SOURCE_DEFS).map(([key, def]) => (
+              <div key={key} className="d-flex align-items-center gap-1">
+                <i className={`bi ${def.icon}`} style={{ color: def.color }} />
+                <small className="text-muted">{def.label}</small>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ── NAVIGATION MOIS ── */}
@@ -543,12 +719,10 @@ export default function CalendrierPage() {
           </button>
         </div>
 
-        {/* ── LOADING ── */}
         {loading && (
           <div className="alert alert-info">Chargement du calendrier…</div>
         )}
 
-        {/* ── EN-TÊTES JOURS ── */}
         <div className="row g-1 mb-1 text-center fw-bold text-muted small">
           {WEEK_DAYS.map((d) => (
             <div
@@ -579,8 +753,15 @@ export default function CalendrierPage() {
             }
 
             const key = toLocalDateKey(day);
-            const data = groupedData[key] || { historiques: [], scheduled: [] };
-            const total = data.historiques.length + data.scheduled.length;
+            const data = groupedData[key] || {
+              historiques: [],
+              scheduled: [],
+              crmLeads: [],
+            };
+            const total =
+              data.historiques.length +
+              data.scheduled.length +
+              data.crmLeads.length;
             const isToday = key === todayKey;
             const hasData = total > 0;
 
@@ -591,9 +772,7 @@ export default function CalendrierPage() {
                 style={{ minWidth: "14.2%", maxWidth: "14.2%" }}
               >
                 <div
-                  className={`card border-0 shadow-sm h-100 ${
-                    isToday ? "border border-primary border-2" : ""
-                  }`}
+                  className={`card border-0 shadow-sm h-100 ${isToday ? "border border-primary border-2" : ""}`}
                   style={{
                     minHeight: 120,
                     cursor: hasData ? "pointer" : "default",
@@ -603,14 +782,9 @@ export default function CalendrierPage() {
                   onClick={() => hasData && setSelectedDay({ date: key, data })}
                 >
                   <div className="card-body p-2">
-                    {/* Numéro du jour */}
                     <div className="d-flex justify-content-between align-items-center mb-1">
                       <div
-                        className={`fw-bold ${
-                          isToday
-                            ? "text-white bg-primary rounded-circle d-flex align-items-center justify-content-center"
-                            : ""
-                        }`}
+                        className={`fw-bold ${isToday ? "text-white bg-primary rounded-circle d-flex align-items-center justify-content-center" : ""}`}
                         style={
                           isToday ? { width: 26, height: 26, fontSize: 13 } : {}
                         }
@@ -627,7 +801,6 @@ export default function CalendrierPage() {
                       )}
                     </div>
 
-                    {/* Historiques */}
                     {data.historiques.slice(0, 2).map((h) => {
                       const sm = STATUS_LABEL[h.status];
                       return (
@@ -637,9 +810,7 @@ export default function CalendrierPage() {
                           style={{ fontSize: 11 }}
                         >
                           <span
-                            className={`rounded-circle flex-shrink-0 ${
-                              sm?.cls?.split(" ")[0] || "bg-secondary"
-                            }`}
+                            className={`rounded-circle flex-shrink-0 ${sm?.cls?.split(" ")[0] || "bg-secondary"}`}
                             style={{
                               width: 8,
                               height: 8,
@@ -653,17 +824,22 @@ export default function CalendrierPage() {
                       );
                     })}
 
-                    {/* Rappels planifiés */}
                     {data.scheduled.slice(0, 2).map((s) => (
                       <div
                         key={s._id}
                         className="d-flex align-items-center gap-1 mb-1"
                         style={{ fontSize: 11 }}
                       >
+                        <i
+                          className={`bi ${getSourceDef(s.source).icon}`}
+                          style={{
+                            color: getSourceDef(s.source).color,
+                            fontSize: 9,
+                          }}
+                          title={getSourceDef(s.source).label}
+                        />
                         <span
-                          className={`rounded-circle flex-shrink-0 ${
-                            REASON_COLOR[s.reason] ?? "bg-secondary"
-                          }`}
+                          className={`rounded-circle flex-shrink-0 ${REASON_COLOR[s.reason] ?? "bg-secondary"}`}
                           style={{
                             width: 8,
                             height: 8,
@@ -676,10 +852,35 @@ export default function CalendrierPage() {
                       </div>
                     ))}
 
-                    {/* +N autres */}
-                    {total > 4 && (
+                    {data.crmLeads.slice(0, 2).map((l) => (
+                      <div
+                        key={l._id}
+                        className="d-flex align-items-center gap-1 mb-1"
+                        style={{ fontSize: 11 }}
+                      >
+                        <i
+                          className="bi bi-person-badge-fill"
+                          style={{ color: "#7c3aed", fontSize: 9 }}
+                          title="CRM"
+                        />
+                        <span
+                          className="rounded-circle flex-shrink-0"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            display: "inline-block",
+                            background: "#16a34a",
+                          }}
+                        />
+                        <span className="text-truncate text-muted">
+                          {l.telephone}
+                        </span>
+                      </div>
+                    ))}
+
+                    {total > 6 && (
                       <div style={{ fontSize: 10 }} className="text-muted">
-                        +{total - 4} autre{total - 4 > 1 ? "s" : ""}
+                        +{total - 6} autre{total - 6 > 1 ? "s" : ""}
                       </div>
                     )}
                   </div>
@@ -701,10 +902,8 @@ export default function CalendrierPage() {
         >
           <div className="modal-dialog modal-xl modal-dialog-scrollable">
             <div className="modal-content">
-              {/* Header modale */}
               <div className="modal-header">
                 <h5 className="modal-title fw-bold">
-                  📅{" "}
                   {new Date(selectedDay.date + "T12:00:00").toLocaleDateString(
                     "fr-FR",
                     {
@@ -722,15 +921,14 @@ export default function CalendrierPage() {
               </div>
 
               <div className="modal-body">
-                {/* ── SECTION : Historique appels ── */}
+                {/* ── HISTORIQUE APPELS ── */}
                 <h6 className="fw-bold mb-3 text-primary">
                   📞 Historique appels ({selectedDay.data.historiques.length})
                 </h6>
 
                 {selectedDay.data.historiques.length === 0 && (
                   <div className="alert alert-light text-muted">
-                    Aucun appel ce jour
-                    {hasActiveFilter && " (filtre actif)"}
+                    Aucun appel ce jour{hasActiveFilter && " (filtre actif)"}
                   </div>
                 )}
 
@@ -748,76 +946,111 @@ export default function CalendrierPage() {
                   );
 
                   return (
-                    <div key={h._id} className="border rounded p-3 mb-2">
-                      <div className="d-flex justify-content-between align-items-start gap-2">
-                        <div className="flex-grow-1 min-w-0">
-                          <div className="fw-bold">{h.calledNumber}</div>
-                          <div className="small text-muted">
-                            {h.aiResponse?.nameUser ?? "—"}
-                          </div>
-                          <div className="small text-muted mt-1">
-                            {h.aiResponse?.description}
-                          </div>
-                          {/* Méta : heure + durée */}
-                          <div className="d-flex gap-3 mt-2">
-                            <span className="small text-muted">🕐 {time}</span>
-                            {h.billsec !== undefined && (
-                              <span className="small text-muted">
-                                ⏱ {formatDuration(h.billsec)}
-                              </span>
-                            )}
-                            {h.callerNumber && (
-                              <span className="small text-muted">
-                                📲 {h.callerNumber}
-                              </span>
-                            )}
-                          </div>
-                          {/* <div className="audio_calendrier">
-                            {h.pathRecord && (
-                              <div className="mt-2">
-                                <div
-                                  className="historiqueCol schedulerCol"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {buildRecordUrl(h.pathRecord) ? (
-                                    <>
-                                      <audio controls className="scheduler">
-                                        <source
-                                          src={buildRecordUrl(h.pathRecord)}
-                                        />
-                                        Votre navigateur ne supporte pas
-                                        l'audio.
-                                      </audio>
-                                    </>
-                                  ) : (
-                                    <span className="historiqueNoAudio">
-                                      <i className="bi bi-volume-mute" /> Pas
-                                      d'audio
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div> */}
-                        </div>
-                        <div className="d-flex flex-column align-items-end gap-1 flex-shrink-0">
-                          <span className={`badge ${sm.cls}`}>{sm.label}</span>
-                          <span className="small text-muted">{time}</span>
-                        </div>
-                      </div>
-                    </div>
+                    <UnifiedCard
+                      key={h._id}
+                      sourceBadge={
+                        <span
+                          className="calSourceBadge"
+                          style={{ color: "#1d4ed8", background: "#dbeafe" }}
+                        >
+                          <i className="bi bi-telephone-fill me-1" />
+                          Appel réel
+                        </span>
+                      }
+                      accentColor="#1d4ed8"
+                      title={h.calledNumber}
+                      subtitle={h.aiResponse?.nameUser || null}
+                      description={h.aiResponse?.description}
+                      metaItems={[
+                        { icon: "bi-clock", text: time },
+                        ...(h.billsec !== undefined
+                          ? [
+                              {
+                                icon: "bi-stopwatch",
+                                text: formatDuration(h.billsec),
+                              },
+                            ]
+                          : []),
+                        ...(h.callerNumber
+                          ? [
+                              {
+                                icon: "bi-telephone-inbound",
+                                text: h.callerNumber,
+                              },
+                            ]
+                          : []),
+                      ]}
+                      statusBadges={
+                        <span className={`badge ${sm.cls}`}>{sm.label}</span>
+                      }
+                      audioPath={h.pathRecord}
+                    />
                   );
                 })}
 
-                {/* ── SECTION : Rappels planifiés ── */}
-                <h6 className="fw-bold mt-4 mb-3 text-warning">
-                  ⏰ Rappels planifiés ({selectedDay.data.scheduled.length})
+                {/* ── CRM CONFIRMÉS ── */}
+                <h6 className="fw-bold mt-4 mb-3" style={{ color: "#7c3aed" }}>
+                  <i className="bi bi-person-badge-fill me-1" />
+                  Leads CRM confirmés ({selectedDay.data.crmLeads.length})
+                </h6>
+
+                {selectedDay.data.crmLeads.length === 0 && (
+                  <div className="alert alert-light text-muted">
+                    Aucun lead CRM ce jour{hasActiveFilter && " (filtre actif)"}
+                  </div>
+                )}
+
+                {selectedDay.data.crmLeads.map((lead) => {
+                  const statusDef =
+                    CRM_STATUS_DEFS[lead.crmStatus] || CRM_STATUS_DEFS[1];
+
+                  return (
+                    <UnifiedCard
+                      key={lead._id}
+                      sourceBadge={renderSourceBadge(3)}
+                      accentColor="#7c3aed"
+                      title={lead.nom || "Lead sans nom"}
+                      subtitle={lead.telephone}
+                      description={lead.note || lead.entreprise}
+                      metaItems={[
+                        ...(lead.email
+                          ? [{ icon: "bi-envelope-fill", text: lead.email }]
+                          : []),
+                        {
+                          icon: "bi-megaphone",
+                          text:
+                            lead.campagneId?.nomCompagne || "Campagne inconnue",
+                        },
+                        ...(lead.assignedTo
+                          ? [{ icon: "bi-person-check", text: lead.assignedTo }]
+                          : []),
+                      ]}
+                      statusBadges={
+                        <span
+                          className="badge"
+                          style={{
+                            color: statusDef.color,
+                            background: statusDef.bg,
+                          }}
+                        >
+                          <i className={`bi ${statusDef.icon} me-1`} />
+                          {statusDef.label}
+                        </span>
+                      }
+                      audioPath={lead.historiqueId?.pathRecord}
+                    />
+                  );
+                })}
+
+                {/* ── RAPPELS PLANIFIÉS ── */}
+                <h6 className="fw-bold mt-4 mb-3 text-warning d-flex align-items-center gap-2">
+                  <i className="bi bi-telephone-outbound-fill" />
+                  Rappels planifiés ({selectedDay.data.scheduled.length})
                 </h6>
 
                 {selectedDay.data.scheduled.length === 0 && (
                   <div className="alert alert-light text-muted">
-                    Aucun rappel ce jour
-                    {hasActiveFilter && " (filtre actif)"}
+                    Aucun rappel ce jour{hasActiveFilter && " (filtre actif)"}
                   </div>
                 )}
 
@@ -826,85 +1059,63 @@ export default function CalendrierPage() {
                     label: s.status,
                     cls: "bg-secondary",
                   };
-                  const recordUrl = buildRecordUrl(s.pathRecord); // 👈 calculé ici
+                  const time = new Date(s.scheduledAt).toLocaleTimeString(
+                    "fr-FR",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  );
+                  const accent = getSourceDef(s.source).color;
 
                   return (
-                    <div
+                    <UnifiedCard
                       key={s._id}
-                      className="border rounded-4 p-3 mb-3 bg-white shadow-sm"
-                    >
-                      <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                        {/* LEFT */}
-                        <div className="flex-grow-1 min-w-0">
-                          <div className="d-flex align-items-center gap-2 mb-2">
-                            <div
-                              className={`rounded-circle ${
-                                REASON_COLOR[s.reason] ?? "bg-secondary"
-                              }`}
-                              style={{ width: 14, height: 14, minWidth: 14 }}
-                            />
-                            <h6 className="fw-bold mb-0">{s.calledNumber}</h6>
-                          </div>
-
-                          <div className="small text-muted mb-1">
-                            <strong>Nom :</strong>{" "}
-                            {s.aiResponse?.nameUser || "Inconnu"}
-                          </div>
-                          <div className="small text-muted mb-2">
-                            {/* Mettre a la ligne le text si c'est trop long */}
-                            <strong>Description :</strong>{" "}
-                            <span
-                              className="text-truncate d-inline-block"
-                              style={{ maxWidth: "50%" }}
-                            >
-                              {s.aiResponse?.description || "—"}
-                            </span>
-                          </div>
-
-                          <div className="d-flex flex-wrap gap-3 mt-2">
-                            <div className="small text-muted">
-                              🕐{" "}
-                              {new Date(s.scheduledAt).toLocaleTimeString(
-                                "fr-FR",
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}
-                            </div>
-                            <div className="small text-muted">
-                              📲 {s.callerNumber}
-                            </div>
-                          </div>
-
-                          {/* ── AUDIO ── */}
-                          {/* <div
-                            className="mt-2"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {recordUrl ? (
-                              <audio controls className="shcedulerAudio w-100">
-                                <source src={recordUrl} />
-                                Votre navigateur ne supporte pas l'audio.
-                              </audio>
-                            ) : (
-                              <span className="small text-muted fst-italic">
-                                <i className="bi bi-volume-mute me-1" />
-                                Pas d'enregistrement
-                              </span>
-                            )}
-                          </div> */}
-                        </div>
-
-                        {/* RIGHT */}
-                        <div className="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+                      sourceBadge={renderSourceBadge(s.source)}
+                      accentColor={accent}
+                      title={s.calledNumber}
+                      subtitle={s.aiResponse?.nameUser || "Inconnu"}
+                      description={s.aiResponse?.description}
+                      metaItems={[
+                        { icon: "bi-clock", text: time },
+                        { icon: "bi-telephone-inbound", text: s.callerNumber },
+                      ]}
+                      statusBadges={
+                        <>
                           <span
-                            className={`badge px-3 py-2 ${
-                              REASON_COLOR[s.reason] ?? "bg-secondary"
-                            } ${s.reason === "RAPPEL" ? "text-dark" : ""}`}
+                            className={`badge ${REASON_COLOR[s.reason] ?? "bg-secondary"} ${s.reason === "RAPPEL" ? "text-dark" : ""}`}
                           >
                             {REASON_LABEL[s.reason] ?? s.reason}
                           </span>
-                          <span className={`badge px-3 py-2 ${ssObj.cls}`}>
-                            {ssObj.label}
-                          </span>
+                          {!s._isCrmReminder && (
+                            <span className={`badge ${ssObj.cls}`}>
+                              {ssObj.label}
+                            </span>
+                          )}
+                          {s._isCrmReminder && (
+                            <span
+                              className="badge"
+                              style={{
+                                background: "#f3f4f6",
+                                color: "#6b7280",
+                              }}
+                            >
+                              <i className="bi bi-x-circle me-1" />
+                              Non confirmé
+                            </span>
+                          )}
+                          {s.resultStatus && (
+                            <span className="badge bg-light text-dark border">
+                              <i className="bi bi-flag me-1" />
+                              {REASON_LABEL[s.resultStatus] || s.resultStatus}
+                            </span>
+                          )}
+                        </>
+                      }
+                      audioPath={s._pathRecord}
+                      actions={
+                        // Seuls les vrais ScheduledCall sont supprimables
+                        !s._isCrmReminder && (
                           <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={(e) => {
@@ -912,29 +1123,13 @@ export default function CalendrierPage() {
                               handleDelete(s._id);
                             }}
                           >
-                            🗑 Supprimer
+                            <i className="bi bi-trash3" />
                           </button>
-                        </div>
-                      </div>
-                    </div>
+                        )
+                      }
+                    />
                   );
                 })}
-
-                {/* ── SECTION : Leads CRM confirmés ── */}
-                <h6 className="fw-bold mt-4 mb-3 text-success">
-                  ✅ Leads CRM confirmés ({selectedDay.data.crmLeads?.length || 0})
-                </h6>
-
-                {selectedDay.data.crmLeads?.length === 0 && (
-                  <div className="alert alert-light text-muted">
-                    Aucun lead confirmé ce jour
-                    {hasActiveFilter && " (filtre actif)"}
-                  </div>
-                )}
-
-                {selectedDay.data.crmLeads?.map((lead) =>
-                  renderCrmLeadItem(lead),
-                )}
               </div>
             </div>
           </div>
