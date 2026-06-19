@@ -49,8 +49,12 @@ export default function CompagneCard({
         </div>
 
         <div>
-          <span className="label">Fiche</span>
-          <div>{compagne.fiche?.nomFiche || "Non définie"}</div>
+          <span className="label">Fiches</span>
+          <div>
+            {compagne.fiches?.length
+              ? compagne.fiches.map((f) => f.nomFiche).join(", ")
+              : "Non définies"}
+          </div>
         </div>
 
         <div>
