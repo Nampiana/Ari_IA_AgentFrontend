@@ -26,6 +26,10 @@ class CrmLeadServices {
   delete(id) {
     return axios.delete(`${ApiUrl}crm-leads/${id}`, header());
   }
+
+  reorderCrmLeads(crmStatus, orderedIds){
+    return axios.patch(`${ApiUrl}crm-leads/reorder`, { crmStatus, orderedIds }, header());
+  }
 }
 
 export default new CrmLeadServices();

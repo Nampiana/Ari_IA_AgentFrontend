@@ -21,11 +21,16 @@ export default function useCrmLead() {
     return crmLeadServices.delete(id);
   };
 
+  const reorderCrmLeads = async (crmStatus, orderedIds) => {
+    return crmLeadServices.reorderCrmLeads(crmStatus, orderedIds);
+  };
+
   return {
     getCrmLeads,
     getOneCrmLead,
     createCrmLead,
     updateCrmLead,
     deleteCrmLead,
+    reorderCrmLeads
   };
 }

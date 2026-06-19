@@ -351,13 +351,15 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function CrmLeadPage({ showToast }) {
-  const { getCrmLeads, updateCrmLead } = useCrmLead();
+  const { getCrmLeads, updateCrmLead, reorderCrmLeads } = useCrmLead();
 
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedLead, setSelectedLead] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
+  const [dragOverCardId, setDragOverCardId] = useState(null);
+  const [draggedId, setDraggedId] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [modalArchive, setModalArchive] = useState(false);
   const [selectedLeadArchive, setSelectedLeadArchive] = useState(null);
@@ -395,34 +397,99 @@ export default function CrmLeadPage({ showToast }) {
 
   // ── Drag & drop entre colonnes ────────────────────────────────────────────
   const handleDragStart = (e, id) => {
+    setDraggedId(id);
     e.dataTransfer.setData("leadId", id);
+    e.dataTransfer.effectAllowed = "move";
   };
 
-  const handleDragOver = (e, colKey) => {
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverCardId(null);
+    setDragOverCol(null);
+  };
+
+  // Survol d'une carte précise → marque la position d'insertion
+  const handleCardDragOver = (e, cardId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cardId !== draggedId) setDragOverCardId(cardId);
+  };
+
+  const handleColumnDragOver = (e, colKey) => {
     e.preventDefault();
     setDragOverCol(colKey);
   };
 
-  const handleDrop = async (e, colKey) => {
+  const handleDrop = async (e, colKey, dropOnCardId = null) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragOverCol(null);
+    setDragOverCardId(null);
+
     const id = e.dataTransfer.getData("leadId");
     if (!id) return;
 
-    const lead = leads.find((l) => l._id === id);
-    if (!lead || lead.crmStatus === colKey) return;
+    const draggedLead = leads.find((l) => l._id === id);
+    if (!draggedLead) return;
 
-    // Optimistic update
-    setLeads((prev) =>
-      prev.map((l) => (l._id === id ? { ...l, crmStatus: colKey } : l)),
-    );
+    // ── Construit la nouvelle liste ordonnée pour la colonne cible ──────────
+    setLeads((prev) => {
+      // Retire la carte déplacée de sa position actuelle
+      const without = prev.filter((l) => l._id !== id);
 
+      // Cartes actuelles de la colonne cible (déjà triées par leur ordre actuel)
+      const colLeads = without.filter((l) => (l.crmStatus ?? 3) === colKey);
+      const otherLeads = without.filter((l) => (l.crmStatus ?? 3) !== colKey);
+
+      const movedLead = { ...draggedLead, crmStatus: colKey };
+
+      let newColLeads;
+      if (dropOnCardId) {
+        // Insère juste avant la carte ciblée
+        const idx = colLeads.findIndex((l) => l._id === dropOnCardId);
+        newColLeads = [
+          ...colLeads.slice(0, idx),
+          movedLead,
+          ...colLeads.slice(idx),
+        ];
+      } else {
+        // Déposé sur la colonne (pas sur une carte précise) → à la fin
+        newColLeads = [...colLeads, movedLead];
+      }
+
+      // Réassigne un "order" local pour le rendu (sera confirmé par le backend)
+      newColLeads.forEach((l, i) => {
+        l.order = i;
+      });
+
+      return [...otherLeads, ...newColLeads];
+    });
+
+    // ── Persistance backend ───────────────────────────────────────────────────
     try {
-      await updateCrmLead(id, { crmStatus: colKey });
+      // Si changement de colonne, on met à jour le statut du lead déplacé
+      if (draggedLead.crmStatus !== colKey) {
+        await updateCrmLead(id, { crmStatus: colKey });
+      }
+
+      // Recalcule l'ordre final de la colonne cible et l'envoie au backend
+      setLeads((current) => {
+        const finalColIds = current
+          .filter((l) => (l.crmStatus ?? 3) === colKey)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map((l) => l._id);
+
+        reorderCrmLeads(colKey, finalColIds).catch(() => {
+          showToast?.("Erreur lors de la réorganisation", "danger");
+        });
+
+        return current;
+      });
+
       showToast?.("Lead déplacé", "success");
     } catch {
       showToast?.("Erreur lors du déplacement", "danger");
-      fetchLeads(); // rollback en cas d'échec
+      fetchLeads(); // rollback complet en cas d'échec
     }
   };
 
@@ -431,6 +498,10 @@ export default function CrmLeadPage({ showToast }) {
     leads.forEach((lead) => {
       const key = lead.crmStatus ?? 3;
       if (grouped[key]) grouped[key].push(lead);
+    });
+    // Trie chaque colonne par order
+    Object.keys(grouped).forEach((k) => {
+      grouped[k].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     });
     return grouped;
   }, [leads]);
@@ -498,9 +569,9 @@ export default function CrmLeadPage({ showToast }) {
                 <div
                   key={col.key}
                   className={`crmSectionColumn ${dragOverCol === col.key ? "dragOver" : ""}`}
-                  onDragOver={(e) => handleDragOver(e, col.key)}
+                  onDragOver={(e) => handleColumnDragOver(e, col.key)}
                   onDragLeave={() => setDragOverCol(null)}
-                  onDrop={(e) => handleDrop(e, col.key)}
+                  onDrop={(e) => handleDrop(e, col.key)} // drop sur zone vide de colonne = fin de liste
                 >
                   <div
                     className="crmSectionColumnHeader"
@@ -526,13 +597,20 @@ export default function CrmLeadPage({ showToast }) {
                       <div className="crmSectionColumnEmpty">Aucun lead</div>
                     ) : (
                       leadsByColumn[col.key].map((lead) => (
-                        <LeadCard
+                        <div
                           key={lead._id}
-                          lead={lead}
-                          onDragStart={handleDragStart}
-                          onOpen={setSelectedLead}
-                          onArchive={handlebtnArchive}
-                        />
+                          className={`crmCardWrapper ${dragOverCardId === lead._id ? "crmCardWrapper--dragOver" : ""} ${draggedId === lead._id ? "crmCardWrapper--dragging" : ""}`}
+                          onDragOver={(e) => handleCardDragOver(e, lead._id)}
+                          onDrop={(e) => handleDrop(e, col.key, lead._id)}
+                        >
+                          <LeadCard
+                            lead={lead}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onOpen={setSelectedLead}
+                            onArchive={handlebtnArchive}
+                          />
+                        </div>
                       ))
                     )}
                   </div>
