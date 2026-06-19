@@ -7,19 +7,20 @@ import "../../assets/css/CrmLeadPage.css";
 // crmStatus : 1 = confirmé, 2 = non confirmé, 3 = à relancer
 const COLUMNS = [
   {
+    key: 3,
+    title: "Client potentiel",
+    color: "#2563eb",
+    bg: "#dbeafe",
+    icon: "bi-arrow-repeat",
+  },
+  {
     key: 1,
     title: "Confirmé",
     color: "#16a34a",
     bg: "#dcfce7",
     icon: "bi-check-circle-fill",
   },
-  {
-    key: 3,
-    title: "À relancer",
-    color: "#2563eb",
-    bg: "#dbeafe",
-    icon: "bi-arrow-repeat",
-  },
+
   {
     key: 2,
     title: "Non confirmé",
@@ -68,7 +69,7 @@ function LeadCard({ lead, onDragStart, onOpen, onArchive }) {
             e.stopPropagation();
             onArchive(lead);
           }}
-          style={{"cursor":"pointer"}}
+          style={{ cursor: "pointer" }}
         />
       </div>
 
@@ -327,7 +328,7 @@ export default function CrmLeadPage({ showToast }) {
     return grouped;
   }, [leads]);
 
-  const handlebtnArchive = (lead) => {    
+  const handlebtnArchive = (lead) => {
     setSelectedLeadArchive(lead);
     setModalArchive(true);
   };

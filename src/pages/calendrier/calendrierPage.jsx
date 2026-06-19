@@ -2,13 +2,31 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import HeaderBar from "../../components/agents/HeaderBar";
 import useScheduledCall from "../../hooks/useScheduledCall";
 import useHistoriqueIa from "../../hooks/useHistoriqueIa";
-import "bootstrap/dist/css/bootstrap.min.css";
+import useCrmLead from "../../hooks/useCrmLead";
 import "../../assets/css/calendrierPage.css";
 import { buildRecordUrl } from "../../utils/buildPathAudio";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
 const WEEK_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
+const SOURCE_DEFS = {
+  1: { label: "Auto", color: "#6b7280", bg: "#f3f4f6", icon: "bi-robot" },
+  2: {
+    label: "Manuel",
+    color: "#d97706",
+    bg: "#fef3c7",
+    icon: "bi-person-fill",
+  },
+  3: {
+    label: "CRM",
+    color: "#7c3aed",
+    bg: "#ede9fe",
+    icon: "bi-person-badge-fill",
+  },
+};
+
+const getSourceDef = (source) => SOURCE_DEFS[source] || SOURCE_DEFS[1];
 
 /**
  * Convertit getDay() (0=Dim … 6=Sam) en index lundi-first (0=Lun … 6=Dim)
@@ -42,7 +60,7 @@ function formatDuration(billsec) {
 
 const REASON_COLOR = {
   RAPPEL: "bg-warning",
-  CALLBACK: "bg-warning",   // ← alias MongoDB
+  CALLBACK: "bg-warning", // ← alias MongoDB
   NI: "bg-danger",
   OCCUPE: "bg-gris",
   REPONDEUR: "bg-info",
@@ -51,7 +69,7 @@ const REASON_COLOR = {
 
 const REASON_LABEL = {
   RAPPEL: "Rappel",
-  CALLBACK: "Rappel",       // ← alias MongoDB
+  CALLBACK: "Rappel", // ← alias MongoDB
   NI: "Non intéressé",
   OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
@@ -103,10 +121,12 @@ const SCHEDULED_STATUS = {
 export default function CalendrierPage() {
   const { getScheduledCalls, deleteScheduledCall } = useScheduledCall();
   const { getHistoriques } = useHistoriqueIa();
+  const { getCrmLeads } = useCrmLead();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduledCalls, setScheduledCalls] = useState([]);
   const [historiques, setHistoriques] = useState([]);
+  const [crmLeads, setCrmLeads] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -115,6 +135,7 @@ export default function CalendrierPage() {
   const [statusFilter, setStatusFilter] = useState("ALL"); // clé reason ou "ALL"
   const [agentFilter, setAgentFilter] = useState(""); // _id agentIaId
   const [campagneFilter, setCampagneFilter] = useState(""); // _id campagneId
+  const [sourceFilter, setSourceFilter] = useState("ALL");
 
   // ── Chargement ────────────────────────────────────────────
   useEffect(() => {
@@ -124,12 +145,22 @@ export default function CalendrierPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [scheduledRes, historiquesRes] = await Promise.all([
-        getScheduledCalls(),
-        getHistoriques({ status: 2 }),
-      ]);
+      // const [scheduledRes, historiquesRes] = await Promise.all([
+      //   getScheduledCalls(),
+      //   getHistoriques({ status: 2 }),
+      // ]);
+      const [scheduledRes, historiquesRes, crmLeadListeConfirmer] =
+        await Promise.all([
+          getScheduledCalls(),
+          [],
+          getCrmLeads({ crmStatus: 1 }),
+        ]);
       setScheduledCalls(scheduledRes?.data?.data || []);
       setHistoriques(historiquesRes?.data?.data || []);
+      const confirmedWithDate = (crmLeadsRes?.data?.data || []).filter(
+        (lead) => !!lead.callbackDate,
+      );
+      setCrmLeads(confirmedWithDate);
     } catch (err) {
       console.error("Erreur chargement calendrier:", err);
     } finally {
@@ -142,6 +173,7 @@ export default function CalendrierPage() {
     setStatusFilter("ALL");
     setAgentFilter("");
     setCampagneFilter("");
+    setSourceFilter("ALL");
   };
 
   // ── Listes d'agents / campagnes uniques pour les selects ──
@@ -172,34 +204,54 @@ export default function CalendrierPage() {
 
   // ── Filtre générique ──────────────────────────────────────
   const matchesFilters = useCallback(
-    (item, isHistorique) => {
+    (item, type) => {
       const q = searchQuery.trim().toLowerCase();
 
       // Recherche textuelle : numéro ou nom
       if (q) {
-        const num = (item.calledNumber || "").toLowerCase();
-        const name = (item.aiResponse?.nameUser || "").toLowerCase();
+        const num =
+          type === "crm"
+            ? (item.telephone || "").toLowerCase()
+            : (item.calledNumber || "").toLowerCase();
+        const name =
+          type === "crm"
+            ? (item.nom || "").toLowerCase()
+            : (item.aiResponse?.nameUser || "").toLowerCase();
         if (!num.includes(q) && !name.includes(q)) return false;
       }
 
-      // Filtre statut/reason
-      if (statusFilter !== "ALL") {
-        const reason = isHistorique
-          ? STATUS_LABEL[item.status]?.reason || ""
-          : item.reason || "";
+      // Filtre statut/reason — ne s'applique pas aux leads CRM (pas de "reason")
+      if (statusFilter !== "ALL" && type !== "crm") {
+        const reason =
+          type === "historique"
+            ? STATUS_LABEL[item.status]?.reason || ""
+            : item.reason || "";
         if (reason !== statusFilter) return false;
       }
 
-      // Filtre agent
-      if (agentFilter && String(item.agentIaId) !== agentFilter) return false;
+      // Filtre agent — non applicable directement aux leads CRM bruts
+      if (agentFilter && type !== "crm") {
+        const itemAgentId = item.agentIaId?._id || item.agentIaId;
+        if (String(itemAgentId) !== agentFilter) return false;
+      }
 
       // Filtre campagne
-      if (campagneFilter && String(item.campagneId) !== campagneFilter)
-        return false;
+      if (campagneFilter) {
+        const itemCampagneId = item.campagneId?._id || item.campagneId;
+        if (String(itemCampagneId) !== campagneFilter) return false;
+      }
+
+      // ⚡ Filtre source — uniquement pertinent pour les scheduledCalls
+      // (les historiques n'ont pas de "source", les leads CRM comptent comme source=3)
+      if (sourceFilter !== "ALL") {
+        if (type === "historique") return false; // les historiques ne matchent aucune source
+        const itemSource = type === "crm" ? 3 : item.source || 1;
+        if (String(itemSource) !== String(sourceFilter)) return false;
+      }
 
       return true;
     },
-    [searchQuery, statusFilter, agentFilter, campagneFilter],
+    [searchQuery, statusFilter, agentFilter, campagneFilter, sourceFilter],
   );
 
   // ── Calcul du mois ────────────────────────────────────────
@@ -244,21 +296,33 @@ export default function CalendrierPage() {
         map[key].scheduled.push(s);
       });
 
+    crmLeads
+      .filter((l) => matchesFilters(l, "crm"))
+      .forEach((l) => {
+        if (!l.callbackDate) return;
+        const key = toLocalDateKey(new Date(l.callbackDate));
+        if (!map[key])
+          map[key] = { historiques: [], scheduled: [], crmLeads: [] };
+        map[key].crmLeads.push(l);
+      });
+
     return map;
-  }, [historiques, scheduledCalls, matchesFilters]);
+  }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
 
   // Compte total des résultats filtrés (tous mois confondus)
   const filteredTotal = useMemo(() => {
     const fH = historiques.filter((h) => matchesFilters(h, true)).length;
     const fS = scheduledCalls.filter((s) => matchesFilters(s, false)).length;
-    return fH + fS;
-  }, [historiques, scheduledCalls, matchesFilters]);
+    const fC = crmLeads.filter((l) => matchesFilters(l, "crm")).length;
+    return fH + fS + fC;
+  }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
 
   const hasActiveFilter =
     searchQuery.trim() !== "" ||
     statusFilter !== "ALL" ||
     agentFilter !== "" ||
     campagneFilter !== "";
+  sourceFilter !== "ALL";
 
   // ── Navigation ────────────────────────────────────────────
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
@@ -287,6 +351,36 @@ export default function CalendrierPage() {
       alert("Erreur lors de la suppression");
     }
   };
+
+  const renderSourceBadge = (source) => {
+    const def = getSourceDef(source);
+    return (
+      <span
+        className="calSourceBadge"
+        style={{ color: def.color, background: def.bg }}
+        title={`Source : ${def.label}`}
+      >
+        <i className={`bi ${def.icon} me-1`} />
+        {def.label}
+      </span>
+    );
+  };
+
+  const renderScheduledItem = (item) => (
+    <div key={item._id} className="calItem calItemScheduled">
+      {renderSourceBadge(item.source)}
+      <span className="calItemPhone">{item.calledNumber}</span>
+      <span className="calItemReason">{item.reason}</span>
+    </div>
+  );
+
+  const renderCrmLeadItem = (lead) => (
+    <div key={lead._id} className="calItem calItemCrm">
+      {renderSourceBadge(3)}
+      <span className="calItemPhone">{lead.telephone || "-"}</span>
+      <span className="calItemReason">{lead.nom || "Lead confirmé"}</span>
+    </div>
+  );
 
   // ── Rendu ─────────────────────────────────────────────────
   return (
@@ -324,6 +418,18 @@ export default function CalendrierPage() {
                 </button>
               )}
             </div>
+
+            <select
+              className="form-select mobile-min-width"
+              style={{ flex: 1 }}
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+            >
+              <option value="ALL">Toutes les sources</option>
+              <option value="1">Auto</option>
+              <option value="2">Manuel</option>
+              <option value="3">CRM</option>
+            </select>
 
             <select
               className="form-select mobile-min-width"
@@ -813,6 +919,22 @@ export default function CalendrierPage() {
                     </div>
                   );
                 })}
+
+                {/* ── SECTION : Leads CRM confirmés ── */}
+                <h6 className="fw-bold mt-4 mb-3 text-success">
+                  ✅ Leads CRM confirmés ({selectedDay.data.crmLeads?.length || 0})
+                </h6>
+
+                {selectedDay.data.crmLeads?.length === 0 && (
+                  <div className="alert alert-light text-muted">
+                    Aucun lead confirmé ce jour
+                    {hasActiveFilter && " (filtre actif)"}
+                  </div>
+                )}
+
+                {selectedDay.data.crmLeads?.map((lead) =>
+                  renderCrmLeadItem(lead),
+                )}
               </div>
             </div>
           </div>
