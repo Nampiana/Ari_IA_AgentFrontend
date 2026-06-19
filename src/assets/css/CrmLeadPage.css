@@ -1,0 +1,418 @@
+.crmSectionPage {
+    background: var(--gradient-body);
+    min-height: 100vh;
+}
+
+.crmSectionContainer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px 48px;
+}
+
+/* ── En-tête ── */
+.crmSectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.crmSectionHeader h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-h);
+    margin: 0 0 4px;
+}
+
+.crmSectionHeader p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.crmSectionActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.crmSectionSearch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-btn);
+    padding: 6px 12px;
+    min-width: 240px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.crmSectionSearch:focus-within {
+    border-color: var(--primary);
+    background: var(--input-bg-focus);
+}
+
+.crmSectionSearch i {
+    color: var(--gray-secondaire);
+    font-size: 0.9rem;
+}
+
+.crmSectionSearch input {
+    border: none;
+    outline: none;
+    font-size: 0.85rem;
+    width: 100%;
+    background: transparent;
+    color: var(--text);
+}
+
+.spin {
+    animation: crmSpin 0.8s linear infinite;
+}
+
+@keyframes crmSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Board / colonnes ── */
+.crmSectionBoard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .crmSectionBoard {
+        grid-template-columns: 1fr;
+    }
+}
+
+.crmSectionColumn {
+    background: var(--surface);
+    border-radius: var(--border-radius-card);
+    border: 1px solid var(--border);
+    min-height: 200px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.crmSectionColumn.dragOver {
+    background: var(--info-soft);
+    border-color: var(--info);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* ⚡ FIX — "fixed" sortait le header du flux et le collait à la fenêtre.
+   "sticky" le colle en haut de SA colonne scrollable (comportement Trello). */
+.crmSectionColumnHeader {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    height: 70px;
+    box-sizing: border-box;
+    border-bottom: 2px solid;
+    border-radius: var(--border-radius-card) var(--border-radius-card) 0 0;
+    background: var(--surface);
+}
+
+.crmSectionColumnTitle {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.crmSectionColumnCount {
+    color: var(--white-principale);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 2px 9px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.crmSectionColumnBody {
+    flex: 1;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 120px;
+}
+
+.crmSectionColumnEmpty {
+    color: var(--gray-secondaire);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 24px 0;
+}
+
+.crmSectionEmpty {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--muted);
+}
+
+/* ── Carte lead ── */
+.crmCard {
+    background: var(--white-bg-secondaire);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: grab;
+    transition: box-shadow 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+
+.crmCard:hover {
+    box-shadow: var(--shadow-primary);
+    transform: translateY(-1px);
+    border-color: var(--principale-border);
+}
+
+.crmCard:active {
+    cursor: grabbing;
+}
+
+.crmCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    gap: 8px;
+}
+
+.crmCardName {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-h);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crmCardBadgeDate {
+    font-size: 0.7rem;
+    color: var(--info);
+    background: var(--info-soft);
+    border-radius: 10px;
+    padding: 2px 7px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.crmCardPhone {
+    font-size: 0.8rem;
+    color: var(--gray-tertiaire);
+    margin-bottom: 4px;
+}
+
+.crmCardCompany {
+    font-size: 0.78rem;
+    color: var(--gray-secondaire);
+    margin-bottom: 6px;
+}
+
+.crmCardNote {
+    font-size: 0.78rem;
+    color: var(--text);
+    background: var(--white-principale);
+    border-left: 3px solid var(--principale-border);
+    border-radius: 0 6px 6px 0;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.crmCardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--gray-secondaire);
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+}
+
+.crmCardCampagne {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crmCardAssigned {
+    font-weight: 600;
+    color: var(--gray-secondaire);
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* ── Modal détail ── */
+.crmModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.crmModalContent {
+    background: var(--modal-bg);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+}
+
+.crmModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.crmModalHeader h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-h);
+}
+
+.crmModalClose {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--close-bg);
+    color: var(--close-text);
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.crmModalClose:hover {
+    background: var(--close-bg-hover);
+}
+
+.crmModalBody {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.crmModalRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--text);
+    padding: 6px 0;
+}
+
+.crmModalRow i {
+    color: var(--gray-secondaire);
+    width: 18px;
+}
+
+.crmModalDivider {
+    border-top: 1px solid var(--border);
+    margin: 12px 0;
+}
+
+.crmModalLabel {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--label-color);
+    margin: 10px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.crmModalStatusGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.crmStatusBtn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid transparent;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, font-weight 0.15s ease, transform 0.1s ease;
+}
+
+.crmStatusBtn:hover {
+    transform: translateY(-1px);
+}
+
+.crmStatusBtn.active {
+    font-weight: 700;
+}
+
+.crmModalInput,
+.crmModalTextarea {
+    width: 100%;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--text);
+    margin-bottom: 8px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.crmModalInput:focus,
+.crmModalTextarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--input-bg-focus);
+}
+
+.crmModalTextarea {
+    resize: vertical;
+}
+
+.crmModalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+}
