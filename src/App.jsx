@@ -11,6 +11,7 @@ import ListsPage from "./pages/lists/listsPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import Historique from "./pages/historique/HistoriquesPage.jsx";
 import SettingsIAPage from "./pages/settingIA/SettingIaPage.jsx";
+import CrmLeadPage from "./pages/crmLead/crmLeadPage.jsx";
 
 import ToastMessage from "./components/alert/toastMessage.js";
 import { AuthProvider, AuthContext } from "./context/AuthContext.jsx";
@@ -85,6 +86,15 @@ function AppRoutes({ showToast }) {
         element={
           <PrivateRoute>
             <SettingsIAPage showToast={showToast} />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/crm-lead"
+        element={
+          <PrivateRoute>
+            <CrmLeadPage showToast={showToast} />
           </PrivateRoute>
         }
       />

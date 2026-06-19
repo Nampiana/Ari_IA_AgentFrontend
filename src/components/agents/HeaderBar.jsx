@@ -91,6 +91,14 @@ export default function HeaderBar() {
           </Link>
 
           <Link
+            to="/crm-lead"
+            onClick={() => setOpen(false)}
+            className={`headerLink ${location.pathname === "/crm-lead" ? "active" : ""}`}
+          >
+            CRM
+          </Link>
+
+          <Link
             to="/calendrier"
             onClick={() => setOpen(false)}
             className={`headerLink ${location.pathname === "/calendrier" ? "active" : ""}`}

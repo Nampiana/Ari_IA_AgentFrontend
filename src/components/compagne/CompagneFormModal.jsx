@@ -5,7 +5,9 @@ const getInitialFormData = (selectedCompagne) => ({
   numero: selectedCompagne?.numero || "",
   script: selectedCompagne?.script || "",
   id_ia: selectedCompagne?.id_ia?._id || selectedCompagne?.id_ia || "",
-  fiche: selectedCompagne?.fiche?._id || selectedCompagne?.fiche || "",
+  fiches: Array.isArray(selectedCompagne?.fiches)
+    ? selectedCompagne.fiches.map((f) => f?._id || f)
+    : [],
   active: selectedCompagne?.active ?? 1,
   dialTimeout: selectedCompagne?.dialTimeout ?? 30,
   maxConcurrentCalls: selectedCompagne?.maxConcurrentCalls ?? 1,
@@ -37,6 +39,18 @@ export default function CompagneFormModal({
         ? Number(value)
         : value,
     }));
+  };
+
+  const toggleFiche = (listId) => {
+    setFormData((prev) => {
+      const exists = prev.fiches.includes(listId);
+      return {
+        ...prev,
+        fiches: exists
+          ? prev.fiches.filter((id) => id !== listId)
+          : [...prev.fiches, listId],
+      };
+    });
   };
 
   const handleSubmit = (e) => {
@@ -78,18 +92,6 @@ export default function CompagneFormModal({
             </div>
 
             <div className="formGroup">
-              <label>Fiche (liste CSV)</label>
-              <select name="fiche" value={formData.fiche} onChange={handleChange}>
-                <option value="">Sélectionner une fiche</option>
-                {lists.map((list) => (
-                  <option key={list._id} value={list._id}>
-                    {list.nomFiche}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="formGroup">
               <label>Agent IA associé</label>
               <select name="id_ia" value={formData.id_ia} onChange={handleChange}>
                 <option value="">Sélectionner un agent</option>
@@ -124,6 +126,34 @@ export default function CompagneFormModal({
               />
             </div>
 
+          </div>
+
+          {/* Sélection multiple des fiches (listes CSV) */}
+          <div className="formGroup full">
+            <label>
+              Fiches (listes CSV)
+              <span className="formHint"> (plusieurs listes possibles)</span>
+            </label>
+            <div className="fichesCheckList">
+              {lists.length === 0 && (
+                <div className="formHint">Aucune liste disponible</div>
+              )}
+              {lists.map((list) => (
+                <label key={list._id} className="ficheCheckItem">
+                  <input
+                    type="checkbox"
+                    checked={formData.fiches.includes(list._id)}
+                    onChange={() => toggleFiche(list._id)}
+                  />
+                  <span>{list.nomFiche}</span>
+                </label>
+              ))}
+            </div>
+            {formData.fiches.length > 0 && (
+              <div className="formHint">
+                {formData.fiches.length} liste(s) sélectionnée(s)
+              </div>
+            )}
           </div>
 
           {/* Slider appels simultanés */}
