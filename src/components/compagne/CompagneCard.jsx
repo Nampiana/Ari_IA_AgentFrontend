@@ -76,6 +76,39 @@ export default function CompagneCard({
             <span className="concurrentCount">{compagne.maxConcurrentCalls ?? 1}</span>
           </div>
         </div>
+
+        <div>
+          <span className="label">Jours autorisés</span>
+          <div>
+            {compagne.allowedDays?.length
+              ? compagne.allowedDays
+                .map((d) =>
+                ({
+                  0: "Dim",
+                  1: "Lun",
+                  2: "Mar",
+                  3: "Mer",
+                  4: "Jeu",
+                  5: "Ven",
+                  6: "Sam",
+                }[d]),
+                )
+                .join(", ")
+              : "Lun - Ven"}
+          </div>
+        </div>
+
+        <div>
+          <span className="label">Horaires</span>
+          <div>
+            {compagne.startHour || "08:00"} - {compagne.endHour || "21:00"}
+          </div>
+        </div>
+
+        <div>
+          <span className="label">Fuseau</span>
+          <div>{compagne.timeZone || "Europe/Paris"}</div>
+        </div>
       </div>
 
       <div className="compagneScriptBlock">
