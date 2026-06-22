@@ -90,7 +90,7 @@ const REASON_LABEL = {
   SALE: "Vente / RDV",
   SVI:"SVI",
 };
- 6=SVI
+
 const STATUS_LABEL = {
   1: { label: "Non intéressé", cls: "bg-danger", reason: "NI" },
   2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
