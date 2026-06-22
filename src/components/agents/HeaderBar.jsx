@@ -74,13 +74,13 @@ export default function HeaderBar() {
             Listes
           </Link>
 
-          <Link
+          {/* <Link
             to="/tester"
             onClick={() => setOpen(false)}
             className={`headerLink ${location.pathname === "/tester" ? "active" : ""}`}
           >
             Test profil
-          </Link>
+          </Link> */}
 
           <Link
             to="/historique"
