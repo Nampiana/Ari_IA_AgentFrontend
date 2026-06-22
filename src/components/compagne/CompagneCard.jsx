@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function CompagneCard({
   compagne,
   onEdit,
@@ -17,12 +16,11 @@ export default function CompagneCard({
               {compagne.active === 1 ? "Actif" : "Inactif"}
             </span>
             <span className={`badge ${compagne.maxConcurrentCalls > 1 ? "badgeConcurrent" : "badgeSeq"}`}>
-              <i className="bi bi-telephone-fill" style={{ color: "#10b981" }} />  {/* orange */}
-              <span style={{ color: "#10b981" }}>×{compagne.maxConcurrentCalls ?? 1}</span>  {/* vert */}
+              <i className="bi bi-telephone-fill" style={{ color: "#10b981" }} />
+              <span style={{ color: "#10b981" }}>×{compagne.maxConcurrentCalls ?? 1}</span>
             </span>
           </div>
         </div>
-
         <div className="compagneStatusWrap">
           <button
             type="button"
@@ -32,7 +30,6 @@ export default function CompagneCard({
             <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
             {compagne.isRunning === 1 ? " Arrêter" : " Lancer"}
           </button>
-
           <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
             Modifier
           </button>
@@ -41,13 +38,11 @@ export default function CompagneCard({
           </button>
         </div>
       </div>
-
       <div className="compagneMetaGrid">
         <div>
           <span className="label">Numéro</span>
           <div>{compagne.numero || "-"}</div>
         </div>
-
         <div>
           <span className="label">Fiches</span>
           <div>
@@ -56,17 +51,32 @@ export default function CompagneCard({
               : "Non définies"}
           </div>
         </div>
-
         <div>
           <span className="label">Agent IA</span>
           <div>{compagne.id_ia?.nomAgent || "Non défini"}</div>
         </div>
-
         <div>
           <span className="label">Timeout</span>
           <div>{compagne.dialTimeout ?? 30}s</div>
         </div>
-
+        <div>
+          <span className="label">Appels disponibles</span>
+          <div>{compagne.callStats?.appelsDisponibles ?? 0}</div>
+        </div>
+        <div>
+          <span className="label">Fiches disponibles</span>
+          {compagne.callStats?.parListe?.length > 0 ? (
+            <div className="formHint">
+              {compagne.callStats.parListe.map((l) => (
+                <div key={l.listId}>
+                  {l.nomFiche} : {l.disponible} disponible(s) sur {l.total}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>0</div>
+          )}
+        </div>
         <div>
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
@@ -77,7 +87,6 @@ export default function CompagneCard({
           </div>
         </div>
       </div>
-
       <div className="compagneScriptBlock">
         <span className="label">Script final</span>
         <p>{compagne.scriptFinal || compagne.script}</p>

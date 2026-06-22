@@ -13,6 +13,7 @@ const STATUSES = [
     icon: "bi-hand-thumbs-down",
     label: "Pas intéressé",
   },
+  { value: 6, label: "SVI", color: "#0891b2", icon: "bi-telephone-inbound-fill" }
 ];
 
 export default function StatusDropdown({ itemId, status, onStatusChange }) {

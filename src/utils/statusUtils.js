@@ -5,6 +5,7 @@ export const getStatusLabel = (status) => {
   if (value === 4) return "OCCUPÉ";
   if (value === 1) return "PAS_INTÉRESSÉ";
   if (value === 5) return "RÉPONDEUR";
+  if (value === 6) return "SVI";
   return "INCONNU";
 };
 
@@ -15,5 +16,6 @@ export const getStatusClass = (status) => {
   if (value === 4) return "OCCUPÉ";
   if (value === 1) return "PAS_INTÉRESSÉ";
   if (value === 5) return "RÉPONDEUR";
+  if (value === 6) return "SVI";
   return "default";
 };

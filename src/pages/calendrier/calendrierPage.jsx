@@ -47,6 +47,7 @@ const REASON_COLOR = {
   OCCUPE: "bg-gris",
   REPONDEUR: "bg-info",
   SALE: "bg-success",
+  SVI:       "bg-cyan", 
 };
 
 const REASON_LABEL = {
@@ -56,14 +57,16 @@ const REASON_LABEL = {
   OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
   SALE: "Vente / RDV",
+  SVI:"SVI",
 };
-// status MongoDB : 1=NI, 2=SALE, 3=CALLBACK, 4=OCCUPE, 5=REPONDEUR
+// status MongoDB : 1=NI, 2=SALE, 3=CALLBACK, 4=OCCUPE, 5=REPONDEUR 6=SVI
 const STATUS_LABEL = {
   1: { label: "Non intéressé", cls: "bg-danger", reason: "NI" },
   2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
   3: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
   4: { label: "Occupé", cls: "bg-gris", reason: "OCCUPE" },
   5: { label: "Répondeur", cls: "bg-info", reason: "REPONDEUR" },
+  6: { label: "SVI", cls: "bg-cyan text-dark", reason: "SVI" },
   CALLBACK: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" }, // ← alias
 };
 
@@ -83,6 +86,8 @@ const FILTER_CHIPS = [
     dotCls: "bg-gris",
   },
   { key: "REPONDEUR", label: "Répondeur", cls: "btn-info", dotCls: "bg-info" },
+  { key: "SVI", label: "SVI", cls: "btn-cyan", dotCls: "bg-cyan" },
+
   {
     key: "SALE",
     label: "Vente / RDV",
@@ -407,6 +412,7 @@ export default function CalendrierPage() {
             { cls: "bg-gris", label: "Occupé" },
             { cls: "bg-info", label: "Répondeur" },
             { cls: "bg-success", label: "RDV / Vente" },
+            { cls: "bg-cyan", label: "SVI" },
           ].map(({ cls, label }) => (
             <div key={label} className="d-flex align-items-center gap-2">
               <span

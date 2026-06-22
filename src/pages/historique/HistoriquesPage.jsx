@@ -88,48 +88,20 @@ const hasActiveFilters = (
   timeEnd !== "";
 
 // ── Qualifications ────────────────────────────────────────────────────────────
+// Après la définition de status "1" (Pas intéressé) :
 const STATUS_DEFS = [
-  {
-    key: "2",
-    label: "Réussi",
-    color: "#16a34a",
-    bg: "#dcfce7",
-    icon: "bi-check-circle-fill",
-  },
-  {
-    key: "3",
-    label: "Rappel",
-    color: "#2563eb",
-    bg: "#dbeafe",
-    icon: "bi-arrow-repeat",
-  },
-  {
-    key: "4",
-    label: "Occupé",
-    color: "#d97706",
-    bg: "#fef3c7",
-    icon: "bi-telephone-x-fill",
-  },
-  {
-    key: "5",
-    label: "Répondeur",
-    color: "#7c3aed",
-    bg: "#ede9fe",
-    icon: "bi-voicemail",
-  },
-  {
-    key: "1",
-    label: "Pas intéressé",
-    color: "#6b7280",
-    bg: "#f3f4f6",
-    icon: "bi-x-circle-fill",
-  },
+  { key: "2", label: "Réussi",        color: "#16a34a", bg: "#dcfce7", icon: "bi-check-circle-fill" },
+  { key: "3", label: "Rappel",        color: "#2563eb", bg: "#dbeafe", icon: "bi-arrow-repeat" },
+  { key: "4", label: "Occupé",        color: "#d97706", bg: "#fef3c7", icon: "bi-telephone-x-fill" },
+  { key: "5", label: "Répondeur",     color: "#7c3aed", bg: "#ede9fe", icon: "bi-voicemail" },
+  { key: "1", label: "Pas intéressé", color: "#6b7280", bg: "#f3f4f6", icon: "bi-x-circle-fill" },
+  { key: "6", label: "SVI",           color: "#0891b2", bg: "#cffafe", icon: "bi-telephone-inbound-fill" }, // ← nouveau
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
 // ⚡ FIX bug badges invisibles : on force toutes les clés en string
 const normalizeStatusCounts = (raw = {}) => {
-  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
   Object.entries(raw).forEach(([k, v]) => {
     result[String(k)] = Number(v) || 0;
   });
@@ -220,6 +192,7 @@ export default function HistoriquesPage({ showToast }) {
     3: 0,
     4: 0,
     5: 0,
+    6: 0,
   });
 
   const { getAgents } = useAgent();
@@ -612,6 +585,7 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="4">OCCUPÉ</option>
                     <option value="5">RÉPONDEUR</option>
                     <option value="1">PAS INTÉRESSÉ</option>
+                    <option value="6">SVI</option>
                   </select>
                   <select
                     className="historiquesFilterSelect"

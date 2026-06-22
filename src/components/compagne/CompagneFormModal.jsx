@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const getInitialFormData = (selectedCompagne) => ({
   nomCompagne: selectedCompagne?.nomCompagne || "",
@@ -12,6 +12,72 @@ const getInitialFormData = (selectedCompagne) => ({
   dialTimeout: selectedCompagne?.dialTimeout ?? 30,
   maxConcurrentCalls: selectedCompagne?.maxConcurrentCalls ?? 1,
 });
+
+function FichesMultiSelect({ lists, selectedIds, onToggle }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedLists = lists.filter((l) => selectedIds.includes(l._id));
+
+  return (
+    <div className="multiSelectWrapper" ref={containerRef}>
+      <button
+        type="button"
+        className="multiSelectTrigger"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        {selectedLists.length === 0 ? (
+          <span className="multiSelectPlaceholder">Sélectionner une ou plusieurs fiches</span>
+        ) : (
+          <div className="multiSelectTags">
+            {selectedLists.map((list) => (
+              <span key={list._id} className="multiSelectTag">
+                {list.nomFiche}
+                <i
+                  className="bi bi-x"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggle(list._id);
+                  }}
+                />
+              </span>
+            ))}
+          </div>
+        )}
+        <i className={`bi bi-chevron-${open ? "up" : "down"} multiSelectChevron`} />
+      </button>
+
+      {open && (
+        <div className="multiSelectDropdown">
+          {lists.length === 0 ? (
+            <div className="formHint multiSelectEmpty">Aucune liste disponible</div>
+          ) : (
+            lists.map((list) => (
+              <label key={list._id} className="multiSelectOption">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(list._id)}
+                  onChange={() => onToggle(list._id)}
+                />
+                <span>{list.nomFiche}</span>
+              </label>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CompagneFormModal({
   open,
@@ -128,27 +194,17 @@ export default function CompagneFormModal({
 
           </div>
 
-          {/* Sélection multiple des fiches (listes CSV) */}
+          {/* Sélection multiple des fiches (listes CSV) — dropdown */}
           <div className="formGroup full">
             <label>
               Fiches (listes CSV)
               <span className="formHint"> (plusieurs listes possibles)</span>
             </label>
-            <div className="fichesCheckList">
-              {lists.length === 0 && (
-                <div className="formHint">Aucune liste disponible</div>
-              )}
-              {lists.map((list) => (
-                <label key={list._id} className="ficheCheckItem">
-                  <input
-                    type="checkbox"
-                    checked={formData.fiches.includes(list._id)}
-                    onChange={() => toggleFiche(list._id)}
-                  />
-                  <span>{list.nomFiche}</span>
-                </label>
-              ))}
-            </div>
+            <FichesMultiSelect
+              lists={lists}
+              selectedIds={formData.fiches}
+              onToggle={toggleFiche}
+            />
             {formData.fiches.length > 0 && (
               <div className="formHint">
                 {formData.fiches.length} liste(s) sélectionnée(s)
