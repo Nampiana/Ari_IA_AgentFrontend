@@ -106,13 +106,13 @@ export default function HeaderBar() {
             Calendrier
           </Link>
 
-          <Link
+          {/* <Link
             to="/settings-ia"
             onClick={() => setOpen(false)}
             className={`headerLink ${location.pathname === "/settings-ia" ? "active" : ""}`}
           >
             Paramètres
-          </Link>
+          </Link> */}
 
 
           <div className="headerUserSection">
