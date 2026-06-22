@@ -70,9 +70,9 @@ export default function CompagneCard({
         <div>
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
-            {Array.from({ length: compagne.maxConcurrentCalls ?? 1 }).map((_, i) => (
-              <i key={i} className="bi bi-telephone-fill concurrentDot" />
-            ))}
+            {/* {Array.from({ length: compagne.maxConcurrentCalls ?? 1 }).map((_, i) => ( */}
+              <i className="bi bi-telephone-fill concurrentDot" />
+            {/* ))} */}
             <span className="concurrentCount">{compagne.maxConcurrentCalls ?? 1}</span>
           </div>
         </div>
