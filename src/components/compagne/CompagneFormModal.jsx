@@ -11,6 +11,17 @@ const getInitialFormData = (selectedCompagne) => ({
   active: selectedCompagne?.active ?? 1,
   dialTimeout: selectedCompagne?.dialTimeout ?? 30,
   maxConcurrentCalls: selectedCompagne?.maxConcurrentCalls ?? 1,
+  allowedDays: Array.isArray(selectedCompagne?.allowedDays)
+    ? selectedCompagne.allowedDays
+    : [1, 2, 3, 4, 5],
+
+  startHour: selectedCompagne?.startHour || "08:00",
+  endHour: selectedCompagne?.endHour || "21:00",
+  timeZone: selectedCompagne?.timeZone || "Europe/Paris",
+
+  startHour: selectedCompagne?.startHour || "08:00",
+  endHour: selectedCompagne?.endHour || "21:00",
+  timeZone: selectedCompagne?.timeZone || "Europe/Paris",
 });
 
 export default function CompagneFormModal({
@@ -22,6 +33,16 @@ export default function CompagneFormModal({
   lists = [],
 }) {
   const [formData, setFormData] = useState(() => getInitialFormData(selectedCompagne));
+
+  const DAYS = [
+    { value: 1, label: "Lundi" },
+    { value: 2, label: "Mardi" },
+    { value: 3, label: "Mercredi" },
+    { value: 4, label: "Jeudi" },
+    { value: 5, label: "Vendredi" },
+    { value: 6, label: "Samedi" },
+    { value: 0, label: "Dimanche" },
+  ];
 
   useEffect(() => {
     if (open) {
@@ -55,7 +76,25 @@ export default function CompagneFormModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ ...formData, id_ia: formData.id_ia || null });
+    onSubmit({
+      ...formData,
+      id_ia: formData.id_ia || null,
+      startDate: formData.startDate || null,
+      endDate: formData.endDate || null,
+    });
+  };
+
+  const toggleDay = (dayValue) => {
+    setFormData((prev) => {
+      const exists = prev.allowedDays.includes(dayValue);
+
+      return {
+        ...prev,
+        allowedDays: exists
+          ? prev.allowedDays.filter((d) => d !== dayValue)
+          : [...prev.allowedDays, dayValue],
+      };
+    });
   };
 
   return (
@@ -124,6 +163,59 @@ export default function CompagneFormModal({
                 value={formData.dialTimeout}
                 onChange={handleChange}
               />
+            </div>
+
+            <div className="formGroup full">
+              <label>Jours autorisés</label>
+
+              <div className="fichesCheckList">
+                {DAYS.map((day) => (
+                  <label key={day.value} className="ficheCheckItem">
+                    <input
+                      type="checkbox"
+                      checked={formData.allowedDays.includes(day.value)}
+                      onChange={() => toggleDay(day.value)}
+                    />
+                    <span>{day.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="formHint">
+                Exemple : cochez lundi à vendredi pour autoriser les appels en semaine.
+              </div>
+            </div>
+
+            <div className="formGroup">
+              <label>Heure début</label>
+              <input
+                type="time"
+                name="startHour"
+                value={formData.startHour}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="formGroup">
+              <label>Heure fin</label>
+              <input
+                type="time"
+                name="endHour"
+                value={formData.endHour}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="formGroup">
+              <label>Fuseau horaire</label>
+              <select
+                name="timeZone"
+                value={formData.timeZone}
+                onChange={handleChange}
+              >
+                <option value="Europe/Paris">Europe/Paris</option>
+                <option value="Indian/Antananarivo">Madagascar</option>
+              </select>
             </div>
 
           </div>
