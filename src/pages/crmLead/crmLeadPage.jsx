@@ -30,6 +30,16 @@ const COLUMNS = [
   },
 ];
 
+function getInitials(nom) {
+  if (!nom) return "SN";
+  return nom
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 const formatDate = (date) => {
   if (!date) return "-";
   const d = new Date(date);
@@ -66,24 +76,22 @@ function formatDateTime(date) {
   });
 }
 
-function LeadCard({ lead, onDragStart, onOpen, onArchive }) {
+function LeadCard({ lead, onDragStart, onDragEnd, onOpen, onArchive }) {
   const recordUrl = buildRecordUrl(lead.historiqueId?.pathRecord);
-
   return (
     <div
       className="crmCard"
       draggable
       onDragStart={(e) => onDragStart(e, lead._id)}
+      onDragEnd={onDragEnd}   // ← ajouter cette ligne
       onClick={() => onOpen(lead)}
     >
       <div className="crmCardHeader">
-        <span className="crmCardName">
-          <i className="bi bi-person-fill me-1" />
-          {lead.nom || "Sans nom"}
-        </span>
+        <div className="crmCardAvatar">{getInitials(lead.nom)}</div>
+        <span className="crmCardName">{lead.nom || "Sans nom"}</span>
         {lead.callbackDate && (
           <span className="crmCardBadgeDate">
-            <i className="bi bi-calendar-event me-1" />
+            <i className="bi bi-calendar-event" />
             {formatDate(lead.callbackDate)}
           </span>
         )}
@@ -98,8 +106,18 @@ function LeadCard({ lead, onDragStart, onOpen, onArchive }) {
       </div>
 
       <div className="crmCardPhone">
-        <i className="bi bi-telephone-fill me-1" />
-        {lead.telephone || "-"}
+        {lead?.historiqueId?.typeCall == 2 ? (
+          <i
+            className="bi bi-telephone-inbound-fill"
+            style={{ color: "rgb(108, 192, 112)" }}
+          />
+        ) : (
+          <i
+            className="bi bi-telephone-outbound-fill"
+            style={{ color: "rgb(0, 231, 235)" }}
+          />
+        )}
+        <span style={{ marginLeft: "5px" }}>{lead.telephone || "-"}</span>
       </div>
 
       {lead.entreprise && (
@@ -219,7 +237,11 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
           {lead.historiqueId && (
             <div className="crmModalCallOrigin">
               <div className="crmModalCallOriginHeader">
-                <i className="bi bi-telephone-fill" />
+                {lead?.historiqueId?.typeCall == 2 ? (
+                  <i className="bi bi-telephone-inbound-fill" />
+                ) : (
+                  <i className="bi bi-telephone-outbound-fill" />
+                )}
                 <span>Appel d'origine</span>
                 <span className="crmModalCallOriginDate">
                   {formatDateTime(lead.historiqueId.callDate)}
@@ -573,20 +595,22 @@ export default function CrmLeadPage({ showToast }) {
                   onDragLeave={() => setDragOverCol(null)}
                   onDrop={(e) => handleDrop(e, col.key)} // drop sur zone vide de colonne = fin de liste
                 >
-                  <div
-                    className="crmSectionColumnHeader"
-                    style={{ borderColor: col.color }}
-                  >
+                  <div className="crmSectionColumnHeader">
+                    <div
+                      className="crmSectionColumnIcon"
+                      style={{ background: col.bg, color: col.color }}
+                    >
+                      <i className={`bi ${col.icon}`} />
+                    </div>
                     <span
                       className="crmSectionColumnTitle"
                       style={{ color: col.color }}
                     >
-                      <i className={`bi ${col.icon} me-2`} />
                       {col.title}
                     </span>
                     <span
                       className="crmSectionColumnCount"
-                      style={{ background: col.color }}
+                      style={{ background: col.bg, color: col.color }}
                     >
                       {leadsByColumn[col.key]?.length ?? 0}
                     </span>

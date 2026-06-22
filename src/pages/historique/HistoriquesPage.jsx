@@ -937,13 +937,18 @@ export default function HistoriquesPage({ showToast }) {
 
                           <td>
                             <div className="fw-semibold">
-                              <i className="bi bi-telephone-outbound me-2" />
-                              {item.calledNumber || "-"}
+                              {/* Ajout icon different dont voir la condition typeCall=1 entrant et typeCall=2 sortant et si c'est null on met 1*/}
+                              {item.typeCall == 2 ? (
+                                <i className="bi bi-telephone-inbound-fill" style={{color: "rgb(108, 192, 112)"}}/>
+                              ) : (
+                                <i className="bi bi-telephone-outbound-fill" style={{ color: "rgb(0, 231, 235)" }} />
+                              )}
+                              <span style={{marginLeft:"5px"}}>{item.calledNumber || "-"}</span>                              
                             </div>
                             <small className="text-muted">
                               Canal : {item.channelId || "-"}
                             </small>
-                          </td>
+                          </td>                              
 
                           <td>
                             <div className="fw-semibold">

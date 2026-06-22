@@ -388,9 +388,6 @@ export default function CalendrierPage() {
           _pathRecord: l.historiqueId?.pathRecord,
         });
       });
-
-    console.log(crmLeads);
-
     return map;
   }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
 
