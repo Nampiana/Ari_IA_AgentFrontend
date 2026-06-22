@@ -256,3 +256,7 @@
     font-size: 12px;
     padding: 4px 10px;
 }
+/* Dans ton fichier CSS global ou HistoriquesPage.css / calendrierPage.css */
+.bg-cyan    { background-color: #0891b2 !important; }
+.btn-cyan   { background-color: #cffafe; color: #0891b2; border-color: #0891b2; }
+.btn-cyan:hover { background-color: #0891b2; color: #fff; }

@@ -346,3 +346,116 @@
   margin-top: 4px;
   padding: 0 2px;
 }
+
+/* ── Multi-select dropdown pour les fiches ── */
+.multiSelectWrapper {
+  position: relative;
+}
+
+.multiSelectTrigger {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white-border);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease;
+}
+
+
+.multiSelectPlaceholder {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.multiSelectTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.multiSelectTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ede9fe;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.multiSelectTag i {
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.multiSelectTag i:hover {
+  opacity: 1;
+}
+
+.multiSelectChevron {
+  color: var(--muted);
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.multiSelectDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--gradient-body);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  z-index: 30;
+  padding: 6px;
+}
+
+label.multiSelectOption {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--dark-principale);
+  width: 100%;
+}
+
+label.multiSelectOption input[type="checkbox"] {
+  accent-color: #7c3aed;
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+  width: auto !important;
+}
+
+label.multiSelectOption span {
+  flex: none !important;
+  text-align: left;
+  width: auto !important;
+}
+
+.multiSelectEmpty {
+  padding: 8px 10px;
+}
+
+.multiSelectOption:hover {
+  background: var(--white-border);
+}
