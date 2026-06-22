@@ -22,6 +22,7 @@ export default function CompagnesPage({ showToast }) {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCompagne, setSelectedCompagne] = useState(null);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     compagne: null,
@@ -163,6 +164,7 @@ export default function CompagnesPage({ showToast }) {
 
   const handleSubmit = async (payload) => {
     try {
+      setLoadingUpdate(true);
       if (selectedCompagne?._id) {
         const updated = await updateCompagne(selectedCompagne._id, payload);
         const updatedData = updated?.data?.data;
@@ -179,9 +181,11 @@ export default function CompagnesPage({ showToast }) {
       }
       setModalOpen(false);
       setSelectedCompagne(null);
+      setLoadingUpdate(false);
     } catch (error) {
       console.error("Erreur enregistrement campagne :", error);
       showToast("Erreur lors de l'enregistrement", "danger");
+      setLoadingUpdate(false);
     }
   };
 
@@ -238,6 +242,7 @@ export default function CompagnesPage({ showToast }) {
         selectedCompagne={selectedCompagne}
         agents={agents}
         lists={lists}
+        loadingUpdate={loadingUpdate}
       />
 
       {deleteModal.open && (

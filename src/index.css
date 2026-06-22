@@ -318,3 +318,68 @@ body {
   box-shadow: var(--shadow);
   font-size: 15px;
 }
+
+/* SPINNER */
+
+.loadingSpinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--white-principale);
+  border-radius: 50%;
+  animation: spinnerRotate 0.7s linear infinite;
+}
+
+@keyframes spinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btnPrimary .loadingSpinner {
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: var(--white-principale);
+}
+
+.btnGhost .loadingSpinner,
+.btn-outline-secondary .loadingSpinner {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: var(--gray-principale);
+}
+
+.agentModal--loading {
+  pointer-events: none;
+  user-select: none;
+}
+
+.agentModal--loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: inherit;
+  z-index: 10;
+}
+
+.agentModal {
+  position: relative;
+}
+
+/* spinner déjà existant — à ajouter si pas encore présent */
+.loadingSpinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--white-principale);
+  border-radius: 50%;
+  animation: spinnerRotate 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
