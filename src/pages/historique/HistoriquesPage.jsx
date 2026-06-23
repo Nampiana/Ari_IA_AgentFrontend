@@ -65,7 +65,6 @@ const buildRecordUrl = (pathRecord) => {
   return `${base}/files/${pathRecord}`;
 };
 
-
 const hasActiveFilters = (
   search,
   selectedStatus,
@@ -92,12 +91,48 @@ const hasActiveFilters = (
 // ── Qualifications ────────────────────────────────────────────────────────────
 // Après la définition de status "1" (Pas intéressé) :
 const STATUS_DEFS = [
-  { key: "2", label: "Réussi", color: "#16a34a", bg: "#dcfce7", icon: "bi-check-circle-fill" },
-  { key: "3", label: "Rappel", color: "#2563eb", bg: "#dbeafe", icon: "bi-arrow-repeat" },
-  { key: "4", label: "Occupé", color: "#d97706", bg: "#fef3c7", icon: "bi-telephone-x-fill" },
-  { key: "5", label: "Répondeur", color: "#7c3aed", bg: "#ede9fe", icon: "bi-voicemail" },
-  { key: "1", label: "Pas intéressé", color: "#6b7280", bg: "#f3f4f6", icon: "bi-x-circle-fill" },
-  { key: "6", label: "SVI", color: "#0891b2", bg: "#cffafe", icon: "bi-telephone-inbound-fill" }, // ← nouveau
+  {
+    key: "2",
+    label: "Réussi",
+    color: "#16a34a",
+    bg: "#dcfce7",
+    icon: "bi-check-circle-fill",
+  },
+  {
+    key: "3",
+    label: "Rappel",
+    color: "#2563eb",
+    bg: "#dbeafe",
+    icon: "bi-arrow-repeat",
+  },
+  {
+    key: "4",
+    label: "Occupé",
+    color: "#d97706",
+    bg: "#fef3c7",
+    icon: "bi-telephone-x-fill",
+  },
+  {
+    key: "5",
+    label: "Répondeur",
+    color: "#7c3aed",
+    bg: "#ede9fe",
+    icon: "bi-voicemail",
+  },
+  {
+    key: "1",
+    label: "Pas intéressé",
+    color: "#6b7280",
+    bg: "#f3f4f6",
+    icon: "bi-x-circle-fill",
+  },
+  {
+    key: "6",
+    label: "SVI",
+    color: "#0891b2",
+    bg: "#cffafe",
+    icon: "bi-telephone-inbound-fill",
+  }, // ← nouveau
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
@@ -286,7 +321,6 @@ export default function HistoriquesPage({ showToast }) {
       if (timeEnd) params.timeEnd = timeEnd;
 
       const res = await getHistoriques(params);
-
       setHistoriques(res?.data?.data || []);
       setTotalPages(res?.data?.totalPages || 1);
       setTotalResults(res?.data?.totalResults || 0);
@@ -503,7 +537,9 @@ export default function HistoriquesPage({ showToast }) {
               </div>
               <div className="historiquesCounter">
                 <i className="bi bi-cash-coin" />
-                <span>Coût télécom estimé : {formatTelecomCost(totalTelecomCost)}</span>
+                <span>
+                  Coût télécom estimé : {formatTelecomCost(totalTelecomCost)}
+                </span>
               </div>
 
               {/* ⚡ Badges qualification avec comptages ── */}
@@ -667,7 +703,7 @@ export default function HistoriquesPage({ showToast }) {
                       className="historiquesDateInput"
                       value={dateStart}
                       onChange={(e) => {
-                        setDateStart(e.target.value)
+                        setDateStart(e.target.value);
                       }}
                     />
                     <span className="historiquesDateSeparator">→</span>
@@ -676,7 +712,7 @@ export default function HistoriquesPage({ showToast }) {
                       className="historiquesDateInput"
                       value={dateEnd}
                       onChange={(e) => {
-                        setDateEnd(e.target.value)
+                        setDateEnd(e.target.value);
                       }}
                     />
                   </div>
@@ -936,14 +972,27 @@ export default function HistoriquesPage({ showToast }) {
 
                           <td>
                             <div className="fw-semibold">
-                              {/* Ajout icon different dont voir la condition typeCall=1 entrant et typeCall=2 sortant et si c'est null on met 1*/}
                               {item.typeCall == 2 ? (
-                                <i className="bi bi-telephone-inbound-fill" style={{ color: "rgb(108, 192, 112)" }} />
+                                <i
+                                  className="bi bi-telephone-inbound-fill"
+                                  style={{ color: "rgb(108, 192, 112)" }}
+                                />
                               ) : (
-                                <i className="bi bi-telephone-outbound-fill" style={{ color: "rgb(0, 231, 235)" }} />
+                                <i
+                                  className="bi bi-telephone-outbound-fill"
+                                  style={{ color: "rgb(0, 231, 235)" }}
+                                />
                               )}
-                              <span style={{ marginLeft: "5px" }}>{item.calledNumber || "-"}</span>
+                              <span style={{ marginLeft: "5px" }}>
+                                {item.calledNumber || "-"}
+                              </span>
                             </div>
+                            {item.fiche?.nom && (
+                              <small className="text-muted d-block">
+                                <i className="bi bi-person me-1" />
+                                {item.fiche.nom}
+                              </small>
+                            )}
                             <small className="text-muted">
                               Canal : {item.channelId || "-"}
                             </small>

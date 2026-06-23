@@ -78,7 +78,7 @@ const REASON_COLOR = {
   OCCUPE: "bg-gris",
   REPONDEUR: "bg-info",
   SALE: "bg-success",
-  SVI:       "bg-cyan", 
+  SVI: "bg-cyan",
 };
 
 const REASON_LABEL = {
@@ -88,7 +88,7 @@ const REASON_LABEL = {
   OCCUPE: "Occupé",
   REPONDEUR: "Répondeur",
   SALE: "Vente / RDV",
-  SVI:"SVI",
+  SVI: "SVI",
 };
 
 const STATUS_LABEL = {
@@ -218,6 +218,9 @@ export default function CalendrierPage() {
           getCrmLeads({ crmStatus: 1, isArchived: false }),
           getCrmLeads({ crmStatus: 2, isArchived: false }),
         ]);
+      console.log(crmLeadStatus1?.data?.data);
+      console.log(crmLeadStatus2?.data?.data);
+
       setScheduledCalls(scheduledRes?.data?.data || []);
       setHistoriques(historiquesRes?.data?.data || []);
 
@@ -277,12 +280,16 @@ export default function CalendrierPage() {
       if (q) {
         const num =
           type === "crm"
-            ? (item.telephone || "").toLowerCase()
-            : (item.calledNumber || "").toLowerCase();
+            ? (item.telephone || item.fiche?.phone || "").toLowerCase()
+            : (item.calledNumber || item.fiche?.phone || "").toLowerCase();
         const name =
           type === "crm"
-            ? (item.nom || "").toLowerCase()
-            : (item.aiResponse?.nameUser || "").toLowerCase();
+            ? (item.nom || item.fiche?.nom || "").toLowerCase()
+            : (
+                item.aiResponse?.nameUser ||
+                item.fiche?.nom ||
+                ""
+              ).toLowerCase();
         if (!num.includes(q) && !name.includes(q)) return false;
       }
 
@@ -361,7 +368,7 @@ export default function CalendrierPage() {
     // ── crmStatus 1 (Confirmé) → section CRM, peu importe la date ──────────────
     crmLeads
       .filter((l) => l.crmStatus === 1 && matchesFilters(l, "crm"))
-      .forEach((l) => {        
+      .forEach((l) => {
         if (!l.historiqueId.callDate) return; // sans date → section dédiée plus bas
         const key = toLocalDateKey(new Date(l.historiqueId.callDate)); // ← corrigé
         if (!map[key])
@@ -369,6 +376,7 @@ export default function CalendrierPage() {
         map[key].crmLeads.push(l);
       });
 
+    // ── crmStatus 2 (Non confirmé) avec date → traité comme un rappel ──────────
     // ── crmStatus 2 (Non confirmé) avec date → traité comme un rappel ──────────
     crmLeads
       .filter(
@@ -383,13 +391,16 @@ export default function CalendrierPage() {
           _id: `crm-${l._id}`,
           _isCrmReminder: true, // marqueur pour distinguer dans le rendu
           _crmLead: l,
-          calledNumber: l.telephone,
+          calledNumber: l.telephone || l.fiche?.phone,
           callerNumber: l.historiqueId?.calledNumber || "—",
           scheduledAt: l.callbackDate,
           reason: "RAPPEL",
           status: "pending",
           source: 3,
-          aiResponse: { nameUser: l.nom, description: l.note },
+          aiResponse: {
+            nameUser: l.nom || l.fiche?.nom,
+            description: l.note,
+          },
           _pathRecord: l.historiqueId?.pathRecord,
         });
       });
@@ -466,8 +477,12 @@ export default function CalendrierPage() {
   const renderCrmLeadItem = (lead) => (
     <div key={lead._id} className="calItem calItemCrm">
       {renderSourceBadge(3)}
-      <span className="calItemPhone">{lead.telephone || "-"}</span>
-      <span className="calItemReason">{lead.nom || "Lead confirmé"}</span>
+      <span className="calItemPhone">
+        {lead.telephone || lead.fiche?.phone || "-"}
+      </span>
+      <span className="calItemReason">
+        {lead.nom || lead.fiche?.nom || "Lead confirmé"}
+      </span>
     </div>
   );
 
@@ -477,6 +492,10 @@ export default function CalendrierPage() {
     const recordUrl = lead.historiqueId?.pathRecord
       ? buildRecordUrl(lead.historiqueId.pathRecord)
       : "";
+    const displayNom = lead.nom || lead.fiche?.nom || "Lead sans nom";
+    const displayTelephone = lead.telephone || lead.fiche?.phone || "—";
+    const displayEntreprise = lead.entreprise || lead.fiche?.entreprise;
+    const displayEmail = lead.email || lead.fiche?.email;
 
     return (
       <div key={lead._id} className="crmLeadCard">
@@ -488,9 +507,7 @@ export default function CalendrierPage() {
               style={{ background: statusDef.color }}
               title={statusDef.label}
             />
-            <strong className="crmLeadName">
-              {lead.nom || "Lead sans nom"}
-            </strong>
+            <strong className="crmLeadName">{displayNom}</strong>
           </div>
           <span
             className="crmLeadStatusBadge"
@@ -504,18 +521,18 @@ export default function CalendrierPage() {
         <div className="crmLeadCardBody">
           <div className="crmLeadCardRow">
             <i className="bi bi-telephone-fill" />
-            {lead.telephone || "—"}
+            {displayTelephone}
           </div>
-          {lead.entreprise && (
+          {displayEntreprise && (
             <div className="crmLeadCardRow">
               <i className="bi bi-building" />
-              {lead.entreprise}
+              {displayEntreprise}
             </div>
           )}
-          {lead.email && (
+          {displayEmail && (
             <div className="crmLeadCardRow">
               <i className="bi bi-envelope-fill" />
-              {lead.email}
+              {displayEmail}
             </div>
           )}
           <div className="crmLeadCardRow text-muted">
@@ -821,7 +838,7 @@ export default function CalendrierPage() {
                             }}
                           />
                           <span className="text-truncate text-muted">
-                            {h.calledNumber}
+                            {h.fiche?.nom || h.calledNumber}
                           </span>
                         </div>
                       );
@@ -876,7 +893,7 @@ export default function CalendrierPage() {
                           }}
                         />
                         <span className="text-truncate text-muted">
-                          {l.telephone}
+                          {l.telephone || l.fiche?.phone || "-"}
                         </span>
                       </div>
                     ))}
@@ -947,6 +964,7 @@ export default function CalendrierPage() {
                       minute: "2-digit",
                     },
                   );
+                  const displayTitle = h.fiche?.nom || h.calledNumber;
 
                   return (
                     <UnifiedCard
@@ -961,8 +979,8 @@ export default function CalendrierPage() {
                         </span>
                       }
                       accentColor="#1d4ed8"
-                      title={h.calledNumber}
-                      subtitle={h.aiResponse?.nameUser || null}
+                      title={displayTitle}
+                      subtitle={h.aiResponse?.nameUser || h.calledNumber}
                       description={h.aiResponse?.description}
                       metaItems={[
                         { icon: "bi-clock", text: time },
@@ -1006,18 +1024,24 @@ export default function CalendrierPage() {
                 {selectedDay.data.crmLeads.map((lead) => {
                   const statusDef =
                     CRM_STATUS_DEFS[lead.crmStatus] || CRM_STATUS_DEFS[1];
+                  const displayNom =
+                    lead.nom || lead.fiche?.nom || "Lead sans nom";
+                  const displayTelephone = lead.telephone || lead.fiche?.phone;
+                  const displayEntreprise =
+                    lead.entreprise || lead.fiche?.entreprise;
+                  const displayEmail = lead.email || lead.fiche?.email;
 
                   return (
                     <UnifiedCard
                       key={lead._id}
                       sourceBadge={renderSourceBadge(3)}
                       accentColor="#7c3aed"
-                      title={lead.nom || "Lead sans nom"}
-                      subtitle={lead.telephone}
-                      description={lead.note || lead.entreprise}
+                      title={displayNom}
+                      subtitle={displayTelephone}
+                      description={lead.note || displayEntreprise}
                       metaItems={[
-                        ...(lead.email
-                          ? [{ icon: "bi-envelope-fill", text: lead.email }]
+                        ...(displayEmail
+                          ? [{ icon: "bi-envelope-fill", text: displayEmail }]
                           : []),
                         {
                           icon: "bi-megaphone",
@@ -1070,13 +1094,14 @@ export default function CalendrierPage() {
                     },
                   );
                   const accent = getSourceDef(s.source).color;
+                  const displayTitle = s.fiche?.nom || s.calledNumber;
 
                   return (
                     <UnifiedCard
                       key={s._id}
                       sourceBadge={renderSourceBadge(s.source)}
                       accentColor={accent}
-                      title={s.calledNumber}
+                      title={displayTitle}
                       subtitle={s.aiResponse?.nameUser || "Inconnu"}
                       description={s.aiResponse?.description}
                       metaItems={[
@@ -1117,7 +1142,6 @@ export default function CalendrierPage() {
                       }
                       audioPath={s._pathRecord}
                       actions={
-                        // Seuls les vrais ScheduledCall sont supprimables
                         !s._isCrmReminder && (
                           <button
                             className="btn btn-sm btn-outline-danger"
