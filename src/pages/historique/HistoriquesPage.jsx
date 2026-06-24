@@ -191,7 +191,7 @@ function StatusCountBadge({ def, count, active, onClick }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function HistoriquesPage({ showToast }) {
-  const { getHistoriques, archiveManyHistoriques, updateHistorique } =
+  const { getHistoriques, archiveManyHistoriques, updateHistorique, toggleArchiveManyHistoriques } =
     useHistoriqueIa();
 
   const [historiques, setHistoriques] = useState([]);
@@ -218,6 +218,7 @@ export default function HistoriquesPage({ showToast }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectedTypeCall, setSelectedTypeCall] = useState("all");
+  const [confirmArchive, setConfirmArchive] = useState(null);
 
   // ⚡ Tri — "date_desc" par défaut (comportement original)
   // Valeurs : "date_desc" | "date_asc" | "duration_desc" | "duration_asc"
@@ -419,6 +420,33 @@ export default function HistoriquesPage({ showToast }) {
     }
   };
 
+  const handleToggleArchiveSelected = async (archive) => {
+    const ids =
+      selectedIds.size > 0 ? [...selectedIds] : historiques.map((i) => i._id);
+    if (!ids.length)
+      return showToast?.("Aucun historique sélectionné", "warning");
+    try {
+      await toggleArchiveManyHistoriques(ids, archive);
+      showToast?.(
+        selectedIds.size > 0
+          ? `${ids.length} historique(s) ${archive ? "archivé(s)" : "désarchivé(s)"}`
+          : `Page ${archive ? "archivée" : "désarchivée"}`,
+        "success",
+      );
+      setSelectedIds(new Set());
+      setConfirmArchive(null);
+      fetchHistoriques(currentPage);
+    } catch(err) {
+      console.log(err);
+      
+      showToast?.(
+        `Erreur lors de l'${archive ? "archivage" : "désarchivage"}`,
+        "danger",
+      );
+      setConfirmArchive(null);
+    }
+  };
+
   const resetFilters = () => {
     setSearch("");
     setSelectedStatus("all");
@@ -590,16 +618,21 @@ export default function HistoriquesPage({ showToast }) {
                     />
                     {isRefreshing ? "Actualisation…" : "Actualiser"}
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={handleArchiveSelected}
-                  >
-                    <i className="bi bi-archive" />
-                    {selectedIds.size > 0
-                      ? `Archiver (${selectedIds.size})`
-                      : "Archiver la page"}
-                  </button>
+                  {selectedIds.size > 0 && (
+                    <button
+                      type="button"
+                      className={`btn btn-sm ${filtersArchive === "1" ? "btn-outline-secondary" : "btn-outline-primary"}`}
+                      onClick={() =>
+                        setConfirmArchive(filtersArchive === "1" ? 2 : 1)
+                      }
+                    >
+                      <i className="bi bi-archive" />
+                      {filtersArchive === "1"
+                        ? `Désarchiver (${selectedIds.size})`
+                        : `Archiver (${selectedIds.size})`}
+                    </button>
+                  )}
+
                   {filtersActive && (
                     <button
                       type="button"
@@ -1130,6 +1163,52 @@ export default function HistoriquesPage({ showToast }) {
         historique={selectedHistorique}
         onClose={() => setSelectedHistorique(null)}
       />
+
+      {confirmArchive !== null && (
+        <div className="modal" tabIndex="-1" style={{ display: "block" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  <i className={`bi bi-archive me-2`} />
+                  {confirmArchive === 1
+                    ? "Confirmer l'archivage"
+                    : "Confirmer le désarchivage"}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setConfirmArchive(null)}
+                />
+              </div>
+              <div className="modal-body">
+                <p>
+                  {confirmArchive === 1
+                    ? `Vous êtes sur le point d'archiver ${selectedIds.size} historique(s). Cette action les masquera de la vue par défaut.`
+                    : `Vous êtes sur le point de désarchiver ${selectedIds.size} historique(s). Ils seront à nouveau visibles dans la liste.`}
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setConfirmArchive(null)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${confirmArchive === 1 ? "btn-primary" : "btn-outline-secondary"}`}
+                  onClick={() => handleToggleArchiveSelected(confirmArchive)}
+                >
+                  <i className="bi bi-archive me-1" />
+                  {confirmArchive === 1 ? "Archiver" : "Désarchiver"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

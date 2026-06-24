@@ -28,10 +28,14 @@ class HistoriqueIaServices {
   }
 
   archiveMany(ids) {
+    return axios.put(`${ApiUrl}historiques/archive/many`, { ids }, header());
+  }
+
+  toggleArchiveMany(ids, archive) {
     return axios.put(
-      `${ApiUrl}historiques/archive/many`,
-      { ids },
-      header()
+      `${ApiUrl}historiques/toggle-archive/many`,
+      { ids, archive },
+      header(),
     );
   }
 }
