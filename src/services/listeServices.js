@@ -34,10 +34,12 @@ class ListeServices {
     const query = new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== ""),
     ).toString();
-    return axios.get(
-      ApiUrl + `lists/${listId}/fiches?${query}`,
-      header(),
-    );
+
+    const url = query
+      ? ApiUrl + `lists/${listId}/fiches?${query}`
+      : ApiUrl + `lists/${listId}/fiches`;
+
+    return axios.get(url, header());
   };
 
   updateFiche(listId, ficheId, data) {

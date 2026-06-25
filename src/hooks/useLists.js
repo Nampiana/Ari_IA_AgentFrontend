@@ -21,8 +21,8 @@ export default function useLists() {
     return ListeServices.delete(id);
   };
 
-  const getFiches = async (listId, page = 1, limit = 10) => {
-    return ListeServices.getFiches(listId, page, limit);
+  const getFiches = async (listId, params = {}) => {
+    return ListeServices.getFiches(listId, params);
   };
 
   const addFiche = async (listId, data) => {
