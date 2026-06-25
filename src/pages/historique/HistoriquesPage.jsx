@@ -133,6 +133,13 @@ const STATUS_DEFS = [
     bg: "#cffafe",
     icon: "bi-telephone-inbound-fill",
   }, // ← nouveau
+  {
+    key: "7",
+    label: "AMD Répondeur",
+    color: "#0891b2",
+    bg: "#cbcbd3",
+    icon: "bi-telephone-inbound-fill",
+  },
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
@@ -232,6 +239,7 @@ export default function HistoriquesPage({ showToast }) {
     4: 0,
     5: 0,
     6: 0,
+    7: 0,
   });
 
   const { getAgents } = useAgent();
@@ -665,6 +673,7 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="5">RÉPONDEUR</option>
                     <option value="1">PAS INTÉRESSÉ</option>
                     <option value="6">SVI</option>
+                    <option value="7">AMD Répondeur</option>
                   </select>
                   <select
                     className="historiquesFilterSelect"
