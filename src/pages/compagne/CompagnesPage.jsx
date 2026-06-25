@@ -4,6 +4,7 @@ import useAgent from "../../hooks/useAgent";
 import HeaderBar from "../../components/agents/HeaderBar";
 import CompagneCard from "../../components/compagne/CompagneCard";
 import CompagneFormModal from "../../components/compagne/CompagneFormModal";
+import QualificationModal from "../../components/qualification/QualificationModal";
 import "../../assets/css/CompagnesPage.css";
 import useLists from "../../hooks/useLists";
 
@@ -30,6 +31,18 @@ export default function CompagnesPage({ showToast }) {
   });
   const { getLists } = useLists();
   const [lists, setLists] = useState([]);
+
+  const [qualificationModal, setQualificationModal] = useState({
+    open: false,
+    compagne: null,
+  });
+
+  const handleQualifications = (compagne) => {
+    setQualificationModal({
+      open: true,
+      compagne,
+    });
+  };
 
   const fetchLists = async () => {
     try {
@@ -225,6 +238,7 @@ export default function CompagnesPage({ showToast }) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 lancerCampagne={lancerCampagne}
+                onQualifications={handleQualifications}
               />
             ))}
           </div>
@@ -243,6 +257,18 @@ export default function CompagnesPage({ showToast }) {
         agents={agents}
         lists={lists}
         loadingUpdate={loadingUpdate}
+      />
+
+      <QualificationModal
+        open={qualificationModal.open}
+        compagne={qualificationModal.compagne}
+        showToast={showToast}
+        onClose={() =>
+          setQualificationModal({
+            open: false,
+            compagne: null,
+          })
+        }
       />
 
       {deleteModal.open && (
