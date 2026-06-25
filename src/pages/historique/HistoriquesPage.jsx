@@ -137,7 +137,7 @@ const STATUS_DEFS = [
     key: "7",
     label: "AMD Répondeur",
     color: "#0891b2",
-    bg: "#cbcbd3",
+    bg: "rgb(224 224 224)",
     icon: "bi-telephone-inbound-fill",
   },
 ];
