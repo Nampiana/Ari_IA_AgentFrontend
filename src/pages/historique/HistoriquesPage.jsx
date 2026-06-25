@@ -145,7 +145,7 @@ const STATUS_DEFS = [
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
 // ⚡ FIX bug badges invisibles : on force toutes les clés en string
 const normalizeStatusCounts = (raw = {}) => {
-  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
   Object.entries(raw).forEach(([k, v]) => {
     result[String(k)] = Number(v) || 0;
   });
