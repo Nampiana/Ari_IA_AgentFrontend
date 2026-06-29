@@ -133,12 +133,19 @@ const STATUS_DEFS = [
     bg: "#cffafe",
     icon: "bi-telephone-inbound-fill",
   }, // ← nouveau
+  {
+    key: "7",
+    label: "AMD Répondeur",
+    color: "#0891b2",
+    bg: "rgb(224 224 224)",
+    icon: "bi-telephone-inbound-fill",
+  },
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
 // ⚡ FIX bug badges invisibles : on force toutes les clés en string
 const normalizeStatusCounts = (raw = {}) => {
-  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
   Object.entries(raw).forEach(([k, v]) => {
     result[String(k)] = Number(v) || 0;
   });
@@ -232,6 +239,7 @@ export default function HistoriquesPage({ showToast }) {
     4: 0,
     5: 0,
     6: 0,
+    7: 0,
   });
 
   const { getAgents } = useAgent();
@@ -665,6 +673,7 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="5">RÉPONDEUR</option>
                     <option value="1">PAS INTÉRESSÉ</option>
                     <option value="6">SVI</option>
+                    <option value="7">AMD Répondeur</option>
                   </select>
                   <select
                     className="historiquesFilterSelect"

@@ -436,6 +436,13 @@
   border-color: rgba(220, 53, 69, 0.18);
 }
 
+/* AMD_RÉPONDEUR → bg-info (bleu) */
+.historiqueBadge.AMD_RÉPONDEUR {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
 .historiqueBadge.default {
   background: rgba(148, 163, 184, 0.15);
   color: #64748b;
