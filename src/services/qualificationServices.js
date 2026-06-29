@@ -17,6 +17,10 @@ class QualificationServices {
     return axios.post(ApiUrl + "qualifications", data, header());
   }
 
+  createDefaults(data) {
+    return axios.post(ApiUrl + "qualifications/defaults", data, header());
+  }
+
   update(id, data) {
     return axios.put(ApiUrl + `qualifications/${id}`, data, header());
   }

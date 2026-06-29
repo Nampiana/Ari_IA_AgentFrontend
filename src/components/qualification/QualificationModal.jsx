@@ -188,7 +188,10 @@ export default function QualificationModal({
     try {
       setSaving(true);
 
-      await createDefaultQualifications(compagne._id);
+      await createDefaultQualifications({
+        campagneId: compagne._id,
+      });
+
       await fetchQualifications();
 
       showToast?.("Qualifications par défaut ajoutées", "success");
@@ -197,6 +200,7 @@ export default function QualificationModal({
 
       const message =
         error?.response?.data?.message ||
+        error?.response?.data?.error ||
         "Erreur ajout qualifications par défaut";
 
       showToast?.(message, "danger");

@@ -13,6 +13,10 @@ export default function useQualification() {
     return QualificationServices.create(data);
   };
 
+  const createDefaultQualifications = async (data) => {
+    return QualificationServices.createDefaults(data);
+  };
+
   const updateQualification = async (id, data) => {
     return QualificationServices.update(id, data);
   };
@@ -25,6 +29,7 @@ export default function useQualification() {
     getQualificationsByCompagne,
     getQualification,
     createQualification,
+    createDefaultQualifications,
     updateQualification,
     deleteQualification,
   };
