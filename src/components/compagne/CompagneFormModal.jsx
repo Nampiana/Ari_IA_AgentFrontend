@@ -282,7 +282,18 @@ export default function CompagneFormModal({
                 <option value="Europe/Paris">Europe/Paris</option>
                 <option value="Indian/Antananarivo">Madagascar</option>
               </select>
-            </div>
+            </div> 
+                        <div className="formGroup">
+              <label>Type d'Appel</label>
+              <select
+                name="timeZone"
+                value={formData.timeZone}
+                onChange={handleChange}
+              >
+                <option value="Analyse Sortant">Analyse Sortant</option>
+                <option value="ANalyse Entrant">Analyse Entrant</option>
+              </select>
+            </div> 
 
           </div>
 
@@ -328,6 +339,17 @@ export default function CompagneFormModal({
               <span>5</span>
               <span>10 (max)</span>
             </div>
+          </div>
+
+                    <div className="formGroup full">
+            <label>Script Transcription</label>
+            <textarea
+              name="script"
+              value={formData.script}
+              onChange={handleChange}
+              rows="6"
+              required
+            />
           </div>
 
           <div className="formGroup full">
