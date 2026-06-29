@@ -4,6 +4,7 @@ const getInitialFormData = (selectedCompagne) => ({
   nomCompagne: selectedCompagne?.nomCompagne || "",
   numero: selectedCompagne?.numero || "",
   script: selectedCompagne?.script || "",
+  scriptTranscription: selectedCompagne?.scriptTranscription || "",
   id_ia: selectedCompagne?.id_ia?._id || selectedCompagne?.id_ia || "",
   fiches: Array.isArray(selectedCompagne?.fiches)
     ? selectedCompagne.fiches.map((f) => f?._id || f)
@@ -14,14 +15,11 @@ const getInitialFormData = (selectedCompagne) => ({
   allowedDays: Array.isArray(selectedCompagne?.allowedDays)
     ? selectedCompagne.allowedDays
     : [1, 2, 3, 4, 5],
-
   startHour: selectedCompagne?.startHour || "08:00",
   endHour: selectedCompagne?.endHour || "21:00",
   timeZone: selectedCompagne?.timeZone || "Europe/Paris",
-
-  startHour: selectedCompagne?.startHour || "08:00",
-  endHour: selectedCompagne?.endHour || "21:00",
-  timeZone: selectedCompagne?.timeZone || "Europe/Paris",
+  // ✅ Type d'appel : "inbound" = entrant, "outbound" = sortant
+  callType: selectedCompagne?.callType || "outbound",
 });
 
 function FichesMultiSelect({ lists, selectedIds, onToggle }) {
@@ -149,6 +147,18 @@ export default function CompagneFormModal({
     });
   };
 
+  const toggleDay = (dayValue) => {
+    setFormData((prev) => {
+      const exists = prev.allowedDays.includes(dayValue);
+      return {
+        ...prev,
+        allowedDays: exists
+          ? prev.allowedDays.filter((d) => d !== dayValue)
+          : [...prev.allowedDays, dayValue],
+      };
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({
@@ -159,18 +169,8 @@ export default function CompagneFormModal({
     });
   };
 
-  const toggleDay = (dayValue) => {
-    setFormData((prev) => {
-      const exists = prev.allowedDays.includes(dayValue);
-
-      return {
-        ...prev,
-        allowedDays: exists
-          ? prev.allowedDays.filter((d) => d !== dayValue)
-          : [...prev.allowedDays, dayValue],
-      };
-    });
-  };
+  // ✅ Le script affiché dépend du type d'appel
+  const isInbound = formData.callType === "inbound";
 
   return (
     <div
@@ -192,6 +192,8 @@ export default function CompagneFormModal({
 
         <form onSubmit={handleSubmit} className="agentForm">
           <div className="formGrid">
+
+            {/* Nom campagne */}
             <div className="formGroup">
               <label>Nom de la campagne</label>
               <input
@@ -202,6 +204,7 @@ export default function CompagneFormModal({
               />
             </div>
 
+            {/* Numéro */}
             <div className="formGroup">
               <label>Numéro</label>
               <input
@@ -212,6 +215,7 @@ export default function CompagneFormModal({
               />
             </div>
 
+            {/* Agent IA */}
             <div className="formGroup">
               <label>Agent IA associé</label>
               <select
@@ -228,6 +232,7 @@ export default function CompagneFormModal({
               </select>
             </div>
 
+            {/* Statut */}
             <div className="formGroup">
               <label>Statut</label>
               <select
@@ -240,24 +245,40 @@ export default function CompagneFormModal({
               </select>
             </div>
 
+            {/* ✅ Type d'appel — nom corrigé, valeurs métier claires */}
             <div className="formGroup">
-              <label>
-                Timeout d'appel
-                <span className="formHint"> (secondes)</span>
-              </label>
-              <input
-                type="number"
-                name="dialTimeout"
-                min={5}
-                max={120}
-                value={formData.dialTimeout}
+              <label>Type d'appel</label>
+              <select
+                name="callType"
+                value={formData.callType}
                 onChange={handleChange}
-              />
+              >
+                <option value="outbound">📞 Sortant</option>
+                <option value="inbound">📲 Entrant</option>
+              </select>
             </div>
 
+            {/* Timeout — masqué en entrant (pas de dial timeout utile) */}
+            {!isInbound && (
+              <div className="formGroup">
+                <label>
+                  Timeout d'appel
+                  <span className="formHint"> (secondes)</span>
+                </label>
+                <input
+                  type="number"
+                  name="dialTimeout"
+                  min={5}
+                  max={120}
+                  value={formData.dialTimeout}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
+
+            {/* Jours autorisés */}
             <div className="formGroup full">
               <label>Jours autorisés</label>
-
               <div className="fichesCheckList">
                 {DAYS.map((day) => (
                   <label key={day.value} className="ficheCheckItem">
@@ -270,13 +291,12 @@ export default function CompagneFormModal({
                   </label>
                 ))}
               </div>
-
               <div className="formHint">
-                Exemple : cochez lundi à vendredi pour autoriser les appels en
-                semaine.
+                Exemple : cochez lundi à vendredi pour autoriser les appels en semaine.
               </div>
             </div>
 
+            {/* Heure début */}
             <div className="formGroup">
               <label>Heure début</label>
               <input
@@ -287,6 +307,7 @@ export default function CompagneFormModal({
               />
             </div>
 
+            {/* Heure fin */}
             <div className="formGroup">
               <label>Heure fin</label>
               <input
@@ -297,6 +318,7 @@ export default function CompagneFormModal({
               />
             </div>
 
+            {/* Fuseau horaire */}
             <div className="formGroup">
               <label>Fuseau horaire</label>
               <select
@@ -308,34 +330,34 @@ export default function CompagneFormModal({
                 <option value="Indian/Antananarivo">Madagascar</option>
               </select>
             </div>
+
           </div>
 
-          {/* Sélection multiple des fiches (listes CSV) — dropdown */}
-          <div className="formGroup full">
-            <label>
-              Fiches (listes CSV)
-              <span className="formHint"> (plusieurs listes possibles)</span>
-            </label>
-            <FichesMultiSelect
-              lists={lists}
-              selectedIds={formData.fiches}
-              onToggle={toggleFiche}
-            />
-            {formData.fiches.length > 0 && (
-              <div className="formHint">
-                {formData.fiches.length} liste(s) sélectionnée(s)
-              </div>
-            )}
-          </div>
+          {/* Fiches CSV — masquées en entrant (pas de liste à appeler) */}
+          {!isInbound && (
+            <div className="formGroup full">
+              <label>
+                Fiches (listes CSV)
+                <span className="formHint"> (plusieurs listes possibles)</span>
+              </label>
+              <FichesMultiSelect
+                lists={lists}
+                selectedIds={formData.fiches}
+                onToggle={toggleFiche}
+              />
+              {formData.fiches.length > 0 && (
+                <div className="formHint">
+                  {formData.fiches.length} liste(s) sélectionnée(s)
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* Slider appels simultanés */}
+          {/* Appels simultanés */}
           <div className="formGroup full">
             <label>
               Appels simultanés
-              <span className="formHint">
-                {" "}
-                (agents IA actifs en même temps)
-              </span>
+              <span className="formHint"> (agents IA actifs en même temps)</span>
             </label>
             <div className="concurrentWrapper">
               <input
@@ -359,17 +381,32 @@ export default function CompagneFormModal({
             </div>
           </div>
 
+          {/* ✅ Script IA — label et hint adaptatifs selon callType */}
           <div className="formGroup full">
-            <label>Script</label>
+            <label>
+              {isInbound ? "Script IA — Appel entrant" : "Script IA — Appel sortant"}
+            </label>
+            <div className="formHint" style={{ marginBottom: 6 }}>
+              {isInbound
+                ? "Ce script est injecté dans ia.js (réception d'appel). L'IA en extrait automatiquement son identité, ses horaires et ses procédures."
+                : "Ce script pilote l'agent sortant. Décrivez l'objectif de l'appel, l'accroche et les objections à gérer."}
+            </div>
             <textarea
               name="script"
               value={formData.script}
               onChange={handleChange}
-              rows="6"
+              rows="10"
+              placeholder={
+                isInbound
+                  ? "##IDENTITE##\nNOM_AGENT: ...\nNOM_ENTREPRISE: ...\n\n##PHRASE_OUVERTURE##\n\"Bonjour, [Entreprise], [Prénom] à l'appareil...\"\n\n##HORAIRES##\n..."
+                  : "Tu es [Prénom], commercial(e) de [Entreprise].\nObjectif : ...\nAccroche : ...\nObjections fréquentes : ..."
+              }
               required
             />
           </div>
 
+
+          {/* Aperçu script final (lecture seule) */}
           {selectedCompagne?.scriptFinal && (
             <div className="formGroup full">
               <label>Aperçu du script final</label>
