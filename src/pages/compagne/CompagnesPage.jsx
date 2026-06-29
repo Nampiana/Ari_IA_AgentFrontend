@@ -4,6 +4,7 @@ import useAgent from "../../hooks/useAgent";
 import HeaderBar from "../../components/agents/HeaderBar";
 import CompagneCard from "../../components/compagne/CompagneCard";
 import CompagneFormModal from "../../components/compagne/CompagneFormModal";
+import QualificationModal from "../../components/qualification/QualificationModal";
 import "../../assets/css/CompagnesPage.css";
 import useLists from "../../hooks/useLists";
 
@@ -22,6 +23,7 @@ export default function CompagnesPage({ showToast }) {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCompagne, setSelectedCompagne] = useState(null);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
   const [deleteModal, setDeleteModal] = useState({
     open: false,
     compagne: null,
@@ -29,6 +31,18 @@ export default function CompagnesPage({ showToast }) {
   });
   const { getLists } = useLists();
   const [lists, setLists] = useState([]);
+
+  const [qualificationModal, setQualificationModal] = useState({
+    open: false,
+    compagne: null,
+  });
+
+  const handleQualifications = (compagne) => {
+    setQualificationModal({
+      open: true,
+      compagne,
+    });
+  };
 
   const fetchLists = async () => {
     try {
@@ -163,6 +177,7 @@ export default function CompagnesPage({ showToast }) {
 
   const handleSubmit = async (payload) => {
     try {
+      setLoadingUpdate(true);
       if (selectedCompagne?._id) {
         const updated = await updateCompagne(selectedCompagne._id, payload);
         const updatedData = updated?.data?.data;
@@ -179,9 +194,11 @@ export default function CompagnesPage({ showToast }) {
       }
       setModalOpen(false);
       setSelectedCompagne(null);
+      setLoadingUpdate(false);
     } catch (error) {
       console.error("Erreur enregistrement campagne :", error);
       showToast("Erreur lors de l'enregistrement", "danger");
+      setLoadingUpdate(false);
     }
   };
 
@@ -221,6 +238,7 @@ export default function CompagnesPage({ showToast }) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 lancerCampagne={lancerCampagne}
+                onQualifications={handleQualifications}
               />
             ))}
           </div>
@@ -238,6 +256,19 @@ export default function CompagnesPage({ showToast }) {
         selectedCompagne={selectedCompagne}
         agents={agents}
         lists={lists}
+        loadingUpdate={loadingUpdate}
+      />
+
+      <QualificationModal
+        open={qualificationModal.open}
+        compagne={qualificationModal.compagne}
+        showToast={showToast}
+        onClose={() =>
+          setQualificationModal({
+            open: false,
+            compagne: null,
+          })
+        }
       />
 
       {deleteModal.open && (

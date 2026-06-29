@@ -34,7 +34,6 @@ const isSale = (status) => {
 
 export default function HistoriqueDetailModal({ open, historique, onClose }) {
   if (!open || !historique) return null;
-
   const ai = historique.aiResponse || {};
   console.log("AI Response:", historique);
   const recordUrl = buildRecordUrl(historique.pathRecord);
@@ -56,8 +55,13 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
         <div className="historiqueModalBody">
           <div className="historiqueDetailGrid">
             <div className="historiqueDetailItem">
+              <span>Nom</span>
+              <strong>{historique.fiche?.nom || "-"}</strong>
+            </div>
+
+            <div className="historiqueDetailItem">
               <span>Numéro appelé</span>
-              <strong>{historique.calledNumber || "-"}</strong>
+              <strong>{historique.fiche?.phone || historique.calledNumber || "-"}</strong>
             </div>
 
             <div className="historiqueDetailItem">

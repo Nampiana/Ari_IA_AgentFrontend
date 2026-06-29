@@ -209,7 +209,7 @@ export default function ListsPage({ showToast }) {
       });
     } catch (err) {
       console.log(err);
-      
+
       showToast("Erreur chargement fiches", "danger");
     } finally {
       setLoadingFiche(false);
@@ -442,7 +442,7 @@ export default function ListsPage({ showToast }) {
               {lists.map((list) => (
                 <tr key={list._id}>
                   <td>{list.nomFiche}</td>
-                  <td>{list.infoFiche?.length}</td>
+                  <td>{list.totalFiches ?? 0}</td>
                   <td>{list.createdAt?.split("T")[0]}</td>
                   <td>{list.updatedAt?.split("T")[0]}</td>
                   <td>
@@ -517,9 +517,8 @@ export default function ListsPage({ showToast }) {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${
-                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                  }`}
+                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                    }`}
                 />
               </div>
 
@@ -854,7 +853,9 @@ export default function ListsPage({ showToast }) {
                           commentaire: "",
                         });
 
-                        fetchFiches(selectedList._id);
+                        await fetchFiches(selectedList._id);
+                        await fetchLists();
+
                         setShowAddForm(false);
                       }}
                     >
@@ -900,10 +901,10 @@ export default function ListsPage({ showToast }) {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                              editingCell?.field === key ? (
+                                editingCell?.field === key ? (
                                 <>
                                   {key === "isAlreadyCalled" ||
-                                  key === "isBlackList" ? (
+                                    key === "isBlackList" ? (
                                     <select
                                       style={{
                                         width: "100%",
@@ -913,8 +914,8 @@ export default function ListsPage({ showToast }) {
                                       }}
                                       value={String(
                                         dirtyFiches[row._id]?.[key] ??
-                                          row[key] ??
-                                          (key === "isBlackList" ? 1 : 0),
+                                        row[key] ??
+                                        (key === "isBlackList" ? 1 : 0),
                                       )}
                                       onChange={(e) => {
                                         const value = Number(e.target.value);
@@ -983,13 +984,13 @@ export default function ListsPage({ showToast }) {
                                 <>
                                   {key === "isAlreadyCalled"
                                     ? (dirtyFiches[row._id]?.[key] ??
-                                        row[key]) == 1
+                                      row[key]) == 1
                                       ? "Appelé"
                                       : "Non appelé"
                                     : key === "isBlackList"
                                       ? (dirtyFiches[row._id]?.[key] ??
-                                          row[key] ??
-                                          1) == 2
+                                        row[key] ??
+                                        1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
                                       : (dirtyFiches[row._id]?.[key] ??
@@ -1259,7 +1260,9 @@ export default function ListsPage({ showToast }) {
                   );
 
                   setDeleteFicheModal({ open: false, fiche: null });
-                  fetchFiches(selectedList._id);
+
+                  await fetchFiches(selectedList._id);
+                  await fetchLists();
                 }}
               >
                 Supprimer

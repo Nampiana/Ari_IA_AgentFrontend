@@ -65,7 +65,6 @@ const buildRecordUrl = (pathRecord) => {
   return `${base}/files/${pathRecord}`;
 };
 
-
 const hasActiveFilters = (
   search,
   selectedStatus,
@@ -74,6 +73,7 @@ const hasActiveFilters = (
   dateStart,
   dateEnd,
   filtersArchive,
+  selectedTypeCall,
   timeStart,
   timeEnd,
 ) =>
@@ -84,24 +84,68 @@ const hasActiveFilters = (
   dateStart !== "" ||
   dateEnd !== "" ||
   filtersArchive !== "all" ||
+  selectedTypeCall !== "all" ||
   timeStart !== "" ||
   timeEnd !== "";
 
 // ── Qualifications ────────────────────────────────────────────────────────────
 // Après la définition de status "1" (Pas intéressé) :
 const STATUS_DEFS = [
-  { key: "2", label: "Réussi",        color: "#16a34a", bg: "#dcfce7", icon: "bi-check-circle-fill" },
-  { key: "3", label: "Rappel",        color: "#2563eb", bg: "#dbeafe", icon: "bi-arrow-repeat" },
-  { key: "4", label: "Occupé",        color: "#d97706", bg: "#fef3c7", icon: "bi-telephone-x-fill" },
-  { key: "5", label: "Répondeur",     color: "#7c3aed", bg: "#ede9fe", icon: "bi-voicemail" },
-  { key: "1", label: "Pas intéressé", color: "#6b7280", bg: "#f3f4f6", icon: "bi-x-circle-fill" },
-  { key: "6", label: "SVI",           color: "#0891b2", bg: "#cffafe", icon: "bi-telephone-inbound-fill" }, // ← nouveau
+  {
+    key: "2",
+    label: "Réussi",
+    color: "#16a34a",
+    bg: "#dcfce7",
+    icon: "bi-check-circle-fill",
+  },
+  {
+    key: "3",
+    label: "Rappel",
+    color: "#2563eb",
+    bg: "#dbeafe",
+    icon: "bi-arrow-repeat",
+  },
+  {
+    key: "4",
+    label: "Occupé",
+    color: "#d97706",
+    bg: "#fef3c7",
+    icon: "bi-telephone-x-fill",
+  },
+  {
+    key: "5",
+    label: "Répondeur",
+    color: "#7c3aed",
+    bg: "#ede9fe",
+    icon: "bi-voicemail",
+  },
+  {
+    key: "1",
+    label: "Pas intéressé",
+    color: "#6b7280",
+    bg: "#f3f4f6",
+    icon: "bi-x-circle-fill",
+  },
+  {
+    key: "6",
+    label: "SVI",
+    color: "#0891b2",
+    bg: "#cffafe",
+    icon: "bi-telephone-inbound-fill",
+  }, // ← nouveau
+  {
+    key: "7",
+    label: "AMD Répondeur",
+    color: "#0891b2",
+    bg: "rgb(224 224 224)",
+    icon: "bi-telephone-inbound-fill",
+  },
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
 // ⚡ FIX bug badges invisibles : on force toutes les clés en string
 const normalizeStatusCounts = (raw = {}) => {
-  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
   Object.entries(raw).forEach(([k, v]) => {
     result[String(k)] = Number(v) || 0;
   });
@@ -154,7 +198,7 @@ function StatusCountBadge({ def, count, active, onClick }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function HistoriquesPage({ showToast }) {
-  const { getHistoriques, archiveManyHistoriques, updateHistorique } =
+  const { getHistoriques, archiveManyHistoriques, updateHistorique, toggleArchiveManyHistoriques } =
     useHistoriqueIa();
 
   const [historiques, setHistoriques] = useState([]);
@@ -176,10 +220,12 @@ export default function HistoriquesPage({ showToast }) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [totalCallDuration, setTotalCallDuration] = useState(0);
-  const [totalTelecomCost,   setTotalTelecomCost]   = useState(0);
+  const [totalTelecomCost, setTotalTelecomCost] = useState(0);
   const [drawerHistorique, setDrawerHistorique] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [selectedTypeCall, setSelectedTypeCall] = useState("all");
+  const [confirmArchive, setConfirmArchive] = useState(null);
 
   // ⚡ Tri — "date_desc" par défaut (comportement original)
   // Valeurs : "date_desc" | "date_asc" | "duration_desc" | "duration_asc"
@@ -193,6 +239,7 @@ export default function HistoriquesPage({ showToast }) {
     4: 0,
     5: 0,
     6: 0,
+    7: 0,
   });
 
   const { getAgents } = useAgent();
@@ -261,6 +308,8 @@ export default function HistoriquesPage({ showToast }) {
     dateEnd,
     timeStart,
     timeEnd,
+    filtersArchive,
+    selectedTypeCall,
   ]);
 
   // ── Fetch historiques ──────────────────────────────────────────────────────
@@ -276,11 +325,11 @@ export default function HistoriquesPage({ showToast }) {
       if (dateStart) params.dateStart = dateStart;
       if (dateEnd) params.dateEnd = dateEnd;
       if (filtersArchive !== "all") params.archive = filtersArchive;
+      if (selectedTypeCall !== "all") params.typeCall = selectedTypeCall;
       if (timeStart) params.timeStart = timeStart; // heure France brute → back gère la conversion
-      if (timeEnd)   params.timeEnd   = timeEnd;
-      
-      const res = await getHistoriques(params);
+      if (timeEnd) params.timeEnd = timeEnd;
 
+      const res = await getHistoriques(params);
       setHistoriques(res?.data?.data || []);
       setTotalPages(res?.data?.totalPages || 1);
       setTotalResults(res?.data?.totalResults || 0);
@@ -314,6 +363,7 @@ export default function HistoriquesPage({ showToast }) {
     timeStart,
     timeEnd,
     filtersArchive,
+    selectedTypeCall,
     sortOrder,
   ]);
 
@@ -329,6 +379,7 @@ export default function HistoriquesPage({ showToast }) {
     timeStart,
     timeEnd,
     filtersArchive,
+    selectedTypeCall,
   ]);
 
   // ── Sélection ─────────────────────────────────────────────────────────────
@@ -377,6 +428,33 @@ export default function HistoriquesPage({ showToast }) {
     }
   };
 
+  const handleToggleArchiveSelected = async (archive) => {
+    const ids =
+      selectedIds.size > 0 ? [...selectedIds] : historiques.map((i) => i._id);
+    if (!ids.length)
+      return showToast?.("Aucun historique sélectionné", "warning");
+    try {
+      await toggleArchiveManyHistoriques(ids, archive);
+      showToast?.(
+        selectedIds.size > 0
+          ? `${ids.length} historique(s) ${archive ? "archivé(s)" : "désarchivé(s)"}`
+          : `Page ${archive ? "archivée" : "désarchivée"}`,
+        "success",
+      );
+      setSelectedIds(new Set());
+      setConfirmArchive(null);
+      fetchHistoriques(currentPage);
+    } catch(err) {
+      console.log(err);
+      
+      showToast?.(
+        `Erreur lors de l'${archive ? "archivage" : "désarchivage"}`,
+        "danger",
+      );
+      setConfirmArchive(null);
+    }
+  };
+
   const resetFilters = () => {
     setSearch("");
     setSelectedStatus("all");
@@ -388,6 +466,7 @@ export default function HistoriquesPage({ showToast }) {
     setTimeEnd("");
     setFiltersArchive("all");
     setSortOrder("date_desc");
+    setSelectedTypeCall("all");
   };
 
   // ── Helpers UI ─────────────────────────────────────────────────────────────
@@ -400,6 +479,7 @@ export default function HistoriquesPage({ showToast }) {
       dateStart,
       dateEnd,
       filtersArchive,
+      selectedTypeCall,
       timeStart,
       timeEnd,
     ) || sortOrder !== "date_desc";
@@ -493,7 +573,9 @@ export default function HistoriquesPage({ showToast }) {
               </div>
               <div className="historiquesCounter">
                 <i className="bi bi-cash-coin" />
-                <span>Coût télécom estimé : {formatTelecomCost(totalTelecomCost)}</span>
+                <span>
+                  Coût télécom estimé : {formatTelecomCost(totalTelecomCost)}
+                </span>
               </div>
 
               {/* ⚡ Badges qualification avec comptages ── */}
@@ -544,16 +626,21 @@ export default function HistoriquesPage({ showToast }) {
                     />
                     {isRefreshing ? "Actualisation…" : "Actualiser"}
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={handleArchiveSelected}
-                  >
-                    <i className="bi bi-archive" />
-                    {selectedIds.size > 0
-                      ? `Archiver (${selectedIds.size})`
-                      : "Archiver la page"}
-                  </button>
+                  {selectedIds.size > 0 && (
+                    <button
+                      type="button"
+                      className={`btn btn-sm ${filtersArchive === "1" ? "btn-outline-secondary" : "btn-outline-primary"}`}
+                      onClick={() =>
+                        setConfirmArchive(filtersArchive === "1" ? 2 : 1)
+                      }
+                    >
+                      <i className="bi bi-archive" />
+                      {filtersArchive === "1"
+                        ? `Désarchiver (${selectedIds.size})`
+                        : `Archiver (${selectedIds.size})`}
+                    </button>
+                  )}
+
                   {filtersActive && (
                     <button
                       type="button"
@@ -586,6 +673,7 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="5">RÉPONDEUR</option>
                     <option value="1">PAS INTÉRESSÉ</option>
                     <option value="6">SVI</option>
+                    <option value="7">AMD Répondeur</option>
                   </select>
                   <select
                     className="historiquesFilterSelect"
@@ -595,6 +683,19 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="all">Tous (archivés)</option>
                     <option value="1">Archivés</option>
                     <option value="2">Non archivés</option>
+                  </select>
+
+                  <select
+                    className="historiquesFilterSelect"
+                    value={selectedTypeCall}
+                    onChange={(e) => {
+                      setSelectedTypeCall(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value="all">Tous les appels</option>
+                    <option value="1">Appels sortants</option>
+                    <option value="2">Appels entrants</option>
                   </select>
                 </div>
 
@@ -644,7 +745,8 @@ export default function HistoriquesPage({ showToast }) {
                       className="historiquesDateInput"
                       value={dateStart}
                       onChange={(e) => {
-                        setDateStart(e.target.value)}}
+                        setDateStart(e.target.value);
+                      }}
                     />
                     <span className="historiquesDateSeparator">→</span>
                     <input
@@ -652,7 +754,8 @@ export default function HistoriquesPage({ showToast }) {
                       className="historiquesDateInput"
                       value={dateEnd}
                       onChange={(e) => {
-                        setDateEnd(e.target.value)}}
+                        setDateEnd(e.target.value);
+                      }}
                     />
                   </div>
                 </div>
@@ -911,18 +1014,31 @@ export default function HistoriquesPage({ showToast }) {
 
                           <td>
                             <div className="fw-semibold">
-                              {/* Ajout icon different dont voir la condition typeCall=1 entrant et typeCall=2 sortant et si c'est null on met 1*/}
                               {item.typeCall == 2 ? (
-                                <i className="bi bi-telephone-inbound-fill" style={{color: "rgb(108, 192, 112)"}}/>
+                                <i
+                                  className="bi bi-telephone-inbound-fill"
+                                  style={{ color: "rgb(108, 192, 112)" }}
+                                />
                               ) : (
-                                <i className="bi bi-telephone-outbound-fill" style={{ color: "rgb(0, 231, 235)" }} />
+                                <i
+                                  className="bi bi-telephone-outbound-fill"
+                                  style={{ color: "rgb(0, 231, 235)" }}
+                                />
                               )}
-                              <span style={{marginLeft:"5px"}}>{item.calledNumber || "-"}</span>                              
+                              <span style={{ marginLeft: "5px" }}>
+                                {item.calledNumber || "-"}
+                              </span>
                             </div>
+                            {item.fiche?.nom && (
+                              <small className="text-muted d-block">
+                                <i className="bi bi-person me-1" />
+                                {item.fiche.nom}
+                              </small>
+                            )}
                             <small className="text-muted">
                               Canal : {item.channelId || "-"}
                             </small>
-                          </td>                              
+                          </td>
 
                           <td>
                             <div className="fw-semibold">
@@ -966,7 +1082,7 @@ export default function HistoriquesPage({ showToast }) {
                                 <audio controls style={{ maxWidth: "220px" }}>
                                   <source src={recordUrl} />
                                   Votre navigateur ne supporte pas l'audio.
-                                </audio>                                
+                                </audio>
                               </div>
                             ) : (
                               <span className="text-muted">
@@ -1056,6 +1172,52 @@ export default function HistoriquesPage({ showToast }) {
         historique={selectedHistorique}
         onClose={() => setSelectedHistorique(null)}
       />
+
+      {confirmArchive !== null && (
+        <div className="modal" tabIndex="-1" style={{ display: "block" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  <i className={`bi bi-archive me-2`} />
+                  {confirmArchive === 1
+                    ? "Confirmer l'archivage"
+                    : "Confirmer le désarchivage"}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setConfirmArchive(null)}
+                />
+              </div>
+              <div className="modal-body">
+                <p>
+                  {confirmArchive === 1
+                    ? `Vous êtes sur le point d'archiver ${selectedIds.size} historique(s). Cette action les masquera de la vue par défaut.`
+                    : `Vous êtes sur le point de désarchiver ${selectedIds.size} historique(s). Ils seront à nouveau visibles dans la liste.`}
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setConfirmArchive(null)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${confirmArchive === 1 ? "btn-primary" : "btn-outline-secondary"}`}
+                  onClick={() => handleToggleArchiveSelected(confirmArchive)}
+                >
+                  <i className="bi bi-archive me-1" />
+                  {confirmArchive === 1 ? "Archiver" : "Désarchiver"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

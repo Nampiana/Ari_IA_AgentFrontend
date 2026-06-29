@@ -25,6 +25,10 @@ export default function useHistoriqueIa() {
     return HistoriqueIaServices.archiveMany(ids);
   };
 
+  const toggleArchiveManyHistoriques = async (ids, archive) => {
+    return HistoriqueIaServices.toggleArchiveMany(ids, archive);
+  };
+
   return {
     getHistoriques,
     getHistorique,
@@ -32,5 +36,6 @@ export default function useHistoriqueIa() {
     updateHistorique,
     deleteHistorique,
     archiveManyHistoriques,
+    toggleArchiveManyHistoriques,
   };
 }

@@ -4,6 +4,7 @@ export default function CompagneCard({
   onEdit,
   onDelete,
   lancerCampagne,
+  onQualifications,
 }) {
   return (
     <div className="compagneCard">
@@ -29,6 +30,13 @@ export default function CompagneCard({
           >
             <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
             {compagne.isRunning === 1 ? " Arrêter" : " Lancer"}
+          </button>
+          <button
+            type="button"
+            className="btnCardAction"
+            onClick={() => onQualifications(compagne)}
+          >
+            <i className="bi bi-tags" /> Qualifications
           </button>
           <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
             Modifier
@@ -81,7 +89,7 @@ export default function CompagneCard({
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
             {/* {Array.from({ length: compagne.maxConcurrentCalls ?? 1 }).map((_, i) => ( */}
-              <i className="bi bi-telephone-fill concurrentDot" />
+            <i className="bi bi-telephone-fill concurrentDot" />
             {/* ))} */}
             <span className="concurrentCount">{compagne.maxConcurrentCalls ?? 1}</span>
           </div>

@@ -78,17 +78,20 @@ function formatDateTime(date) {
 
 function LeadCard({ lead, onDragStart, onDragEnd, onOpen, onArchive }) {
   const recordUrl = buildRecordUrl(lead.historiqueId?.pathRecord);
+  const displayNom = lead.nom || lead.fiche?.nom || "Sans nom";
+  const displayTelephone = lead.telephone || lead.fiche?.phone || "-";
+
   return (
     <div
       className="crmCard"
       draggable
       onDragStart={(e) => onDragStart(e, lead._id)}
-      onDragEnd={onDragEnd}   // ← ajouter cette ligne
+      onDragEnd={onDragEnd}
       onClick={() => onOpen(lead)}
     >
       <div className="crmCardHeader">
-        <div className="crmCardAvatar">{getInitials(lead.nom)}</div>
-        <span className="crmCardName">{lead.nom || "Sans nom"}</span>
+        <div className="crmCardAvatar">{getInitials(displayNom)}</div>
+        <span className="crmCardName">{displayNom}</span>
         {lead.callbackDate && (
           <span className="crmCardBadgeDate">
             <i className="bi bi-calendar-event" />
@@ -117,13 +120,13 @@ function LeadCard({ lead, onDragStart, onDragEnd, onOpen, onArchive }) {
             style={{ color: "rgb(0, 231, 235)" }}
           />
         )}
-        <span style={{ marginLeft: "5px" }}>{lead.telephone || "-"}</span>
+        <span style={{ marginLeft: "5px" }}>{displayTelephone}</span>
       </div>
 
-      {lead.entreprise && (
+      {(lead.entreprise || lead.fiche?.entreprise) && (
         <div className="crmCardCompany">
           <i className="bi bi-building me-1" />
-          {lead.entreprise}
+          {lead.entreprise || lead.fiche?.entreprise}
         </div>
       )}
 
@@ -191,6 +194,13 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
     dateTimeTouched && (!callbackDate || !callbackTime);
   const canSave = !isDateTimeIncomplete;
 
+  const displayNom = lead.nom || lead.fiche?.nom || "Sans nom";
+  const displayTelephone = lead.telephone || lead.fiche?.phone || "-";
+  const displayEmail = lead.email || lead.fiche?.email;
+  const displayEntreprise = lead.entreprise || lead.fiche?.entreprise;
+  const displayAdresse = lead.fiche?.adresse;
+  const displayVille = lead.fiche?.ville;
+
   const handleDateChange = (e) => {
     setCallbackDate(e.target.value);
     setDateTimeTouched(true);
@@ -226,7 +236,7 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
         <div className="crmModalHeader">
           <h3>
             <i className="bi bi-person-badge me-2" />
-            {lead.nom || "Sans nom"}
+            {displayNom}
           </h3>
           <button className="crmModalClose" onClick={onClose}>
             <i className="bi bi-x-lg" />
@@ -247,7 +257,7 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
                   {formatDateTime(lead.historiqueId.callDate)}
                 </span>
                 <span className="crmModalCallOriginDuration">
-                  ({lead.telephone || "-"})
+                  ({displayTelephone})
                 </span>
               </div>
               {recordUrl ? (
@@ -263,16 +273,31 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
               )}
             </div>
           )}
-          {lead.email && (
+          {displayTelephone && (
             <div className="crmModalRow">
-              <i className="bi bi-envelope-fill" />
-              <span>{lead.email}</span>
+              <i className="bi bi-telephone-fill" />
+              <span>{displayTelephone}</span>
             </div>
           )}
-          {lead.entreprise && (
+          {displayEmail && (
+            <div className="crmModalRow">
+              <i className="bi bi-envelope-fill" />
+              <span>{displayEmail}</span>
+            </div>
+          )}
+          {displayEntreprise && (
             <div className="crmModalRow">
               <i className="bi bi-building" />
-              <span>{lead.entreprise}</span>
+              <span>{displayEntreprise}</span>
+            </div>
+          )}
+          {displayAdresse && (
+            <div className="crmModalRow">
+              <i className="bi bi-geo-alt-fill" />
+              <span>
+                {displayAdresse}
+                {displayVille ? `, ${displayVille}` : ""}
+              </span>
             </div>
           )}
           <div className="crmModalRow">

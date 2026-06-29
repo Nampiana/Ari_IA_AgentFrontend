@@ -7,13 +7,9 @@ const STATUSES = [
   { value: "3", key: "RAPPEL", icon: "bi-telephone-inbound", label: "Rappel" },
   { value: "4", key: "OCCUPÉ", icon: "bi-telephone-x", label: "Occupé" },
   { value: "5", key: "RÉPONDEUR", icon: "bi-mic", label: "Répondeur" },
-  {
-    value: "1",
-    key: "PAS_INT",
-    icon: "bi-hand-thumbs-down",
-    label: "Pas intéressé",
-  },
-  { value: 6, label: "SVI", color: "#0891b2", icon: "bi-telephone-inbound-fill" }
+  { value: "1",key: "PAS_INT",icon: "bi-hand-thumbs-down",label: "Pas intéressé",},
+  { value: "6", key: "SVI", label: "SVI", icon: "bi-telephone-inbound-fill", label:"SVI"  },
+  { value: "7", key: "AMD_RÉPONDEUR", icon: "bi-telephone-inbound-fill", label: "AMD Répondeur" }
 ];
 
 export default function StatusDropdown({ itemId, status, onStatusChange }) {

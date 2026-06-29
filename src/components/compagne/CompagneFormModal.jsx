@@ -48,7 +48,9 @@ function FichesMultiSelect({ lists, selectedIds, onToggle }) {
         onClick={() => setOpen((prev) => !prev)}
       >
         {selectedLists.length === 0 ? (
-          <span className="multiSelectPlaceholder">Sélectionner une ou plusieurs fiches</span>
+          <span className="multiSelectPlaceholder">
+            Sélectionner une ou plusieurs fiches
+          </span>
         ) : (
           <div className="multiSelectTags">
             {selectedLists.map((list) => (
@@ -65,13 +67,17 @@ function FichesMultiSelect({ lists, selectedIds, onToggle }) {
             ))}
           </div>
         )}
-        <i className={`bi bi-chevron-${open ? "up" : "down"} multiSelectChevron`} />
+        <i
+          className={`bi bi-chevron-${open ? "up" : "down"} multiSelectChevron`}
+        />
       </button>
 
       {open && (
         <div className="multiSelectDropdown">
           {lists.length === 0 ? (
-            <div className="formHint multiSelectEmpty">Aucune liste disponible</div>
+            <div className="formHint multiSelectEmpty">
+              Aucune liste disponible
+            </div>
           ) : (
             lists.map((list) => (
               <label key={list._id} className="multiSelectOption">
@@ -97,8 +103,11 @@ export default function CompagneFormModal({
   selectedCompagne,
   agents = [],
   lists = [],
+  loadingUpdate = false,
 }) {
-  const [formData, setFormData] = useState(() => getInitialFormData(selectedCompagne));
+  const [formData, setFormData] = useState(() =>
+    getInitialFormData(selectedCompagne),
+  );
 
   const DAYS = [
     { value: 1, label: "Lundi" },
@@ -164,10 +173,18 @@ export default function CompagneFormModal({
   };
 
   return (
-    <div className="agentModalOverlay" onClick={onClose}>
-      <div className="agentModal" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="agentModalOverlay"
+      onClick={!loadingUpdate ? onClose : undefined}
+    >
+      <div
+        className={`agentModal ${loadingUpdate ? "agentModal--loading" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="agentModalHeader">
-          <h2>{selectedCompagne ? "Modifier la campagne" : "Créer une campagne"}</h2>
+          <h2>
+            {selectedCompagne ? "Modifier la campagne" : "Créer une campagne"}
+          </h2>
           <button type="button" className="closeBtn" onClick={onClose}>
             <i className="bi bi-x-lg" />
           </button>
@@ -175,7 +192,6 @@ export default function CompagneFormModal({
 
         <form onSubmit={handleSubmit} className="agentForm">
           <div className="formGrid">
-
             <div className="formGroup">
               <label>Nom de la campagne</label>
               <input
@@ -198,7 +214,11 @@ export default function CompagneFormModal({
 
             <div className="formGroup">
               <label>Agent IA associé</label>
-              <select name="id_ia" value={formData.id_ia} onChange={handleChange}>
+              <select
+                name="id_ia"
+                value={formData.id_ia}
+                onChange={handleChange}
+              >
                 <option value="">Sélectionner un agent</option>
                 {agents.map((agent) => (
                   <option key={agent._id} value={agent._id}>
@@ -210,7 +230,11 @@ export default function CompagneFormModal({
 
             <div className="formGroup">
               <label>Statut</label>
-              <select name="active" value={formData.active} onChange={handleChange}>
+              <select
+                name="active"
+                value={formData.active}
+                onChange={handleChange}
+              >
                 <option value={1}>Actif</option>
                 <option value={0}>Inactif</option>
               </select>
@@ -248,7 +272,8 @@ export default function CompagneFormModal({
               </div>
 
               <div className="formHint">
-                Exemple : cochez lundi à vendredi pour autoriser les appels en semaine.
+                Exemple : cochez lundi à vendredi pour autoriser les appels en
+                semaine.
               </div>
             </div>
 
@@ -294,7 +319,6 @@ export default function CompagneFormModal({
                 <option value="ANalyse Entrant">Analyse Entrant</option>
               </select>
             </div> 
-
           </div>
 
           {/* Sélection multiple des fiches (listes CSV) — dropdown */}
@@ -319,7 +343,10 @@ export default function CompagneFormModal({
           <div className="formGroup full">
             <label>
               Appels simultanés
-              <span className="formHint"> (agents IA actifs en même temps)</span>
+              <span className="formHint">
+                {" "}
+                (agents IA actifs en même temps)
+              </span>
             </label>
             <div className="concurrentWrapper">
               <input
@@ -332,7 +359,9 @@ export default function CompagneFormModal({
                 onChange={handleChange}
                 className="formRange"
               />
-              <span className="concurrentBadge">{formData.maxConcurrentCalls}</span>
+              <span className="concurrentBadge">
+                {formData.maxConcurrentCalls}
+              </span>
             </div>
             <div className="concurrentLabels">
               <span>1 (séquentiel)</span>
@@ -366,16 +395,35 @@ export default function CompagneFormModal({
           {selectedCompagne?.scriptFinal && (
             <div className="formGroup full">
               <label>Aperçu du script final</label>
-              <textarea value={selectedCompagne.scriptFinal} readOnly rows="8" />
+              <textarea
+                value={selectedCompagne.scriptFinal}
+                readOnly
+                rows="8"
+              />
             </div>
           )}
 
           <div className="agentModalActions">
-            <button type="button" className="btnGhost" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btnGhost"
+              onClick={onClose}
+              disabled={loadingUpdate}
+            >
               Annuler
             </button>
-            <button type="submit" className="btnPrimary">
-              {selectedCompagne ? "Mettre à jour" : "Créer"}
+            <button
+              type="submit"
+              className="btn btnPrimary"
+              disabled={loadingUpdate}
+            >
+              {loadingUpdate ? (
+                <span className="loadingSpinner" />
+              ) : selectedCompagne ? (
+                "Mettre à jour"
+              ) : (
+                "Créer"
+              )}
             </button>
           </div>
         </form>

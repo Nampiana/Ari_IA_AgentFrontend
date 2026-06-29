@@ -130,7 +130,9 @@ export default function ScheduledCallsDrawer({
               </div>
               <div>
                 <h2>Rappels planifiés</h2>
-                <p className="scd-mono">{historique?.calledNumber}</p>
+                <p className="scd-mono">
+                  {historique?.fiche?.nom || ""} {historique?.calledNumber || ""}
+                </p>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
