@@ -473,3 +473,17 @@ label.multiSelectOption span {
 .multiSelectOption:hover {
   background: var(--white-border);
 }
+
+/* ✅ Badge type d'appel — à ajouter dans votre fichier CSS existant */
+
+.badge.badgeInbound {
+  background-color: #ede9fe;
+  color: #6366f1;
+  border: 1px solid #c4b5fd;
+}
+
+.badge.badgeOutbound {
+  background-color: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fcd34d;
+}
