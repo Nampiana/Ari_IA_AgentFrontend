@@ -1051,7 +1051,16 @@ export default function HistoriquesPage({ showToast }) {
                               </span>
                             </div>
                             {item.fiche?.nom && (
-                              <small className="text-muted d-block">
+                              <small
+                                className="text-muted d-block"
+                                title={item.fiche.nom}
+                                style={{
+                                  maxWidth: "220px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
                                 <i className="bi bi-person me-1" />
                                 {item.fiche.nom}
                               </small>
