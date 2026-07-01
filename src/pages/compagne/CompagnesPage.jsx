@@ -202,6 +202,45 @@ export default function CompagnesPage({ showToast }) {
     }
   };
 
+  const handleToggleBackgroundNoise = async (compagne) => {
+    const nextValue = !compagne.backgroundNoise;
+
+    const backup = compagnes;
+
+    try {
+      setCompagnes((prev) =>
+        prev.map((c) =>
+          c._id === compagne._id
+            ? { ...c, backgroundNoise: nextValue }
+            : c,
+        ),
+      );
+
+      const res = await updateCompagne(compagne._id, {
+        backgroundNoise: nextValue,
+      });
+
+      const updated = res?.data?.data;
+
+      if (updated) {
+        setCompagnes((prev) =>
+          prev.map((c) => (c._id === compagne._id ? updated : c)),
+        );
+      }
+
+      showToast(
+        nextValue
+          ? "Bruit de fond activé pour cette campagne"
+          : "Bruit de fond désactivé pour cette campagne",
+        "success",
+      );
+    } catch (error) {
+      console.error("Erreur toggle bruit de fond :", error);
+      setCompagnes(backup);
+      showToast("Erreur lors de la modification du bruit de fond", "danger");
+    }
+  };
+
   return (
     <div className="compagnesPage">
       <HeaderBar />
@@ -239,6 +278,7 @@ export default function CompagnesPage({ showToast }) {
                 onDelete={handleDelete}
                 lancerCampagne={lancerCampagne}
                 onQualifications={handleQualifications}
+                onToggleBackgroundNoise={handleToggleBackgroundNoise}
               />
             ))}
           </div>

@@ -6,6 +6,7 @@ export default function CompagneCard({
   onDelete,
   lancerCampagne,
   onQualifications,
+  onToggleBackgroundNoise,
 }) {
   const isInbound = compagne.callType === "inbound";
 
@@ -20,6 +21,15 @@ export default function CompagneCard({
             <span className={`badge ${compagne.active === 1 ? "success" : "danger"}`}>
               {compagne.active === 1 ? "Actif" : "Inactif"}
             </span>
+            {!isInbound && (
+              <span
+                className={`badge ${compagne.backgroundNoise ? "success" : "danger"}`}
+              >
+                <i className={`bi ${compagne.backgroundNoise ? "bi-volume-up-fill" : "bi-volume-mute-fill"}`} />
+                {" "}
+                {compagne.backgroundNoise ? "Fond actif" : "Fond off"}
+              </span>
+            )}
 
             {/* ✅ Type d'appel */}
             <span className={`badge ${isInbound ? "badgeInbound" : "badgeOutbound"}`}>
@@ -54,6 +64,23 @@ export default function CompagneCard({
           >
             <i className="bi bi-tags" /> Qualifications
           </button>
+
+          {!isInbound && (
+            <button
+              type="button"
+              className="btnCardAction"
+              onClick={() => onToggleBackgroundNoise(compagne)}
+            >
+              <i
+                className={`bi ${compagne.backgroundNoise
+                    ? "bi-volume-up-fill"
+                    : "bi-volume-mute-fill"
+                  }`}
+              />
+              {" "}
+              {compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}
+            </button>
+          )}
           <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
             Modifier
           </button>
@@ -143,8 +170,8 @@ export default function CompagneCard({
           <div>
             {compagne.allowedDays?.length
               ? compagne.allowedDays
-                  .map((d) => ({ 0: "Dim", 1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam" }[d]))
-                  .join(", ")
+                .map((d) => ({ 0: "Dim", 1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam" }[d]))
+                .join(", ")
               : "Lun - Ven"}
           </div>
         </div>
