@@ -129,15 +129,13 @@ export default function CompagneCard({
             </div>
           </>
         )}
-
-        <div>
+          <div>
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
             <i className="bi bi-telephone-fill concurrentDot" />
             <span className="concurrentCount">{compagne.maxConcurrentCalls ?? 1}</span>
           </div>
         </div>
-
         <div>
           <span className="label">Jours autorisés</span>
           <div>
