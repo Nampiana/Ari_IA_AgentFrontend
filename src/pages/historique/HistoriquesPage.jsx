@@ -13,6 +13,16 @@ const ITEMS_PER_PAGE = 10;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+const getTodayDateInputValue = () => {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 const formatDate = (date) => {
   if (!date) return "-";
   const d = new Date(date);
@@ -206,7 +216,7 @@ export default function HistoriquesPage({ showToast }) {
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedCampagne, setSelectedCampagne] = useState("all");
-  const [dateStart, setDateStart] = useState("");
+  const [dateStart, setDateStart] = useState(getTodayDateInputValue);
   const [dateEnd, setDateEnd] = useState("");
   const [timeStart, setTimeStart] = useState("");
   const [timeEnd, setTimeEnd] = useState("");
@@ -444,9 +454,9 @@ export default function HistoriquesPage({ showToast }) {
       setSelectedIds(new Set());
       setConfirmArchive(null);
       fetchHistoriques(currentPage);
-    } catch(err) {
+    } catch (err) {
       console.log(err);
-      
+
       showToast?.(
         `Erreur lors de l'${archive ? "archivage" : "désarchivage"}`,
         "danger",
@@ -460,7 +470,7 @@ export default function HistoriquesPage({ showToast }) {
     setSelectedStatus("all");
     setSelectedCampagne("all");
     setSelectedAgentIa("all");
-    setDateStart("");
+    setDateStart(getTodayDateInputValue());
     setDateEnd("");
     setTimeStart("");
     setTimeEnd("");
@@ -745,16 +755,27 @@ export default function HistoriquesPage({ showToast }) {
                       className="historiquesDateInput"
                       value={dateStart}
                       onChange={(e) => {
-                        setDateStart(e.target.value);
+                        const newDateStart = e.target.value;
+                        setDateStart(newDateStart);
+
+                        if (dateEnd && dateEnd < newDateStart) {
+                          setDateEnd("");
+                        }
+
+                        setCurrentPage(1);
                       }}
                     />
+
                     <span className="historiquesDateSeparator">→</span>
+
                     <input
                       type="date"
                       className="historiquesDateInput"
                       value={dateEnd}
+                      min={dateStart}
                       onChange={(e) => {
                         setDateEnd(e.target.value);
+                        setCurrentPage(1);
                       }}
                     />
                   </div>
@@ -1030,7 +1051,16 @@ export default function HistoriquesPage({ showToast }) {
                               </span>
                             </div>
                             {item.fiche?.nom && (
-                              <small className="text-muted d-block">
+                              <small
+                                className="text-muted d-block"
+                                title={item.fiche.nom}
+                                style={{
+                                  maxWidth: "220px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
                                 <i className="bi bi-person me-1" />
                                 {item.fiche.nom}
                               </small>
