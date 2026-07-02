@@ -65,22 +65,20 @@ export default function CompagneCard({
             <i className="bi bi-tags" /> Qualifications
           </button>
 
-          {!isInbound && (
-            <button
-              type="button"
-              className="btnCardAction"
-              onClick={() => onToggleBackgroundNoise(compagne)}
-            >
-              <i
-                className={`bi ${compagne.backgroundNoise
-                    ? "bi-volume-up-fill"
-                    : "bi-volume-mute-fill"
-                  }`}
-              />
-              {" "}
-              {compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}
-            </button>
-          )}
+          <button
+            type="button"
+            className="btnCardAction"
+            onClick={() => onToggleBackgroundNoise(compagne)}
+          >
+            <i
+              className={`bi ${compagne.backgroundNoise
+                ? "bi-volume-up-fill"
+                : "bi-volume-mute-fill"
+                }`}
+            />
+            {" "}
+            {compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}
+          </button>
           <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
             Modifier
           </button>

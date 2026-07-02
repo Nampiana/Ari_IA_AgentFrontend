@@ -259,7 +259,6 @@ export default function CompagneFormModal({
               </select>
             </div>
 
-            {!isInbound && (
               <div className="formGroup">
                 <label>Bruit de fond</label>
 
@@ -289,7 +288,6 @@ export default function CompagneFormModal({
                   Si activé, un bruit de fond léger sera joué pendant les silences de l’agent.
                 </div>
               </div>
-            )}
 
             {/* Timeout — masqué en entrant (pas de dial timeout utile) */}
             {!isInbound && (
