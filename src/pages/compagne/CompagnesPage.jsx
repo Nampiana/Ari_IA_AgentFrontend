@@ -161,9 +161,11 @@ export default function CompagnesPage({ showToast }) {
   };
 
   const confirmDelete = async () => {
-    const id = deleteModal.compagne;
+    const id = deleteModal.compagne?._id;
     const backup = compagnes;
+
     setCompagnes((prev) => prev.filter((c) => c._id !== id));
+
     try {
       await deleteCompagne(id);
 
@@ -318,7 +320,7 @@ export default function CompagnesPage({ showToast }) {
 
             <p>
               Voulez-vous vraiment supprimer{" "}
-              <strong>{deleteModal.compagne?.nom || "cette campagne"}</strong> ?
+              <strong>{deleteModal.compagne?.nomCompagne || "cette campagne"}</strong>
             </p>
 
             <div className="deleteActions">

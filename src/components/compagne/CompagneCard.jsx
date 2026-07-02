@@ -46,45 +46,65 @@ export default function CompagneCard({
         </div>
 
         <div className="compagneStatusWrap">
-          {/* Bouton Lancer/Arrêter — masqué pour l'entrant (pas de dialer) */}
-          {!isInbound && (
+          {/* Ligne principale : Lancer + icônes modifier/supprimer */}
+          <div className="cardActionHeader">
+            {!isInbound && (
+              <button
+                type="button"
+                className={`btnAction ${compagne.isRunning === 1 ? "btnStop" : "btnStart"}`}
+                onClick={() => lancerCampagne(compagne)}
+              >
+                <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
+                {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
+              </button>
+            )}
+
             <button
               type="button"
-              className={`btnAction ${compagne.isRunning === 1 ? "btnStop" : "btnStart"}`}
-              onClick={() => lancerCampagne(compagne)}
+              className="btnIconAction btnIconEdit"
+              onClick={() => onEdit(compagne)}
+              title="Modifier"
+              aria-label="Modifier"
             >
-              <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
-              {compagne.isRunning === 1 ? " Arrêter" : " Lancer"}
+              <i className="bi bi-pencil-square" />
             </button>
-          )}
-          <button
-            type="button"
-            className="btnCardAction"
-            onClick={() => onQualifications(compagne)}
-          >
-            <i className="bi bi-tags" /> Qualifications
-          </button>
 
-          <button
-            type="button"
-            className="btnCardAction"
-            onClick={() => onToggleBackgroundNoise(compagne)}
-          >
-            <i
-              className={`bi ${compagne.backgroundNoise
-                ? "bi-volume-up-fill"
-                : "bi-volume-mute-fill"
-                }`}
-            />
-            {" "}
-            {compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}
-          </button>
-          <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
-            Modifier
-          </button>
-          <button type="button" className="btnDelete" onClick={() => onDelete(compagne._id)}>
-            Supprimer
-          </button>
+            <button
+              type="button"
+              className="btnIconAction btnIconDelete"
+              onClick={() => onDelete(compagne)}
+              title="Supprimer"
+              aria-label="Supprimer"
+            >
+              <i className="bi bi-trash3" />
+            </button>
+          </div>
+
+          {/* Ligne secondaire : Qualifications + bruit de fond */}
+          <div className="cardActionTools">
+            <button
+              type="button"
+              className="btnCardAction btnQualification"
+              onClick={() => onQualifications(compagne)}
+            >
+              <i className="bi bi-tags" />
+              <span>Qualifications</span>
+            </button>
+
+            <button
+              type="button"
+              className={`btnCardAction ${compagne.backgroundNoise ? "btnNoiseOn" : "btnNoiseOff"}`}
+              onClick={() => onToggleBackgroundNoise(compagne)}
+            >
+              <i
+                className={`bi ${compagne.backgroundNoise
+                  ? "bi-volume-up-fill"
+                  : "bi-volume-mute-fill"
+                  }`}
+              />
+              <span>{compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
