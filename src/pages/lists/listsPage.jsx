@@ -30,7 +30,10 @@ export default function ListsPage({ showToast }) {
   const [loadingCreate, setLoadingCreate] = useState(false);
   const [mapping, setMapping] = useState({
     nom: "",
+    nomResponsable: "",
+    phoneResponsable: "",
     phone: "",
+    phone2: "",
     adresse: "",
     habitation: "",
     ville: "",
@@ -45,7 +48,10 @@ export default function ListsPage({ showToast }) {
   });
   const [newFiche, setNewFiche] = useState({
     nom: "",
+    nomResponsable: "",
+    phoneResponsable: "",
     phone: "",
+    phone2: "",
     email: "",
     ville: "",
     habitation: "",
@@ -54,13 +60,15 @@ export default function ListsPage({ showToast }) {
     codePostale: "",
     entreprise: "",
     pays: "",
-    effectif: "",
     commentaire: "",
   });
 
   const [visibleColumns, setVisibleColumns] = useState([
     "nom",
+    "nomResponsable",
+    "phoneResponsable",
     "phone",
+    "phone2",
     "email",
     "ville",
     "habitation",
@@ -76,7 +84,10 @@ export default function ListsPage({ showToast }) {
 
   const ALL_COLUMNS = [
     "nom",
+    "nomResponsable",
+    "phoneResponsable",
     "phone",
+    "phone2",
     "email",
     "ville",
     "habitation",
@@ -224,7 +235,6 @@ export default function ListsPage({ showToast }) {
     fetchFiches(selectedList._id, 1, ficheLimit);
   }, [search, filterBlackList, filterCalled]);
 
-
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -285,7 +295,14 @@ export default function ListsPage({ showToast }) {
     try {
       const formattedData = csvData.map((row) => ({
         nom: mapping.nom ? row[mapping.nom] || "" : "",
+        nomResponsable: mapping.nomResponsable
+          ? row[mapping.nomResponsable] || ""
+          : "",
+        phoneResponsable: mapping.phoneResponsable
+          ? row[mapping.phoneResponsable] || ""
+          : "",
         phone: mapping.phone ? row[mapping.phone] || "" : "",
+        phone2: mapping.phone2 ? row[mapping.phone2] || "" : "",
         adresse: mapping.adresse ? row[mapping.adresse] || "" : "",
         habitation: mapping.habitation ? row[mapping.habitation] || "" : "",
         ville: mapping.ville ? row[mapping.ville] || "" : "",
@@ -313,7 +330,10 @@ export default function ListsPage({ showToast }) {
       setColumns([]);
       setMapping({
         nom: "",
+        nomResponsable: "",
+        phoneResponsable: "",
         phone: "",
+        phone2: "",
         adresse: "",
         habitation: "",
         ville: "",
@@ -379,7 +399,10 @@ export default function ListsPage({ showToast }) {
     setColumns([]);
     setMapping({
       nom: "",
+      nomResponsable: "",
+      phoneResponsable: "",
       phone: "",
+      phone2: "",
       adresse: "",
       habitation: "",
       ville: "",
@@ -396,7 +419,10 @@ export default function ListsPage({ showToast }) {
 
   const mappingFields = [
     { key: "nom", label: "Nom *" },
+    { key: "nomResponsable", label: "Nom responsable" },
+    { key: "phoneResponsable", label: "Téléphone responsable" },
     { key: "phone", label: "Téléphone *" },
+    { key: "phone2", label: "Téléphone 2" },
     { key: "adresse", label: "Adresse" },
     { key: "habitation", label: "Habitation" },
     { key: "ville", label: "Ville" },
@@ -517,8 +543,9 @@ export default function ListsPage({ showToast }) {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                    }`}
+                  className={`bi ${
+                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                  }`}
                 />
               </div>
 
@@ -693,6 +720,38 @@ export default function ListsPage({ showToast }) {
                     </div>
 
                     <div className="col-md-6">
+                      <label className="form-label">Nom responsable</label>
+                      <input
+                        className="form-control"
+                        placeholder="Nom responsable"
+                        value={newFiche.nomResponsable}
+                        onChange={(e) =>
+                          setNewFiche({
+                            ...newFiche,
+                            nomResponsable: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">
+                        Téléphone responsable
+                      </label>
+                      <input
+                        className="form-control"
+                        placeholder="Téléphone responsable"
+                        value={newFiche.phoneResponsable}
+                        onChange={(e) =>
+                          setNewFiche({
+                            ...newFiche,
+                            phoneResponsable: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
                       <label className="form-label">Téléphone *</label>
                       <input
                         className="form-control"
@@ -700,6 +759,18 @@ export default function ListsPage({ showToast }) {
                         value={newFiche.phone}
                         onChange={(e) =>
                           setNewFiche({ ...newFiche, phone: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">Téléphone 2</label>
+                      <input
+                        className="form-control"
+                        placeholder="Téléphone 2"
+                        value={newFiche.phone2}
+                        onChange={(e) =>
+                          setNewFiche({ ...newFiche, phone2: e.target.value })
                         }
                       />
                     </div>
@@ -841,7 +912,10 @@ export default function ListsPage({ showToast }) {
 
                         setNewFiche({
                           nom: "",
+                          nomResponsable: "",
+                          phoneResponsable: "",
                           phone: "",
+                          phone2: "",
                           email: "",
                           ville: "",
                           habitation: "",
@@ -901,10 +975,10 @@ export default function ListsPage({ showToast }) {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                                editingCell?.field === key ? (
+                              editingCell?.field === key ? (
                                 <>
                                   {key === "isAlreadyCalled" ||
-                                    key === "isBlackList" ? (
+                                  key === "isBlackList" ? (
                                     <select
                                       style={{
                                         width: "100%",
@@ -914,8 +988,8 @@ export default function ListsPage({ showToast }) {
                                       }}
                                       value={String(
                                         dirtyFiches[row._id]?.[key] ??
-                                        row[key] ??
-                                        (key === "isBlackList" ? 1 : 0),
+                                          row[key] ??
+                                          (key === "isBlackList" ? 1 : 0),
                                       )}
                                       onChange={(e) => {
                                         const value = Number(e.target.value);
@@ -984,13 +1058,13 @@ export default function ListsPage({ showToast }) {
                                 <>
                                   {key === "isAlreadyCalled"
                                     ? (dirtyFiches[row._id]?.[key] ??
-                                      row[key]) == 1
+                                        row[key]) == 1
                                       ? "Appelé"
                                       : "Non appelé"
                                     : key === "isBlackList"
                                       ? (dirtyFiches[row._id]?.[key] ??
-                                        row[key] ??
-                                        1) == 2
+                                          row[key] ??
+                                          1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
                                       : (dirtyFiches[row._id]?.[key] ??
