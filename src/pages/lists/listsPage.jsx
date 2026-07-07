@@ -81,6 +81,7 @@ export default function ListsPage({ showToast }) {
     commentaire: "Commentaire",
     isAlreadyCalled: "Appel",
     isBlackList: "Liste noire",
+    emailEnvoye: "Email envoyé",
   };
 
   const IMPORTANT_COLUMNS = [
@@ -113,6 +114,7 @@ export default function ListsPage({ showToast }) {
     "commentaire",
     "isAlreadyCalled",
     "isBlackList",
+    "emailEnvoye",
   ];
 
   const [visibleColumns, setVisibleColumns] = useState(IMPORTANT_COLUMNS);
@@ -1049,7 +1051,8 @@ export default function ListsPage({ showToast }) {
                               editingCell?.field === key ? (
                                 <>
                                   {key === "isAlreadyCalled" ||
-                                  key === "isBlackList" ? (
+                                  key === "isBlackList" ||
+                                  key === "emailEnvoye" ? (
                                     <select
                                       style={{
                                         width: "100%",
@@ -1085,10 +1088,15 @@ export default function ListsPage({ showToast }) {
                                           <option value="0">Non appelé</option>
                                           <option value="1">Appelé</option>
                                         </>
-                                      ) : (
+                                      ) : key === "isBlackList" ? (
                                         <>
                                           <option value="1">Whitelist</option>
                                           <option value="2">Blacklist</option>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <option value="0">Non envoyé</option>
+                                          <option value="1">Envoyé</option>
                                         </>
                                       )}
                                     </select>
@@ -1138,8 +1146,14 @@ export default function ListsPage({ showToast }) {
                                           1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
-                                      : (dirtyFiches[row._id]?.[key] ??
-                                        row[key])}
+                                      : key === "emailEnvoye"
+                                        ? (dirtyFiches[row._id]?.[key] ??
+                                            row[key] ??
+                                            0) == 1
+                                          ? "Envoyé"
+                                          : "Non envoyé"
+                                        : (dirtyFiches[row._id]?.[key] ??
+                                          row[key])}
                                 </>
                               )}
                             </td>
