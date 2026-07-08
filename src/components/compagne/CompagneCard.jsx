@@ -6,6 +6,7 @@ export default function CompagneCard({
   onDelete,
   lancerCampagne,
   onQualifications,
+  onToggleBackgroundNoise,
 }) {
   const isInbound = compagne.callType === "inbound";
 
@@ -20,6 +21,15 @@ export default function CompagneCard({
             <span className={`badge ${compagne.active === 1 ? "success" : "danger"}`}>
               {compagne.active === 1 ? "Actif" : "Inactif"}
             </span>
+            {!isInbound && (
+              <span
+                className={`badge ${compagne.backgroundNoise ? "success" : "danger"}`}
+              >
+                <i className={`bi ${compagne.backgroundNoise ? "bi-volume-up-fill" : "bi-volume-mute-fill"}`} />
+                {" "}
+                {compagne.backgroundNoise ? "Fond actif" : "Fond off"}
+              </span>
+            )}
 
             {/* ✅ Type d'appel */}
             <span className={`badge ${isInbound ? "badgeInbound" : "badgeOutbound"}`}>
@@ -36,30 +46,65 @@ export default function CompagneCard({
         </div>
 
         <div className="compagneStatusWrap">
-          {/* Bouton Lancer/Arrêter — masqué pour l'entrant (pas de dialer) */}
-          {!isInbound && (
+          {/* Ligne principale : Lancer + icônes modifier/supprimer */}
+          <div className="cardActionHeader">
+            {!isInbound && (
+              <button
+                type="button"
+                className={`btnAction ${compagne.isRunning === 1 ? "btnStop" : "btnStart"}`}
+                onClick={() => lancerCampagne(compagne)}
+              >
+                <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
+                {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
+              </button>
+            )}
+
             <button
               type="button"
-              className={`btnAction ${compagne.isRunning === 1 ? "btnStop" : "btnStart"}`}
-              onClick={() => lancerCampagne(compagne)}
+              className="btnIconAction btnIconEdit"
+              onClick={() => onEdit(compagne)}
+              title="Modifier"
+              aria-label="Modifier"
             >
-              <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
-              {compagne.isRunning === 1 ? " Arrêter" : " Lancer"}
+              <i className="bi bi-pencil-square" />
             </button>
-          )}
-          <button
-            type="button"
-            className="btnCardAction"
-            onClick={() => onQualifications(compagne)}
-          >
-            <i className="bi bi-tags" /> Qualifications
-          </button>
-          <button type="button" className="btnEdit" onClick={() => onEdit(compagne)}>
-            Modifier
-          </button>
-          <button type="button" className="btnDelete" onClick={() => onDelete(compagne._id)}>
-            Supprimer
-          </button>
+
+            <button
+              type="button"
+              className="btnIconAction btnIconDelete"
+              onClick={() => onDelete(compagne)}
+              title="Supprimer"
+              aria-label="Supprimer"
+            >
+              <i className="bi bi-trash3" />
+            </button>
+          </div>
+
+          {/* Ligne secondaire : Qualifications + bruit de fond */}
+          <div className="cardActionTools">
+            <button
+              type="button"
+              className="btnCardAction btnQualification"
+              onClick={() => onQualifications(compagne)}
+            >
+              <i className="bi bi-tags" />
+              <span>Qualifications</span>
+            </button>
+
+            <button
+              type="button"
+              className={`btnCardAction ${compagne.backgroundNoise ? "btnNoiseOn" : "btnNoiseOff"}`}
+              onClick={() => onToggleBackgroundNoise(compagne)}
+            >
+              <i
+                className={`bi ${compagne.backgroundNoise
+                  ? "bi-volume-up-fill"
+                  : "bi-volume-mute-fill"
+                  }`}
+              />
+              <span>{compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -141,8 +186,8 @@ export default function CompagneCard({
           <div>
             {compagne.allowedDays?.length
               ? compagne.allowedDays
-                  .map((d) => ({ 0: "Dim", 1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam" }[d]))
-                  .join(", ")
+                .map((d) => ({ 0: "Dim", 1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam" }[d]))
+                .join(", ")
               : "Lun - Ven"}
           </div>
         </div>

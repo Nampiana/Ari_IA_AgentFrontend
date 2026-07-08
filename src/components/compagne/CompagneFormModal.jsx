@@ -20,6 +20,7 @@ const getInitialFormData = (selectedCompagne) => ({
   timeZone: selectedCompagne?.timeZone || "Europe/Paris",
   // ✅ Type d'appel : "inbound" = entrant, "outbound" = sortant
   callType: selectedCompagne?.callType || "outbound",
+  backgroundNoise: selectedCompagne?.backgroundNoise ?? false,
 });
 
 function FichesMultiSelect({ lists, selectedIds, onToggle }) {
@@ -257,6 +258,36 @@ export default function CompagneFormModal({
                 <option value="inbound">📲 Entrant</option>
               </select>
             </div>
+
+              <div className="formGroup">
+                <label>Bruit de fond</label>
+
+                <label
+                  className="ficheCheckItem"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 8,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.backgroundNoise}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        backgroundNoise: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>Activer l’ambiance centre d’appels</span>
+                </label>
+
+                <div className="formHint">
+                  Si activé, un bruit de fond léger sera joué pendant les silences de l’agent.
+                </div>
+              </div>
 
             {/* Timeout — masqué en entrant (pas de dial timeout utile) */}
             {!isInbound && (

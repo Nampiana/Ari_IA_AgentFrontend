@@ -30,7 +30,10 @@ export default function ListsPage({ showToast }) {
   const [loadingCreate, setLoadingCreate] = useState(false);
   const [mapping, setMapping] = useState({
     nom: "",
+    nomResponsable: "",
+    phoneResponsable: "",
     phone: "",
+    phone2: "",
     adresse: "",
     habitation: "",
     ville: "",
@@ -45,7 +48,10 @@ export default function ListsPage({ showToast }) {
   });
   const [newFiche, setNewFiche] = useState({
     nom: "",
+    nomResponsable: "",
+    phoneResponsable: "",
     phone: "",
+    phone2: "",
     email: "",
     ville: "",
     habitation: "",
@@ -54,41 +60,64 @@ export default function ListsPage({ showToast }) {
     codePostale: "",
     entreprise: "",
     pays: "",
-    effectif: "",
     commentaire: "",
   });
 
-  const [visibleColumns, setVisibleColumns] = useState([
+  const COLUMN_LABELS = {
+    nom: "Nom",
+    entreprise: "Entreprise",
+    phone: "Téléphone",
+    phone2: "Téléphone 2",
+    nomResponsable: "Responsable",
+    phoneResponsable: "Tél. responsable",
+    email: "Email",
+    ville: "Ville",
+    adresse: "Adresse",
+    habitation: "Habitation",
+    age: "Âge",
+    effectif: "Effectif",
+    codePostale: "Code postal",
+    pays: "Pays",
+    commentaire: "Commentaire",
+    isAlreadyCalled: "Appel",
+    isBlackList: "Liste noire",
+    emailEnvoye: "Email envoyé",
+  };
+
+  const IMPORTANT_COLUMNS = [
     "nom",
+    "entreprise",
     "phone",
+    "phone2",
+    "nomResponsable",
+    "phoneResponsable",
+    "ville",
+    "isAlreadyCalled",
+    "isBlackList",
+  ];
+
+  const ALL_COLUMNS = [
+    "nom",
+    "entreprise",
+    "phone",
+    "phone2",
+    "nomResponsable",
+    "phoneResponsable",
     "email",
     "ville",
+    "adresse",
     "habitation",
     "age",
     "effectif",
     "codePostale",
-    "entreprise",
     "pays",
     "commentaire",
     "isAlreadyCalled",
     "isBlackList",
-  ]);
-
-  const ALL_COLUMNS = [
-    "nom",
-    "phone",
-    "email",
-    "ville",
-    "habitation",
-    "age",
-    "effectif",
-    "codePostale",
-    "entreprise",
-    "pays",
-    "commentaire",
-    // "isAlreadyCalled",
-    // "isBlackList",
+    "emailEnvoye",
   ];
+
+  const [visibleColumns, setVisibleColumns] = useState(IMPORTANT_COLUMNS);
 
   const [search, setSearch] = useState("");
   const [filterFields, setFilterFields] = useState([
@@ -133,6 +162,28 @@ export default function ListsPage({ showToast }) {
     called: 0,
     notCalled: 0,
   });
+
+  const toggleColumn = (col) => {
+    setVisibleColumns((prev) => {
+      if (prev.includes(col)) {
+        return prev.filter((c) => c !== col);
+      }
+
+      return [...prev, col];
+    });
+  };
+
+  const showImportantColumns = () => {
+    setVisibleColumns(IMPORTANT_COLUMNS);
+  };
+
+  const showAllColumns = () => {
+    setVisibleColumns(ALL_COLUMNS);
+  };
+
+  const hideOptionalColumns = () => {
+    setVisibleColumns(["nom", "phone", "isAlreadyCalled", "isBlackList"]);
+  };
 
   const fetchLists = async () => {
     try {
@@ -224,7 +275,6 @@ export default function ListsPage({ showToast }) {
     fetchFiches(selectedList._id, 1, ficheLimit);
   }, [search, filterBlackList, filterCalled]);
 
-
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -285,7 +335,14 @@ export default function ListsPage({ showToast }) {
     try {
       const formattedData = csvData.map((row) => ({
         nom: mapping.nom ? row[mapping.nom] || "" : "",
+        nomResponsable: mapping.nomResponsable
+          ? row[mapping.nomResponsable] || ""
+          : "",
+        phoneResponsable: mapping.phoneResponsable
+          ? row[mapping.phoneResponsable] || ""
+          : "",
         phone: mapping.phone ? row[mapping.phone] || "" : "",
+        phone2: mapping.phone2 ? row[mapping.phone2] || "" : "",
         adresse: mapping.adresse ? row[mapping.adresse] || "" : "",
         habitation: mapping.habitation ? row[mapping.habitation] || "" : "",
         ville: mapping.ville ? row[mapping.ville] || "" : "",
@@ -313,7 +370,10 @@ export default function ListsPage({ showToast }) {
       setColumns([]);
       setMapping({
         nom: "",
+        nomResponsable: "",
+        phoneResponsable: "",
         phone: "",
+        phone2: "",
         adresse: "",
         habitation: "",
         ville: "",
@@ -379,7 +439,10 @@ export default function ListsPage({ showToast }) {
     setColumns([]);
     setMapping({
       nom: "",
+      nomResponsable: "",
+      phoneResponsable: "",
       phone: "",
+      phone2: "",
       adresse: "",
       habitation: "",
       ville: "",
@@ -396,7 +459,10 @@ export default function ListsPage({ showToast }) {
 
   const mappingFields = [
     { key: "nom", label: "Nom *" },
+    { key: "nomResponsable", label: "Nom responsable" },
+    { key: "phoneResponsable", label: "Téléphone responsable" },
     { key: "phone", label: "Téléphone *" },
+    { key: "phone2", label: "Téléphone 2" },
     { key: "adresse", label: "Adresse" },
     { key: "habitation", label: "Habitation" },
     { key: "ville", label: "Ville" },
@@ -517,8 +583,9 @@ export default function ListsPage({ showToast }) {
                 <div className="fw-bold">🔍 Filtres & colonnes</div>
 
                 <i
-                  className={`bi ${showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                    }`}
+                  className={`bi ${
+                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                  }`}
                 />
               </div>
 
@@ -610,34 +677,67 @@ export default function ListsPage({ showToast }) {
 
                     {/* VISIBILITY (dropdown style compact) */}
                     <div>
-                      <div className="fw-semibold mb-2">Colonnes visibles</div>
-
-                      <div className="d-flex flex-wrap gap-3">
-                        {ALL_COLUMNS.map((col) => (
-                          <div className="form-check" key={col}>
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={visibleColumns.includes(col)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setVisibleColumns([...visibleColumns, col]);
-                                } else {
-                                  setVisibleColumns(
-                                    visibleColumns.filter((c) => c !== col),
-                                  );
-                                }
-                              }}
-                              id={`col-${col}`}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={`col-${col}`}
-                            >
-                              {col}
-                            </label>
+                      <div className="columnsPanel">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <div>
+                            <div className="fw-semibold">
+                              Colonnes à afficher
+                            </div>
+                            <small className="text-muted">
+                              {visibleColumns.length} / {ALL_COLUMNS.length}{" "}
+                              colonnes visibles
+                            </small>
                           </div>
-                        ))}
+
+                          <div className="d-flex gap-2 flex-wrap">
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary btn-sm"
+                              onClick={showImportantColumns}
+                            >
+                              Importantes
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn btn-outline-secondary btn-sm"
+                              onClick={showAllColumns}
+                            >
+                              Tout afficher
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn btn-outline-dark btn-sm"
+                              onClick={hideOptionalColumns}
+                            >
+                              Minimal
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="columnsCheckboxGrid">
+                          {ALL_COLUMNS.map((col) => {
+                            const checked = visibleColumns.includes(col);
+
+                            return (
+                              <label
+                                key={col}
+                                className={`columnCheckPill ${checked ? "columnCheckPill--active" : ""}`}
+                                htmlFor={`col-${col}`}
+                              >
+                                <input
+                                  id={`col-${col}`}
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleColumn(col)}
+                                />
+
+                                <span>{COLUMN_LABELS[col] || col}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -693,6 +793,38 @@ export default function ListsPage({ showToast }) {
                     </div>
 
                     <div className="col-md-6">
+                      <label className="form-label">Nom responsable</label>
+                      <input
+                        className="form-control"
+                        placeholder="Nom responsable"
+                        value={newFiche.nomResponsable}
+                        onChange={(e) =>
+                          setNewFiche({
+                            ...newFiche,
+                            nomResponsable: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">
+                        Téléphone responsable
+                      </label>
+                      <input
+                        className="form-control"
+                        placeholder="Téléphone responsable"
+                        value={newFiche.phoneResponsable}
+                        onChange={(e) =>
+                          setNewFiche({
+                            ...newFiche,
+                            phoneResponsable: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
                       <label className="form-label">Téléphone *</label>
                       <input
                         className="form-control"
@@ -700,6 +832,18 @@ export default function ListsPage({ showToast }) {
                         value={newFiche.phone}
                         onChange={(e) =>
                           setNewFiche({ ...newFiche, phone: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label">Téléphone 2</label>
+                      <input
+                        className="form-control"
+                        placeholder="Téléphone 2"
+                        value={newFiche.phone2}
+                        onChange={(e) =>
+                          setNewFiche({ ...newFiche, phone2: e.target.value })
                         }
                       />
                     </div>
@@ -841,7 +985,10 @@ export default function ListsPage({ showToast }) {
 
                         setNewFiche({
                           nom: "",
+                          nomResponsable: "",
+                          phoneResponsable: "",
                           phone: "",
+                          phone2: "",
                           email: "",
                           ville: "",
                           habitation: "",
@@ -870,12 +1017,12 @@ export default function ListsPage({ showToast }) {
               <p>Chargement...</p>
             ) : (
               <>
-                <div class="table-responsive">
+                <div className="table-responsive">
                   <table className="table fiche-table-fixed">
                     <thead>
                       <tr>
                         {visibleColumns.map((col) => (
-                          <th key={col}>{col}</th>
+                          <th key={col}>{COLUMN_LABELS[col] || col}</th>
                         ))}
                         <th>Action</th>
                       </tr>
@@ -901,10 +1048,11 @@ export default function ListsPage({ showToast }) {
                               }}
                             >
                               {editingCell?.id === row._id &&
-                                editingCell?.field === key ? (
+                              editingCell?.field === key ? (
                                 <>
                                   {key === "isAlreadyCalled" ||
-                                    key === "isBlackList" ? (
+                                  key === "isBlackList" ||
+                                  key === "emailEnvoye" ? (
                                     <select
                                       style={{
                                         width: "100%",
@@ -914,8 +1062,8 @@ export default function ListsPage({ showToast }) {
                                       }}
                                       value={String(
                                         dirtyFiches[row._id]?.[key] ??
-                                        row[key] ??
-                                        (key === "isBlackList" ? 1 : 0),
+                                          row[key] ??
+                                          (key === "isBlackList" ? 1 : 0),
                                       )}
                                       onChange={(e) => {
                                         const value = Number(e.target.value);
@@ -940,10 +1088,15 @@ export default function ListsPage({ showToast }) {
                                           <option value="0">Non appelé</option>
                                           <option value="1">Appelé</option>
                                         </>
-                                      ) : (
+                                      ) : key === "isBlackList" ? (
                                         <>
                                           <option value="1">Whitelist</option>
                                           <option value="2">Blacklist</option>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <option value="0">Non envoyé</option>
+                                          <option value="1">Envoyé</option>
                                         </>
                                       )}
                                     </select>
@@ -984,17 +1137,23 @@ export default function ListsPage({ showToast }) {
                                 <>
                                   {key === "isAlreadyCalled"
                                     ? (dirtyFiches[row._id]?.[key] ??
-                                      row[key]) == 1
+                                        row[key]) == 1
                                       ? "Appelé"
                                       : "Non appelé"
                                     : key === "isBlackList"
                                       ? (dirtyFiches[row._id]?.[key] ??
-                                        row[key] ??
-                                        1) == 2
+                                          row[key] ??
+                                          1) == 2
                                         ? "Blacklist"
                                         : "Whitelist"
-                                      : (dirtyFiches[row._id]?.[key] ??
-                                        row[key])}
+                                      : key === "emailEnvoye"
+                                        ? (dirtyFiches[row._id]?.[key] ??
+                                            row[key] ??
+                                            0) == 1
+                                          ? "Envoyé"
+                                          : "Non envoyé"
+                                        : (dirtyFiches[row._id]?.[key] ??
+                                          row[key])}
                                 </>
                               )}
                             </td>

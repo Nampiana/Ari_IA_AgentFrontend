@@ -3,15 +3,52 @@ import { buildRecordUrl } from "../../utils/buildFormat.js";
 import { REASON_CONFIG, STATUS_CONFIG } from "../../utils/configStatus.js";
 import { formatDateTime } from "../../utils/buildFormat.js";
 
+/**
+ * Convertit une date JS/ISO vers le format attendu par input datetime-local
+ * SANS conversion UTC.
+ *
+ * Exemple :
+ * 2026-07-07T07:40:00.000Z affiché localement en 10:40
+ * devient bien : 2026-07-07T10:40
+ */
+function toDateTimeLocalValue(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hour = pad(date.getHours());
+  const minute = pad(date.getMinutes());
+
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+/**
+ * Transforme la valeur de datetime-local vers Date JS.
+ * Le navigateur interprète correctement selon l'heure locale.
+ */
+function fromDateTimeLocalValue(value) {
+  if (!value) return null;
+  return new Date(value);
+}
+
 export function AudioBlock({ pathRecord, label }) {
   const url = buildRecordUrl(pathRecord);
-  if (!url)
+
+  if (!url) {
     return (
       <div className="scd-audio-empty">
         <i className="bi bi-volume-mute" />
         <span>Pas d'enregistrement</span>
       </div>
     );
+  }
+
   return (
     <div className="scd-audio-wrap">
       {label && (
@@ -20,6 +57,7 @@ export function AudioBlock({ pathRecord, label }) {
           {label}
         </div>
       )}
+
       <audio controls preload="none" className="scd-audio">
         <source src={url} />
       </audio>
@@ -27,14 +65,21 @@ export function AudioBlock({ pathRecord, label }) {
   );
 }
 
-
 export function AddCallForm({ historique, onAdd, onCancel, saving }) {
-  // Heure par défaut : +1h arrondie à la demi-heure
   const defaultDate = () => {
     const d = new Date(Date.now() + 3_600_000);
-    d.setMinutes(d.getMinutes() < 30 ? 30 : 0);
-    if (d.getMinutes() === 0) d.setHours(d.getHours() + 1);
-    return d.toISOString().slice(0, 16);
+
+    if (d.getMinutes() < 30) {
+      d.setMinutes(30);
+    } else {
+      d.setHours(d.getHours() + 1);
+      d.setMinutes(0);
+    }
+
+    d.setSeconds(0);
+    d.setMilliseconds(0);
+
+    return toDateTimeLocalValue(d);
   };
 
   const [scheduledAt, setScheduledAt] = useState(defaultDate());
@@ -43,8 +88,9 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     onAdd({
-      scheduledAt: new Date(scheduledAt),
+      scheduledAt: fromDateTimeLocalValue(scheduledAt),
       reason,
       notes: notes.trim() || undefined,
     });
@@ -56,6 +102,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
         <i className="bi bi-plus-circle" />
         <span>Nouveau rappel</span>
       </div>
+
       <form className="scd-edit-form" onSubmit={handleSubmit}>
         <div className="scd-edit-field">
           <label>Date & heure</label>
@@ -63,10 +110,11 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
             type="datetime-local"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            min={new Date().toISOString().slice(0, 16)}
+            min={toDateTimeLocalValue(new Date())}
             required
           />
         </div>
+
         <div className="scd-edit-field">
           <label>Raison</label>
           <select value={reason} onChange={(e) => setReason(e.target.value)}>
@@ -77,11 +125,13 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
             ))}
           </select>
         </div>
+
         <div className="scd-edit-field">
           <label>
             Notes internes{" "}
             <span style={{ opacity: 0.5, fontWeight: 400 }}>(optionnel)</span>
           </label>
+
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -89,6 +139,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
             rows={2}
           />
         </div>
+
         <div className="scd-add-form-info">
           <i className="bi bi-info-circle" />
           <span>
@@ -96,6 +147,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
             <strong>{historique?.callerNumber}</strong>
           </span>
         </div>
+
         <div className="scd-edit-actions">
           <button
             type="button"
@@ -105,6 +157,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
           >
             Annuler
           </button>
+
           <button
             type="submit"
             className="scd-btn-save scd-btn-add"
@@ -126,26 +179,32 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
   );
 }
 
-
 export function EditForm({ call, onSave, onCancel }) {
-  const [scheduledAt, setScheduledAt] = useState(
-    call.scheduledAt
-      ? new Date(call.scheduledAt).toISOString().slice(0, 16)
-      : "",
-  );
-  const [notes, setNotes] = useState(call.notes || "");
-  const [status, setStatus] = useState(call.status);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState("pending");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setScheduledAt(toDateTimeLocalValue(call?.scheduledAt));
+    setNotes(call?.notes || "");
+    setStatus(call?.status || "pending");
+  }, [call]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setSaving(true);
-    await onSave(call._id, {
-      scheduledAt: new Date(scheduledAt),
-      notes,
-      status,
-    });
-    setSaving(false);
+
+    try {
+      await onSave(call._id, {
+        scheduledAt: fromDateTimeLocalValue(scheduledAt),
+        notes,
+        status,
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -159,6 +218,7 @@ export function EditForm({ call, onSave, onCancel }) {
           required
         />
       </div>
+
       <div className="scd-edit-field">
         <label>Statut</label>
         <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -169,6 +229,7 @@ export function EditForm({ call, onSave, onCancel }) {
           ))}
         </select>
       </div>
+
       <div className="scd-edit-field">
         <label>Notes internes</label>
         <textarea
@@ -178,10 +239,12 @@ export function EditForm({ call, onSave, onCancel }) {
           rows={3}
         />
       </div>
+
       <div className="scd-edit-actions">
         <button type="button" className="scd-btn-cancel" onClick={onCancel}>
           Annuler
         </button>
+
         <button type="submit" className="scd-btn-save" disabled={saving}>
           {saving ? (
             <>
@@ -198,7 +261,6 @@ export function EditForm({ call, onSave, onCancel }) {
   );
 }
 
-
 export function DeleteConfirm({ call, onConfirm, onCancel, deleting }) {
   return (
     <div className="scd-delete-confirm">
@@ -206,12 +268,15 @@ export function DeleteConfirm({ call, onConfirm, onCancel, deleting }) {
         <div className="scd-delete-icon">
           <i className="bi bi-exclamation-triangle" />
         </div>
+
         <p>
           Supprimer ce rappel planifié le{" "}
           <strong>{formatDateTime(call.scheduledAt)}</strong> ?
         </p>
+
         <p className="scd-delete-sub">Cette action est irréversible.</p>
       </div>
+
       <div className="scd-delete-confirm-actions">
         <button
           className="scd-btn-cancel"
@@ -220,6 +285,7 @@ export function DeleteConfirm({ call, onConfirm, onCancel, deleting }) {
         >
           Annuler
         </button>
+
         <button
           className="scd-btn-delete"
           onClick={onConfirm}

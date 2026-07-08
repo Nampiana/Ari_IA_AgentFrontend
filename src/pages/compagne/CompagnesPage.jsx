@@ -161,9 +161,11 @@ export default function CompagnesPage({ showToast }) {
   };
 
   const confirmDelete = async () => {
-    const id = deleteModal.compagne;
+    const id = deleteModal.compagne?._id;
     const backup = compagnes;
+
     setCompagnes((prev) => prev.filter((c) => c._id !== id));
+
     try {
       await deleteCompagne(id);
 
@@ -199,6 +201,45 @@ export default function CompagnesPage({ showToast }) {
       console.error("Erreur enregistrement campagne :", error);
       showToast("Erreur lors de l'enregistrement", "danger");
       setLoadingUpdate(false);
+    }
+  };
+
+  const handleToggleBackgroundNoise = async (compagne) => {
+    const nextValue = !compagne.backgroundNoise;
+
+    const backup = compagnes;
+
+    try {
+      setCompagnes((prev) =>
+        prev.map((c) =>
+          c._id === compagne._id
+            ? { ...c, backgroundNoise: nextValue }
+            : c,
+        ),
+      );
+
+      const res = await updateCompagne(compagne._id, {
+        backgroundNoise: nextValue,
+      });
+
+      const updated = res?.data?.data;
+
+      if (updated) {
+        setCompagnes((prev) =>
+          prev.map((c) => (c._id === compagne._id ? updated : c)),
+        );
+      }
+
+      showToast(
+        nextValue
+          ? "Bruit de fond activé pour cette campagne"
+          : "Bruit de fond désactivé pour cette campagne",
+        "success",
+      );
+    } catch (error) {
+      console.error("Erreur toggle bruit de fond :", error);
+      setCompagnes(backup);
+      showToast("Erreur lors de la modification du bruit de fond", "danger");
     }
   };
 
@@ -239,6 +280,7 @@ export default function CompagnesPage({ showToast }) {
                 onDelete={handleDelete}
                 lancerCampagne={lancerCampagne}
                 onQualifications={handleQualifications}
+                onToggleBackgroundNoise={handleToggleBackgroundNoise}
               />
             ))}
           </div>
@@ -278,7 +320,7 @@ export default function CompagnesPage({ showToast }) {
 
             <p>
               Voulez-vous vraiment supprimer{" "}
-              <strong>{deleteModal.compagne?.nom || "cette campagne"}</strong> ?
+              <strong>{deleteModal.compagne?.nomCompagne || "cette campagne"}</strong>
             </p>
 
             <div className="deleteActions">
