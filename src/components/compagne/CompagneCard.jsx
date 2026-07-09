@@ -7,6 +7,7 @@ export default function CompagneCard({
   lancerCampagne,
   onQualifications,
   onToggleBackgroundNoise,
+  onEmailConfig,
 }) {
   const isInbound = compagne.callType === "inbound";
 
@@ -114,6 +115,15 @@ export default function CompagneCard({
               <span>Qualifications</span>
             </button>
 
+              <button
+                type="button"
+                className="btnCardAction"
+                onClick={() => onEmailConfig(compagne)}
+              >
+                <i className="bi bi-envelope-fill" />
+                <span>Email</span>
+              </button>
+
             <button
               type="button"
               className={`btnCardAction ${compagne.backgroundNoise ? "btnNoiseOn" : "btnNoiseOff"}`}
@@ -218,8 +228,7 @@ export default function CompagneCard({
             </div>
           </>
         )}
-
-        <div>
+          <div>
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
             <i className="bi bi-telephone-fill concurrentDot" />
@@ -228,7 +237,6 @@ export default function CompagneCard({
             </span>
           </div>
         </div>
-
         <div>
           <span className="label">Jours autorisés</span>
           <div>
