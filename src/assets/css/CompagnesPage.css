@@ -482,6 +482,12 @@ label.multiSelectOption span {
   border: 1px solid #fcd34d;
 }
 
+.badge.badgeNumerosRotation {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
 .compagneStatusWrap {
   display: flex;
   flex-direction: column;

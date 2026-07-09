@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 const getInitialFormData = (selectedCompagne) => ({
   nomCompagne: selectedCompagne?.nomCompagne || "",
   numero: selectedCompagne?.numero || "",
+  numeros: Array.isArray(selectedCompagne?.numeros)
+    ? selectedCompagne.numeros.join("\n")
+    : "",
   script: selectedCompagne?.script || "",
   scriptTranscription: selectedCompagne?.scriptTranscription || "",
   id_ia: selectedCompagne?.id_ia?._id || selectedCompagne?.id_ia || "",
@@ -164,6 +167,12 @@ export default function CompagneFormModal({
     e.preventDefault();
     onSubmit({
       ...formData,
+      numeros: formData.numeros
+        ? formData.numeros
+            .split("\n")
+            .map((n) => n.trim())
+            .filter(Boolean)
+        : [],
       id_ia: formData.id_ia || null,
       startDate: formData.startDate || null,
       endDate: formData.endDate || null,
@@ -193,7 +202,6 @@ export default function CompagneFormModal({
 
         <form onSubmit={handleSubmit} className="agentForm">
           <div className="formGrid">
-
             {/* Nom campagne */}
             <div className="formGroup">
               <label>Nom de la campagne</label>
@@ -215,6 +223,27 @@ export default function CompagneFormModal({
                 required
               />
             </div>
+
+            {!isInbound && (
+              <div className="formGroup full">
+                <label>
+                  Numéros en rotation
+                  <span className="formHint"> (optionnel — un par ligne)</span>
+                </label>
+                <textarea
+                  name="numeros"
+                  value={formData.numeros}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder={"33162080441\n33377080258\n33745895056"}
+                />
+                <div className="formHint">
+                  Si renseignés, ces numéros seront utilisés en boucle à la
+                  place du numéro principal pour éviter d'être identifié comme
+                  spam.
+                </div>
+              </div>
+            )}
 
             {/* Agent IA */}
             <div className="formGroup">
@@ -259,35 +288,36 @@ export default function CompagneFormModal({
               </select>
             </div>
 
-              <div className="formGroup">
-                <label>Bruit de fond</label>
+            <div className="formGroup">
+              <label>Bruit de fond</label>
 
-                <label
-                  className="ficheCheckItem"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginTop: 8,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.backgroundNoise}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        backgroundNoise: e.target.checked,
-                      }))
-                    }
-                  />
-                  <span>Activer l’ambiance centre d’appels</span>
-                </label>
+              <label
+                className="ficheCheckItem"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 8,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.backgroundNoise}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      backgroundNoise: e.target.checked,
+                    }))
+                  }
+                />
+                <span>Activer l’ambiance centre d’appels</span>
+              </label>
 
-                <div className="formHint">
-                  Si activé, un bruit de fond léger sera joué pendant les silences de l’agent.
-                </div>
+              <div className="formHint">
+                Si activé, un bruit de fond léger sera joué pendant les silences
+                de l’agent.
               </div>
+            </div>
 
             {/* Timeout — masqué en entrant (pas de dial timeout utile) */}
             {!isInbound && (
@@ -323,7 +353,8 @@ export default function CompagneFormModal({
                 ))}
               </div>
               <div className="formHint">
-                Exemple : cochez lundi à vendredi pour autoriser les appels en semaine.
+                Exemple : cochez lundi à vendredi pour autoriser les appels en
+                semaine.
               </div>
             </div>
 
@@ -361,7 +392,6 @@ export default function CompagneFormModal({
                 <option value="Indian/Antananarivo">Madagascar</option>
               </select>
             </div>
-
           </div>
 
           {/* Fiches CSV — masquées en entrant (pas de liste à appeler) */}
@@ -388,7 +418,10 @@ export default function CompagneFormModal({
           <div className="formGroup full">
             <label>
               Appels simultanés
-              <span className="formHint"> (agents IA actifs en même temps)</span>
+              <span className="formHint">
+                {" "}
+                (agents IA actifs en même temps)
+              </span>
             </label>
             <div className="concurrentWrapper">
               <input
@@ -415,7 +448,9 @@ export default function CompagneFormModal({
           {/* ✅ Script IA — label et hint adaptatifs selon callType */}
           <div className="formGroup full">
             <label>
-              {isInbound ? "Script IA — Appel entrant" : "Script IA — Appel sortant"}
+              {isInbound
+                ? "Script IA — Appel entrant"
+                : "Script IA — Appel sortant"}
             </label>
             <div className="formHint" style={{ marginBottom: 6 }}>
               {isInbound
@@ -429,13 +464,12 @@ export default function CompagneFormModal({
               rows="10"
               placeholder={
                 isInbound
-                  ? "##IDENTITE##\nNOM_AGENT: ...\nNOM_ENTREPRISE: ...\n\n##PHRASE_OUVERTURE##\n\"Bonjour, [Entreprise], [Prénom] à l'appareil...\"\n\n##HORAIRES##\n..."
+                  ? '##IDENTITE##\nNOM_AGENT: ...\nNOM_ENTREPRISE: ...\n\n##PHRASE_OUVERTURE##\n"Bonjour, [Entreprise], [Prénom] à l\'appareil..."\n\n##HORAIRES##\n...'
                   : "Tu es [Prénom], commercial(e) de [Entreprise].\nObjectif : ...\nAccroche : ...\nObjections fréquentes : ..."
               }
               required
             />
           </div>
-
 
           {/* Aperçu script final (lecture seule) */}
           {selectedCompagne?.scriptFinal && (

@@ -18,29 +18,50 @@ export default function CompagneCard({
           <div className="compagneNumero">{compagne.numero}</div>
           <div className="compagneBadges">
             {/* Statut actif/inactif */}
-            <span className={`badge ${compagne.active === 1 ? "success" : "danger"}`}>
+            <span
+              className={`badge ${compagne.active === 1 ? "success" : "danger"}`}
+            >
               {compagne.active === 1 ? "Actif" : "Inactif"}
             </span>
             {!isInbound && (
               <span
                 className={`badge ${compagne.backgroundNoise ? "success" : "danger"}`}
               >
-                <i className={`bi ${compagne.backgroundNoise ? "bi-volume-up-fill" : "bi-volume-mute-fill"}`} />
-                {" "}
+                <i
+                  className={`bi ${compagne.backgroundNoise ? "bi-volume-up-fill" : "bi-volume-mute-fill"}`}
+                />{" "}
                 {compagne.backgroundNoise ? "Fond actif" : "Fond off"}
               </span>
             )}
 
             {/* ✅ Type d'appel */}
-            <span className={`badge ${isInbound ? "badgeInbound" : "badgeOutbound"}`}>
-              <i className={`bi ${isInbound ? "bi-telephone-inbound-fill" : "bi-telephone-outbound-fill"}`} />
-              {" "}{isInbound ? "Entrant" : "Sortant"}
+            <span
+              className={`badge ${isInbound ? "badgeInbound" : "badgeOutbound"}`}
+            >
+              <i
+                className={`bi ${isInbound ? "bi-telephone-inbound-fill" : "bi-telephone-outbound-fill"}`}
+              />{" "}
+              {isInbound ? "Entrant" : "Sortant"}
             </span>
+            {/* Badge rotation numéros */}
+            {!isInbound && compagne.numeros?.length > 0 && (
+              <span className="badge badgeNumerosRotation">
+                <i className="bi bi-arrow-repeat" /> {compagne.numeros.length}{" "}
+                numéro{compagne.numeros.length > 1 ? "s" : ""} en rotation
+              </span>
+            )}
 
             {/* Appels simultanés */}
-            <span className={`badge ${compagne.maxConcurrentCalls > 1 ? "badgeConcurrent" : "badgeSeq"}`}>
-              <i className="bi bi-telephone-fill" style={{ color: "#10b981" }} />
-              <span style={{ color: "#10b981" }}>×{compagne.maxConcurrentCalls ?? 1}</span>
+            <span
+              className={`badge ${compagne.maxConcurrentCalls > 1 ? "badgeConcurrent" : "badgeSeq"}`}
+            >
+              <i
+                className="bi bi-telephone-fill"
+                style={{ color: "#10b981" }}
+              />
+              <span style={{ color: "#10b981" }}>
+                ×{compagne.maxConcurrentCalls ?? 1}
+              </span>
             </span>
           </div>
         </div>
@@ -54,7 +75,9 @@ export default function CompagneCard({
                 className={`btnAction ${compagne.isRunning === 1 ? "btnStop" : "btnStart"}`}
                 onClick={() => lancerCampagne(compagne)}
               >
-                <i className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`} />
+                <i
+                  className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`}
+                />
                 {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
               </button>
             )}
@@ -97,10 +120,11 @@ export default function CompagneCard({
               onClick={() => onToggleBackgroundNoise(compagne)}
             >
               <i
-                className={`bi ${compagne.backgroundNoise
-                  ? "bi-volume-up-fill"
-                  : "bi-volume-mute-fill"
-                  }`}
+                className={`bi ${
+                  compagne.backgroundNoise
+                    ? "bi-volume-up-fill"
+                    : "bi-volume-mute-fill"
+                }`}
               />
               <span>{compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}</span>
             </button>
@@ -110,9 +134,29 @@ export default function CompagneCard({
 
       <div className="compagneMetaGrid">
         <div>
-          <span className="label">Numéro</span>
+          <span className="label">Numéro Principale</span>
           <div>{compagne.numero || "-"}</div>
         </div>
+
+        {/* Numéros en rotation */}
+        {!isInbound && compagne.numeros?.length > 0 && (
+          <div>
+            <span className="label">Numéros en rotation</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {compagne.numeros.map((n, i) => (
+                <span
+                  key={i}
+                  style={{
+                    fontSize: "0.82rem",
+                    color: "var(--gray-secondaire)",
+                  }}
+                >
+                  {n}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ✅ Type d'appel dans la grille */}
         <div>
@@ -179,7 +223,9 @@ export default function CompagneCard({
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
             <i className="bi bi-telephone-fill concurrentDot" />
-            <span className="concurrentCount">{compagne.maxConcurrentCalls ?? 1}</span>
+            <span className="concurrentCount">
+              {compagne.maxConcurrentCalls ?? 1}
+            </span>
           </div>
         </div>
 
@@ -188,8 +234,19 @@ export default function CompagneCard({
           <div>
             {compagne.allowedDays?.length
               ? compagne.allowedDays
-                .map((d) => ({ 0: "Dim", 1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam" }[d]))
-                .join(", ")
+                  .map(
+                    (d) =>
+                      ({
+                        0: "Dim",
+                        1: "Lun",
+                        2: "Mar",
+                        3: "Mer",
+                        4: "Jeu",
+                        5: "Ven",
+                        6: "Sam",
+                      })[d],
+                  )
+                  .join(", ")
               : "Lun - Ven"}
           </div>
         </div>
