@@ -5,6 +5,7 @@ import HeaderBar from "../../components/agents/HeaderBar";
 import CompagneCard from "../../components/compagne/CompagneCard";
 import CompagneFormModal from "../../components/compagne/CompagneFormModal";
 import QualificationModal from "../../components/qualification/QualificationModal";
+import EmailConfigModal from "../../components/compagne/Emailconfigmodal";
 import "../../assets/css/CompagnesPage.css";
 import useLists from "../../hooks/useLists";
 
@@ -43,6 +44,18 @@ export default function CompagnesPage({ showToast }) {
       compagne,
     });
   };
+
+  const [emailConfigModal, setEmailConfigModal] = useState({
+  open: false,
+  compagne: null,
+});
+
+const handleEmailConfig = (compagne) => {
+  setEmailConfigModal({
+    open: true,
+    compagne,
+  });
+};
 
   const fetchLists = async () => {
     try {
@@ -281,6 +294,7 @@ export default function CompagnesPage({ showToast }) {
                 lancerCampagne={lancerCampagne}
                 onQualifications={handleQualifications}
                 onToggleBackgroundNoise={handleToggleBackgroundNoise}
+                onEmailConfig={handleEmailConfig}
               />
             ))}
           </div>
@@ -307,6 +321,17 @@ export default function CompagnesPage({ showToast }) {
         showToast={showToast}
         onClose={() =>
           setQualificationModal({
+            open: false,
+            compagne: null,
+          })
+        }
+      />
+            <EmailConfigModal
+        open={emailConfigModal.open}
+        compagne={emailConfigModal.compagne}
+        showToast={showToast}
+        onClose={() =>
+          setEmailConfigModal({
             open: false,
             compagne: null,
           })

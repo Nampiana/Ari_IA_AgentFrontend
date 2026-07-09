@@ -7,6 +7,7 @@ export default function CompagneCard({
   lancerCampagne,
   onQualifications,
   onToggleBackgroundNoise,
+  onEmailConfig,
 }) {
   const isInbound = compagne.callType === "inbound";
 
@@ -90,6 +91,15 @@ export default function CompagneCard({
               <i className="bi bi-tags" />
               <span>Qualifications</span>
             </button>
+
+              <button
+                type="button"
+                className="btnCardAction"
+                onClick={() => onEmailConfig(compagne)}
+              >
+                <i className="bi bi-envelope-fill" />
+                <span>Email</span>
+              </button>
 
             <button
               type="button"
