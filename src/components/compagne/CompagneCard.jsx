@@ -10,6 +10,9 @@ export default function CompagneCard({
   onEmailConfig,
 }) {
   const isInbound = compagne.callType === "inbound";
+  const numerosSecondaires = Array.isArray(compagne.numeros)
+    ? compagne.numeros.filter(Boolean)
+    : [];
 
   return (
     <div className="compagneCard">
@@ -17,44 +20,74 @@ export default function CompagneCard({
         <div>
           <h3 className="compagneName">{compagne.nomCompagne}</h3>
           <div className="compagneNumero">{compagne.numero}</div>
+
           <div className="compagneBadges">
-            {/* Statut actif/inactif */}
             <span
               className={`badge ${compagne.active === 1 ? "success" : "danger"}`}
             >
               {compagne.active === 1 ? "Actif" : "Inactif"}
             </span>
-            {!isInbound && (
-              <span
-                className={`badge ${compagne.backgroundNoise ? "success" : "danger"}`}
-              >
-                <i
-                  className={`bi ${compagne.backgroundNoise ? "bi-volume-up-fill" : "bi-volume-mute-fill"}`}
-                />{" "}
-                {compagne.backgroundNoise ? "Fond actif" : "Fond off"}
-              </span>
-            )}
 
-            {/* ✅ Type d'appel */}
+            <span
+              className={`badge ${compagne.backgroundNoise ? "success" : "danger"}`}
+            >
+              <i
+                className={`bi ${
+                  compagne.backgroundNoise
+                    ? "bi-volume-up-fill"
+                    : "bi-volume-mute-fill"
+                }`}
+              />{" "}
+              {compagne.backgroundNoise ? "Fond actif" : "Fond off"}
+            </span>
+
             <span
               className={`badge ${isInbound ? "badgeInbound" : "badgeOutbound"}`}
             >
               <i
-                className={`bi ${isInbound ? "bi-telephone-inbound-fill" : "bi-telephone-outbound-fill"}`}
+                className={`bi ${
+                  isInbound
+                    ? "bi-telephone-inbound-fill"
+                    : "bi-telephone-outbound-fill"
+                }`}
               />{" "}
               {isInbound ? "Entrant" : "Sortant"}
             </span>
-            {/* Badge rotation numéros */}
-            {!isInbound && compagne.numeros?.length > 0 && (
-              <span className="badge badgeNumerosRotation">
-                <i className="bi bi-arrow-repeat" /> {compagne.numeros.length}{" "}
-                numéro{compagne.numeros.length > 1 ? "s" : ""} en rotation
+
+            {numerosSecondaires.length > 0 && (
+              <span
+                className={`badge ${
+                  isInbound
+                    ? "badgeInboundNumbers"
+                    : "badgeNumerosRotation"
+                }`}
+              >
+                <i
+                  className={`bi ${
+                    isInbound ? "bi-telephone-inbound-fill" : "bi-arrow-repeat"
+                  }`}
+                />{" "}
+
+                {isInbound
+                  ? `${numerosSecondaires.length} numéro${
+                      numerosSecondaires.length > 1 ? "s" : ""
+                    } entrant${
+                      numerosSecondaires.length > 1 ? "s" : ""
+                    } supplémentaire${
+                      numerosSecondaires.length > 1 ? "s" : ""
+                    }`
+                  : `${numerosSecondaires.length} numéro${
+                      numerosSecondaires.length > 1 ? "s" : ""
+                    } en rotation`}
               </span>
             )}
 
-            {/* Appels simultanés */}
             <span
-              className={`badge ${compagne.maxConcurrentCalls > 1 ? "badgeConcurrent" : "badgeSeq"}`}
+              className={`badge ${
+                compagne.maxConcurrentCalls > 1
+                  ? "badgeConcurrent"
+                  : "badgeSeq"
+              }`}
             >
               <i
                 className="bi bi-telephone-fill"
@@ -68,16 +101,21 @@ export default function CompagneCard({
         </div>
 
         <div className="compagneStatusWrap">
-          {/* Ligne principale : Lancer + icônes modifier/supprimer */}
           <div className="cardActionHeader">
             {!isInbound && (
               <button
                 type="button"
-                className={`btnAction ${compagne.isRunning === 1 ? "btnStop" : "btnStart"}`}
+                className={`btnAction ${
+                  compagne.isRunning === 1 ? "btnStop" : "btnStart"
+                }`}
                 onClick={() => lancerCampagne(compagne)}
               >
                 <i
-                  className={`bi ${compagne.isRunning === 1 ? "bi-stop-fill" : "bi-play-fill"}`}
+                  className={`bi ${
+                    compagne.isRunning === 1
+                      ? "bi-stop-fill"
+                      : "bi-play-fill"
+                  }`}
                 />
                 {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
               </button>
@@ -104,7 +142,6 @@ export default function CompagneCard({
             </button>
           </div>
 
-          {/* Ligne secondaire : Qualifications + bruit de fond */}
           <div className="cardActionTools">
             <button
               type="button"
@@ -115,18 +152,20 @@ export default function CompagneCard({
               <span>Qualifications</span>
             </button>
 
-              <button
-                type="button"
-                className="btnCardAction"
-                onClick={() => onEmailConfig(compagne)}
-              >
-                <i className="bi bi-envelope-fill" />
-                <span>Email</span>
-              </button>
+            <button
+              type="button"
+              className="btnCardAction"
+              onClick={() => onEmailConfig(compagne)}
+            >
+              <i className="bi bi-envelope-fill" />
+              <span>Email</span>
+            </button>
 
             <button
               type="button"
-              className={`btnCardAction ${compagne.backgroundNoise ? "btnNoiseOn" : "btnNoiseOff"}`}
+              className={`btnCardAction ${
+                compagne.backgroundNoise ? "btnNoiseOn" : "btnNoiseOff"
+              }`}
               onClick={() => onToggleBackgroundNoise(compagne)}
             >
               <i
@@ -144,43 +183,63 @@ export default function CompagneCard({
 
       <div className="compagneMetaGrid">
         <div>
-          <span className="label">Numéro Principale</span>
+          <span className="label">Numéro principal</span>
           <div>{compagne.numero || "-"}</div>
         </div>
 
-        {/* Numéros en rotation */}
-        {!isInbound && compagne.numeros?.length > 0 && (
+        {numerosSecondaires.length > 0 && (
           <div>
-            <span className="label">Numéros en rotation</span>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {compagne.numeros.map((n, i) => (
+            <span className="label">
+              {isInbound
+                ? "Autres numéros entrants"
+                : "Numéros sortants en rotation"}
+            </span>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              {numerosSecondaires.map((numero, index) => (
                 <span
-                  key={i}
+                  key={`${numero}-${index}`}
                   style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                     fontSize: "0.82rem",
                     color: "var(--gray-secondaire)",
                   }}
                 >
-                  {n}
+                  <i
+                    className={`bi ${
+                      isInbound ? "bi-telephone-inbound" : "bi-arrow-repeat"
+                    }`}
+                  />
+                  {numero}
                 </span>
               ))}
             </div>
           </div>
         )}
 
-        {/* ✅ Type d'appel dans la grille */}
         <div>
           <span className="label">Type d'appel</span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <i
-              className={`bi ${isInbound ? "bi-telephone-inbound-fill" : "bi-telephone-outbound-fill"}`}
+              className={`bi ${
+                isInbound
+                  ? "bi-telephone-inbound-fill"
+                  : "bi-telephone-outbound-fill"
+              }`}
               style={{ color: isInbound ? "#6366f1" : "#f59e0b" }}
             />
             {isInbound ? "Entrant" : "Sortant"}
           </div>
         </div>
 
-        {/* Fiches — uniquement utiles en sortant */}
         {!isInbound && (
           <div>
             <span className="label">Fiches</span>
@@ -197,7 +256,6 @@ export default function CompagneCard({
           <div>{compagne.id_ia?.nomAgent || "Non défini"}</div>
         </div>
 
-        {/* Timeout — uniquement en sortant */}
         {!isInbound && (
           <div>
             <span className="label">Timeout</span>
@@ -205,20 +263,21 @@ export default function CompagneCard({
           </div>
         )}
 
-        {/* Stats appels — uniquement en sortant */}
         {!isInbound && (
           <>
             <div>
               <span className="label">Appels disponibles</span>
               <div>{compagne.callStats?.appelsDisponibles ?? 0}</div>
             </div>
+
             <div>
               <span className="label">Fiches disponibles</span>
               {compagne.callStats?.parListe?.length > 0 ? (
                 <div className="formHint">
-                  {compagne.callStats.parListe.map((l) => (
-                    <div key={l.listId}>
-                      {l.nomFiche} : {l.disponible} disponible(s) sur {l.total}
+                  {compagne.callStats.parListe.map((liste) => (
+                    <div key={liste.listId}>
+                      {liste.nomFiche} : {liste.disponible} disponible(s) sur{" "}
+                      {liste.total}
                     </div>
                   ))}
                 </div>
@@ -228,7 +287,8 @@ export default function CompagneCard({
             </div>
           </>
         )}
-          <div>
+
+        <div>
           <span className="label">Appels simultanés</span>
           <div className="concurrentDisplay">
             <i className="bi bi-telephone-fill concurrentDot" />
@@ -237,13 +297,14 @@ export default function CompagneCard({
             </span>
           </div>
         </div>
+
         <div>
           <span className="label">Jours autorisés</span>
           <div>
             {compagne.allowedDays?.length
               ? compagne.allowedDays
                   .map(
-                    (d) =>
+                    (jour) =>
                       ({
                         0: "Dim",
                         1: "Lun",
@@ -252,7 +313,7 @@ export default function CompagneCard({
                         4: "Jeu",
                         5: "Ven",
                         6: "Sam",
-                      })[d],
+                      })[jour],
                   )
                   .join(", ")
               : "Lun - Ven"}

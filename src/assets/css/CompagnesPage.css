@@ -754,3 +754,12 @@ label.multiSelectOption span {
   color: #c2410c;
   border-color: #fdba74;
 }
+
+.badgeInboundNumbers {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}

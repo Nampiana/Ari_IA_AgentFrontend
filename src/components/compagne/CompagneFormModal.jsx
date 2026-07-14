@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 
+const normalizePhoneNumber = (value) =>
+  String(value || "")
+    .trim()
+    .replace(/[^0-9]/g, "");
+
 const getInitialFormData = (selectedCompagne) => ({
   nomCompagne: selectedCompagne?.nomCompagne || "",
   numero: selectedCompagne?.numero || "",
@@ -165,17 +170,22 @@ export default function CompagneFormModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const numeroPrincipal = normalizePhoneNumber(formData.numero);
+    const numerosSecondaires = [
+      ...new Set(
+        String(formData.numeros || "")
+          .split(/\r?\n|,|;/)
+          .map(normalizePhoneNumber)
+          .filter(Boolean),
+      ),
+    ].filter((numero) => numero !== numeroPrincipal);
+
     onSubmit({
       ...formData,
-      numeros: formData.numeros
-        ? formData.numeros
-            .split("\n")
-            .map((n) => n.trim())
-            .filter(Boolean)
-        : [],
+      numero: numeroPrincipal,
+      numeros: numerosSecondaires,
       id_ia: formData.id_ia || null,
-      startDate: formData.startDate || null,
-      endDate: formData.endDate || null,
     });
   };
 
@@ -224,26 +234,28 @@ export default function CompagneFormModal({
               />
             </div>
 
-            {!isInbound && (
-              <div className="formGroup full">
-                <label>
-                  Numéros en rotation
-                  <span className="formHint"> (optionnel — un par ligne)</span>
-                </label>
-                <textarea
-                  name="numeros"
-                  value={formData.numeros}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder={"33162080441\n33377080258\n33745895056"}
-                />
-                <div className="formHint">
-                  Si renseignés, ces numéros seront utilisés en boucle à la
-                  place du numéro principal pour éviter d'être identifié comme
-                  spam.
-                </div>
+            <div className="formGroup full">
+              <label>
+                {isInbound
+                  ? "Autres numéros entrants de la campagne"
+                  : "Numéros sortants en rotation"}
+                <span className="formHint"> (optionnel — un par ligne)</span>
+              </label>
+
+              <textarea
+                name="numeros"
+                value={formData.numeros}
+                onChange={handleChange}
+                rows={4}
+                placeholder={"33162080441\n33377080258\n33745895056"}
+              />
+
+              <div className="formHint">
+                {isInbound
+                  ? "Tout appel reçu sur l’un de ces numéros utilisera le même agent IA, le même script et la même configuration que le numéro principal."
+                  : "Ces numéros seront utilisés en boucle à la place du numéro principal pour répartir les appels sortants."}
               </div>
-            )}
+            </div>
 
             {/* Agent IA */}
             <div className="formGroup">
