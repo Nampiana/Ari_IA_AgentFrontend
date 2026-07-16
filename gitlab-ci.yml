@@ -1,0 +1,59 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "reunification"'
+      when: always
+    - when: never
+ 
+stages:
+  - test
+  - deploy
+ 
+ 
+variables:
+  PROJECT_DIR: "/mnt/data"
+  DIR_ENV: "${PROJECT_DIR}/env"
+  VARIABLE: "${DIR_ENV}/vicitelecom/Ari_IA_AgentFrontend/.env"
+  SOURCE_PROJET: "${PROJECT_DIR}/vicitelecom/Ari_IA_AgentFrontend"
+ 
+build_projet:
+  stage: test
+  tags:
+    - linux
+    - production
+    - serveur
+  before_script:
+    - echo "📦 Lancement des tests"
+  script:
+    - echo "✅ Tests terminés avec succès"
+    - pwd
+    - ls -la
+ 
+sast:
+  stage: test
+  script:
+    - echo "SAST analysis is not configured for this project. "
+ 
+deploy_projet:
+  stage: deploy
+  tags:
+    - linux
+    - production
+    - serveur
+  before_script:
+    - echo "🔧 Préparation et création du backup"
+    - DATE_NOW=$(date +'%Y%m%d_%H%M%S')
+    - BACKUP_DIR="${PROJECT_DIR}/Backup-code/vicitelecom/Ari_IA_AgentFrontend/Ari_IA_AgentFrontend-${DATE_NOW}"
+    - mkdir -p "$BACKUP_DIR"
+    - rsync -av --exclude='node_modules' --exclude='.env' "$SOURCE_PROJET/" "$BACKUP_DIR/"
+  script:
+    - echo "🚀 Déploiement démarré..."
+    - rsync -av --exclude='node_modules' ./* "$SOURCE_PROJET"
+    - cp "$VARIABLE" "$SOURCE_PROJET/"
+  after_script:
+    - echo "✅ Déploiement terminé avec succès"
+    - echo "📂 Contenu du répertoire de destination :"
+    - rm -rf $CI_PROJECT_DIR
+    - cd $SOURCE_PROJET
+    - ls
+    - pm2 restart 18
+    - pm2 list
