@@ -96,7 +96,7 @@ export default function AgentsPage({ showToast }) {
       <div className="agentsContainer">
         <div className="agentsTopBar">
           <div>
-            <h1>Gestion Agentss IA</h1>
+            <h1>Gestion Agentsssss IA</h1>
             <p>
               Administrez les profils vocaux, les numéros liés et les scripts de
               vos assistants.
