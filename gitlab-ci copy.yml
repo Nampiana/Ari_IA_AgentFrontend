@@ -8,7 +8,7 @@ stages:
   - deploy
 
 variables:
-  SOURCE_PROJET: "/home/aroniaina/Documents/IA-VICITELECOM/Ari_IA_AgentFrontend"
+  SOURCE_PROJET: "/mnt/data/vicitelecom/Ari_IA_AgentFrontend"
 
 deploy_projet:
   stage: deploy
