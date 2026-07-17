@@ -18,10 +18,9 @@ deploy_projet:
     - serveur
 
   script:
-    - echo "🚀 Déploiement..."
+    - echo "🚀 Encore un test..."
     - cd "$SOURCE_PROJET"
     - git remote -v
-    - pm2 list
     - ls
 
   after_script:
