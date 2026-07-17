@@ -21,9 +21,8 @@ deploy_projet:
     - echo "🚀 Déploiement..."
     - cd "$SOURCE_PROJET"
     - git fetch origin
-    - git reset --hard origin/production
-    - git clean -fd
-    - git pull origin production
+    - git reset --hard origin/testAro
+    - git pull origin testAro
     - pm2 restart 0
     - pm2 list
 
