@@ -14,8 +14,8 @@ deploy_projet:
   stage: deploy
   tags:
     - linux
-    - branche
-    - ubuntu
+    - production
+    - serveur
 
   script:
     - echo "🚀 Encore un test..."
