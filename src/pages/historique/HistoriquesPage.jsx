@@ -7,6 +7,7 @@ import HistoriqueDetailModal from "../../components/historique/HistoriqueDetailM
 import StatusDropdown from "../../components/historique/StatusDropdown.jsx";
 import { getStatusLabel } from "../../utils/statusUtils.js";
 import ScheduledCallsDrawer from "../../components/historique/ScheduledCallsDrawer.jsx";
+import EmailSentModal from "../../components/historique/Emailsentmodal.jsx";
 import "../../assets/css/HistoriquesPage.css";
 
 const ITEMS_PER_PAGE = 10;
@@ -236,10 +237,12 @@ export default function HistoriquesPage({ showToast }) {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectedTypeCall, setSelectedTypeCall] = useState("all");
   const [confirmArchive, setConfirmArchive] = useState(null);
+  const [emailModalHistorique, setEmailModalHistorique] = useState(null);
 
   // ⚡ Tri — "date_desc" par défaut (comportement original)
   // Valeurs : "date_desc" | "date_asc" | "duration_desc" | "duration_asc"
   const [sortOrder, setSortOrder] = useState("date_desc");
+  const [showEmailColumn, setShowEmailColumn] = useState(true);
 
   // ⚡ statusCounts — toutes clés string dès l'init
   const [statusCounts, setStatusCounts] = useState({
@@ -832,6 +835,22 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="duration_asc">Durée (plus courte)</option>
                   </select>
                 </div>
+                <div className="historiquesFilterDivider" />
+
+              {/* ── Visibilité colonne Email ── */}
+              <div className="historiquesFilterGroup">
+                <span className="historiquesFilterLabel">
+                  <i className="bi bi-envelope" /> Email
+                </span>
+                <select
+                  className="historiquesFilterSelect"
+                  value={showEmailColumn ? "show" : "hide"}
+                  onChange={(e) => setShowEmailColumn(e.target.value === "show")}
+                >
+                  <option value="show">Afficher email</option>
+                  <option value="hide">Masquer email</option>
+                </select>
+              </div>
               </div>
             </div>
           </div>
@@ -1005,6 +1024,7 @@ export default function HistoriquesPage({ showToast }) {
                       </th>
 
                       <th>Rappels</th>
+                      {showEmailColumn && <th>Email</th>}
                     </tr>
                   </thead>
 
@@ -1131,6 +1151,24 @@ export default function HistoriquesPage({ showToast }) {
                               <i className="bi bi-clock-history" /> Rappels
                             </button>
                           </td>
+                    {showEmailColumn && (
+                      <td onClick={(e) => e.stopPropagation()}>
+                        {item.emails?.length > 0 ? (
+                          <button
+                            className="scd-trigger-btn"
+                            onClick={() => setEmailModalHistorique(item)}
+                            title="Voir l'email envoyé"
+                          >
+                            <i className="bi bi-envelope-fill" /> Email
+                          </button>
+                        ) : (
+                          <span className="text-muted">
+                            <i className="bi bi-envelope-slash me-1" />
+                            Pas d'email
+                          </span>
+                        )}
+                      </td>
+                    )}
                         </tr>
                       );
                     })}
@@ -1201,6 +1239,12 @@ export default function HistoriquesPage({ showToast }) {
         open={selectedHistorique}
         historique={selectedHistorique}
         onClose={() => setSelectedHistorique(null)}
+      />
+
+      <EmailSentModal
+        open={!!emailModalHistorique}
+        historique={emailModalHistorique}
+        onClose={() => setEmailModalHistorique(null)}
       />
 
       {confirmArchive !== null && (
