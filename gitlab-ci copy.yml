@@ -14,14 +14,15 @@ deploy_projet:
   stage: deploy
   tags:
     - linux
-    - branche
-    - ubuntu
+    - production
+    - serveur
 
   script:
     - echo "🚀 Encore un test..."
     - cd "$SOURCE_PROJET"
     - git remote -v
-    - ls
+    - git pull origin reunification
+    - pm2 restart 18
 
   after_script:
     - echo "✅ Déploiement terminé"
