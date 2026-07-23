@@ -8,7 +8,7 @@ stages:
   - deploy
 
 variables:
-  SOURCE_PROJET: "/mnt/data"
+  SOURCE_PROJET: "/mnt/data/deal-mg"
 
 deploy_projet:
   stage: deploy
