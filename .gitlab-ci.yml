@@ -8,7 +8,7 @@ stages:
   - deploy
 
 variables:
-  SOURCE_PROJET: "/mnt/data/spyteam"
+  SOURCE_PROJET: "/mnt/data/spyteam/spyteam-back"
 
 deploy_projet:
   stage: deploy
