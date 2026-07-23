@@ -8,7 +8,7 @@ stages:
   - deploy
 
 variables:
-  SOURCE_PROJET: "/mnt/data/vicitelecom/Ari_IA_AgentFrontend"
+  SOURCE_PROJET: "/mnt/data/spyteam/spyteam-back"
 
 deploy_projet:
   stage: deploy
@@ -21,8 +21,7 @@ deploy_projet:
     - echo "🚀 Encore un test..."
     - cd "$SOURCE_PROJET"
     - git remote -v
-    - git pull origin reunification
-    - pm2 restart 18
+    - git branch
 
   after_script:
     - echo "✅ Déploiement terminé"
