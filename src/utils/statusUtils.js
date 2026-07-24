@@ -7,6 +7,7 @@ export const getStatusLabel = (status) => {
   if (value === 5) return "RÉPONDEUR";
   if (value === 6) return "SVI";
   if (value === 7) return "AMD_RÉPONDEUR";
+  if (value === 8) return "HORS_CIBLE";
   return "INCONNU";
 };
 
@@ -19,5 +20,6 @@ export const getStatusClass = (status) => {
   if (value === 5) return "RÉPONDEUR";
   if (value === 6) return "SVI";
   if (value === 7) return "AMD_RÉPONDEUR";
+  if (value === 8) return "HORS_CIBLE";
   return "default";
 };
