@@ -152,13 +152,13 @@ const STATUS_DEFS = [
     bg: "rgb(224 224 224)",
     icon: "bi-telephone-inbound-fill",
   },
-  {
-    key: "8",
-    label: "Hors Cible",
-    color: "#dcd245",
-    bg: "rgb(105, 94, 94)",
-    icon: "bi-telephone-inbound-fill",
-  },
+{
+  key: "8",
+  label: "Hors Cible",
+  color: "#713f12",
+  bg: "rgb(237, 238, 163)",
+  icon: "bi-telephone-inbound-fill",
+},
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
