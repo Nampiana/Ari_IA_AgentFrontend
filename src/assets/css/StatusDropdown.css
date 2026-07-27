@@ -111,6 +111,18 @@
     color: #534ab7;
 }
 
+.status-option.SVI .bi:first-child {
+    color: #0891b2;
+}
+
+.status-option.AMD_RÉPONDEUR .bi:first-child {
+    color: #0891b2;
+}
+
+.status-option.HORS_CIBLE .bi:first-child {
+    color: #eee8e8;
+}
+
 /* Option active : fond coloré subtil */
 .status-option.active.RÉUSSI {
     background: #eaf3de;
