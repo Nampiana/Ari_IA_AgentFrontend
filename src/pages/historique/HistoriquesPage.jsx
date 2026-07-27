@@ -152,6 +152,13 @@ const STATUS_DEFS = [
     bg: "rgb(224 224 224)",
     icon: "bi-telephone-inbound-fill",
   },
+  {
+    key: "8",
+    label: "Hors Cible",
+    color: "#dcd245",
+    bg: "rgb(105, 94, 94)",
+    icon: "bi-telephone-inbound-fill",
+  },
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
@@ -255,6 +262,7 @@ export default function HistoriquesPage({ showToast }) {
     5: 0,
     6: 0,
     7: 0,
+    8: 0,
   });
 
   const { getAgents } = useAgent();
@@ -694,6 +702,7 @@ export default function HistoriquesPage({ showToast }) {
                     <option value="1">PAS INTÉRESSÉ</option>
                     <option value="6">SVI</option>
                     <option value="7">AMD Répondeur</option>
+                    <option value="8">Hors Cible</option>
                   </select>
                   <select
                     className="historiquesFilterSelect"

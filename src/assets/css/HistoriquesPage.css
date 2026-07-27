@@ -443,6 +443,13 @@
   border-color: rgba(59, 130, 246, 0.18);
 }
 
+/* AMD_RÉPONDEUR → bg-info (bleu) */
+.historiqueBadge.HORS_CIBLE {
+  background: rgba(105, 94, 94, 0.9);
+  color: #dcd245;
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
 .historiqueBadge.default {
   background: rgba(148, 163, 184, 0.15);
   color: #64748b;
