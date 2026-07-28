@@ -157,7 +157,7 @@ const STATUS_DEFS = [
   label: "Hors Cible",
   color: "#713f12",
   bg: "rgb(237, 238, 163)",
-  icon: "bi-telephone-inbound-fill",
+  icon: "bi-slash-circle-fill",
 },
 ];
 
@@ -865,20 +865,7 @@ export default function HistoriquesPage({ showToast }) {
                 </div>
                 <div className="historiquesFilterDivider" />
 
-              {/* ── Visibilité colonne Email ── */}
-              <div className="historiquesFilterGroup">
-                <span className="historiquesFilterLabel">
-                  <i className="bi bi-envelope" /> Email
-                </span>
-                <select
-                  className="historiquesFilterSelect"
-                  value={showEmailColumn ? "show" : "hide"}
-                  onChange={(e) => setShowEmailColumn(e.target.value === "show")}
-                >
-                  <option value="show">Afficher email</option>
-                  <option value="hide">Masquer email</option>
-                </select>
-              </div>
+
               </div>
             </div>
           </div>
