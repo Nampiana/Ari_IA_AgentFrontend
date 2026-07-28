@@ -8,8 +8,8 @@ const STATUSES = [
   { value: "4", key: "OCCUPÉ", icon: "bi-telephone-x", label: "Occupé" },
   { value: "5", key: "RÉPONDEUR", icon: "bi-mic", label: "Répondeur" },
   { value: "1",key: "PAS_INT",icon: "bi-hand-thumbs-down",label: "Pas intéressé",},
-  { value: "6", key: "SVI", label: "SVI", icon: "bi-telephone-inbound-fill", label:"SVI"  },
-  { value: "7", key: "AMD_RÉPONDEUR", icon: "bi-telephone-inbound-fill", label: "AMD Répondeur" },
+  { value: "6", key: "SVI", label: "SVI", icon: "bi-telephone-inbound-fill", label:"Serveur Vocal"  },
+  { value: "7", key: "AMD_RÉPONDEUR", icon: "bi-telephone-inbound-fill", label: "Répondeur Asterisk" },
   { value: "8", key: "HORS_CIBLE", icon: "bi-slash-circle", label: "Hors Cible" }
 ];
 

@@ -29,6 +29,7 @@ const getInitialFormData = (selectedCompagne) => ({
   // ✅ Type d'appel : "inbound" = entrant, "outbound" = sortant
   callType: selectedCompagne?.callType || "outbound",
   backgroundNoise: selectedCompagne?.backgroundNoise ?? false,
+  companyName: selectedCompagne?.companyName || "",
 });
 
 function FichesMultiSelect({ lists, selectedIds, onToggle }) {
@@ -191,6 +192,30 @@ export default function CompagneFormModal({
 
   // ✅ Le script affiché dépend du type d'appel
   const isInbound = formData.callType === "inbound";
+
+  // ✅ Validation complète du formulaire — un check par champ
+  const isFormValid = (() => {
+    const numeroNormalise = normalizePhoneNumber(formData.numero);
+
+    const checks = {
+      nomCompagne: formData.nomCompagne.trim() !== "",
+      numero: numeroNormalise.length >= 8, // numéro valide (min 8 chiffres)
+      id_ia: formData.id_ia !== "", // un agent IA doit être sélectionné
+      script: formData.script.trim() !== "",
+      allowedDays: formData.allowedDays.length > 0, // au moins 1 jour autorisé
+      startHour: formData.startHour !== "",
+      endHour: formData.endHour !== "",
+      timeZone: formData.timeZone !== "",
+      callType: formData.callType !== "",
+      maxConcurrentCalls: formData.maxConcurrentCalls >= 1,
+      dialTimeout:
+        isInbound || (formData.dialTimeout >= 5 && formData.dialTimeout <= 120),
+      fiches: isInbound || formData.fiches.length > 0,
+      societe: formData.companyName !== ""
+    };
+
+    return Object.values(checks).every(Boolean);
+  })();
 
   return (
     <div
@@ -404,6 +429,17 @@ export default function CompagneFormModal({
                 <option value="Indian/Antananarivo">Madagascar</option>
               </select>
             </div>
+
+            <div className="formGroup">
+              <label>Société</label>
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                placeholder="Nom de la société"
+              />
+            </div>
           </div>
 
           {/* Fiches CSV — masquées en entrant (pas de liste à appeler) */}
@@ -495,6 +531,16 @@ export default function CompagneFormModal({
             </div>
           )}
 
+          {!isFormValid && !loadingUpdate && (
+            <div className="formHint" style={{ color: "#e74c3c" }}>
+              Veuillez remplir tous les champs obligatoires
+              {!isInbound && formData.fiches.length === 0
+                ? " et sélectionner au moins une fiche"
+                : ""}
+              .
+            </div>
+          )}
+
           <div className="agentModalActions">
             <button
               type="button"
@@ -507,7 +553,7 @@ export default function CompagneFormModal({
             <button
               type="submit"
               className="btn btnPrimary"
-              disabled={loadingUpdate}
+              disabled={loadingUpdate || !isFormValid}
             >
               {loadingUpdate ? (
                 <span className="loadingSpinner" />

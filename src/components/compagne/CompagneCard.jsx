@@ -331,6 +331,11 @@ export default function CompagneCard({
           <span className="label">Fuseau</span>
           <div>{compagne.timeZone || "Europe/Paris"}</div>
         </div>
+
+        <div>
+          <span className="label">Société</span>
+          <div>{compagne.companyName || "Aucun"}</div>
+        </div>
       </div>
 
       <div className="compagneScriptBlock">

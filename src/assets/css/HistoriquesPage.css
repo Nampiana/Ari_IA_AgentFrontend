@@ -327,9 +327,24 @@
   background: rgba(239, 71, 111, 0.14);
 }
 
-.historiqueStatusIcon.PAS INTÉRESSÉ {
+.historiqueStatusIcon.PAS_INTÉRESSÉ {
   color: #7fbf59;
   background: rgba(127, 191, 89, 0.14);
+}
+
+.historiqueStatusIcon.SVI {
+  color: #0891b2;
+  background: #cffafe;
+}
+
+.historiqueStatusIcon.AMD_RÉPONDEUR {
+  color: #0891b2;
+  background: rgb(224 224 224);
+}
+
+.historiqueStatusIcon.HORS_CIBLE {
+  color: #242222;
+  background: #efccad;
 }
 
 .historiqueStatusIcon.default {
@@ -403,50 +418,57 @@
 
 /* RÉUSSI → bg-success (vert) */
 .historiqueBadge.RÉUSSI {
-  background: rgba(25, 135, 84, 0.12);
-  color: #157347;
+  background: #dcfce7;
+  color: #16a34a;
   border-color: rgba(25, 135, 84, 0.18);
 }
 
 /* RAPPEL → bg-warning (jaune) */
 .historiqueBadge.RAPPEL {
-  background: rgba(255, 193, 7, 0.12);
-  color: #cc9a06;
+  background: #dbeafe;
+  color: #2563eb;
   border-color: rgba(255, 193, 7, 0.18);
 }
 
 /* OCCUPÉ → gris vif */
 .historiqueBadge.OCCUPÉ {
-  background: rgba(100, 116, 139, 0.12);
-  color: #64748b;
+  background: #fef3c7;
+  color: #d97706;
   border-color: rgba(100, 116, 139, 0.18);
 }
 
 /* RÉPONDEUR → bleu clair */
 .historiqueBadge.RÉPONDEUR {
-  background: rgba(56, 189, 248, 0.12);
-  color: #0284c7;
+  background: #ede9fe;
+  color: #7c3aed;
   border-color: rgba(56, 189, 248, 0.18);
 }
 
 /* PAS_INTÉRESSÉ → bg-danger (rouge) */
 .historiqueBadge.PAS_INTÉRESSÉ {
-  background: rgba(220, 53, 69, 0.12);
-  color: #b02a37;
+  background: #ee6d6d4d;
+  color: #e90505fb;
+  border-color: rgba(220, 53, 69, 0.18);
+}
+
+/* SVI → bg-danger (bleu) */
+.historiqueBadge.SVI {
+  background: #cffafe;
+  color: #0891b2;
   border-color: rgba(220, 53, 69, 0.18);
 }
 
 /* AMD_RÉPONDEUR → bg-info (bleu) */
 .historiqueBadge.AMD_RÉPONDEUR {
-  background: rgba(59, 130, 246, 0.12);
-  color: #1d4ed8;
+  background: rgb(224 224 224);
+  color: #0891b2;
   border-color: rgba(59, 130, 246, 0.18);
 }
 
-/* AMD_RÉPONDEUR → bg-info (bleu) */
+/* HORS_CIBLE → bg-info (marron) */
 .historiqueBadge.HORS_CIBLE {
-  background: rgb(237, 238, 163);
-  color: #713f12;
+  background: #efccad;
+  color: #242222;
   border-color: rgba(59, 130, 246, 0.18);
 }
 

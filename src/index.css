@@ -203,6 +203,10 @@ body {
   font-size: 14px;
 }
 
+/* .ficheCheckItem{
+  margin-left: 5px;
+} */
+
 .formGroup input,
 .formGroup select,
 .formGroup textarea {

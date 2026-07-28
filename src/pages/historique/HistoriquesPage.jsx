@@ -134,31 +134,31 @@ const STATUS_DEFS = [
   {
     key: "1",
     label: "Pas intéressé",
-    color: "#6b7280",
-    bg: "#f3f4f6",
+    color: "#e90505fb",
+    bg: "#ee6d6d4d",
     icon: "bi-x-circle-fill",
   },
   {
     key: "6",
-    label: "SVI",
+    label: "Serveur Vocal",
     color: "#0891b2",
     bg: "#cffafe",
     icon: "bi-telephone-inbound-fill",
   }, // ← nouveau
   {
     key: "7",
-    label: "AMD Répondeur",
+    label: "Répondeur Asterisk",
     color: "#0891b2",
     bg: "rgb(224 224 224)",
     icon: "bi-telephone-inbound-fill",
   },
-{
-  key: "8",
-  label: "Hors Cible",
-  color: "#713f12",
-  bg: "rgb(237, 238, 163)",
-  icon: "bi-slash-circle-fill",
-},
+  {
+    key: "8",
+    label: "Hors Cible",
+    color: "#242222",
+    bg: "#efccad",
+    icon: "bi-telephone-inbound-fill",
+  },
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
