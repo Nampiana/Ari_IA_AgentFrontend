@@ -82,7 +82,7 @@ export default function AgentFormModal({
               />
             </div>
 
-            <div className="formGroup">
+            {/* <div className="formGroup">
               <label>Société</label>
               <input
                 className="form-control"
@@ -91,7 +91,7 @@ export default function AgentFormModal({
                 onChange={handleChange}
                 required
               />
-            </div>
+            </div> */}
 
             <div className="formGroup">
               <label>Voix</label>

@@ -29,6 +29,7 @@ const getInitialFormData = (selectedCompagne) => ({
   // ✅ Type d'appel : "inbound" = entrant, "outbound" = sortant
   callType: selectedCompagne?.callType || "outbound",
   backgroundNoise: selectedCompagne?.backgroundNoise ?? false,
+  companyName: selectedCompagne?.companyName || "",
 });
 
 function FichesMultiSelect({ lists, selectedIds, onToggle }) {
@@ -180,7 +181,7 @@ export default function CompagneFormModal({
           .filter(Boolean),
       ),
     ].filter((numero) => numero !== numeroPrincipal);
-
+    
     onSubmit({
       ...formData,
       numero: numeroPrincipal,
@@ -403,6 +404,17 @@ export default function CompagneFormModal({
                 <option value="Europe/Paris">Europe/Paris</option>
                 <option value="Indian/Antananarivo">Madagascar</option>
               </select>
+            </div>
+
+            <div className="formGroup">
+              <label>Société</label>
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                placeholder="Nom de la société"
+              />
             </div>
           </div>
 
