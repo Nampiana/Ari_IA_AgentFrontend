@@ -89,33 +89,66 @@ export default function AgentsPage({ showToast }) {
     }
   };
 
+  const totalCount = agents.length;
+  const activeCount = agents.filter((a) => a.active === 1).length;
+
   return (
     <div className="agentsPage">
       <HeaderBar />
 
       <div className="agentsContainer">
-        <div className="agentsTopBar">
-          <div>
-            <h1>Gestion des agents IA</h1>
+        <section className="agentsHero">
+          <div className="agentsHero__text">
+            <span className="agentsHero__eyebrow">
+              <span className="agentsHero__dot" />
+              Personas vocaux IA
+            </span>
+            <h1>Agents IA</h1>
             <p>
               Administrez les profils vocaux, les numéros liés et les scripts de
-              vos assistants.
+              vos assistants d'appel.
             </p>
+          </div>
+
+          <div className="agentsHero__stats">
+            <div className="agentStat">
+              <span className="agentStat__value">{totalCount}</span>
+              <span className="agentStat__label">Agents</span>
+            </div>
+            <div className="agentStat agentStat--live">
+              <span className="agentStat__value">{activeCount}</span>
+              <span className="agentStat__label">Actifs</span>
+            </div>
           </div>
 
           <button
             type="button"
-            className="btnPrimary"
+            className="agentBtnPrimary"
             onClick={handleCreateClick}
           >
-            <i className="bi bi-plus-lg" /> Nouvel agent
+            <i className="bi bi-plus-lg" />
+            Nouvel agent
           </button>
-        </div>
+        </section>
 
         {loading ? (
-          <div className="loadingBox">Chargement des agents...</div>
+          <div className="agentState">
+            <i className="bi bi-hourglass-split" />
+            Chargement des agents...
+          </div>
         ) : agents.length === 0 ? (
-          <div className="emptyBox">Aucun agent trouvé.</div>
+          <div className="agentState agentState--empty">
+            <i className="bi bi-person-badge" />
+            <p>Aucun agent trouvé.</p>
+            <button
+              type="button"
+              className="agentBtnPrimary"
+              onClick={handleCreateClick}
+            >
+              <i className="bi bi-plus-lg" />
+              Créer un agent
+            </button>
+          </div>
         ) : (
           <div className="agentsGrid">
             {agents.map((agent) => (
@@ -144,7 +177,7 @@ export default function AgentsPage({ showToast }) {
       {deleteModal.open && (
         <div className="deleteModalOverlay">
           <div className="deleteModal">
-            <h3>Supprimer l’agent</h3>
+            <h3>Supprimer l'agent</h3>
             <p>
               Voulez-vous vraiment supprimer{" "}
               <strong>{deleteModal.agent?.nomAgent}</strong> ?

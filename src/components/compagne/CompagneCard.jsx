@@ -1,5 +1,15 @@
 import React from "react";
 
+const JOURS = {
+  0: "Dim",
+  1: "Lun",
+  2: "Mar",
+  3: "Mer",
+  4: "Jeu",
+  5: "Ven",
+  6: "Sam",
+};
+
 export default function CompagneCard({
   compagne,
   onEdit,
@@ -10,39 +20,65 @@ export default function CompagneCard({
   onEmailConfig,
 }) {
   const isInbound = compagne.callType === "inbound";
+  const isRunning = compagne.isRunning === 1;
+  const isActive = compagne.active === 1;
   const numerosSecondaires = Array.isArray(compagne.numeros)
     ? compagne.numeros.filter(Boolean)
     : [];
+  const maxConcurrent = compagne.maxConcurrentCalls ?? 1;
+  const parListe = compagne.callStats?.parListe || [];
+
+  const railState = isRunning ? "live" : isActive ? "ready" : "off";
+
+  const joursLabel = compagne.allowedDays?.length
+    ? compagne.allowedDays.map((jour) => JOURS[jour]).join(", ")
+    : "Lun – Ven";
+
+  // --- valeurs des 7 lignes fixes : toujours affichées, "—" si non applicable
+  const agentValue = compagne.id_ia?.nomAgent || "—";
+
+  const timeoutValue = !isInbound ? `${compagne.dialTimeout ?? 30}s` : "—";
+
+  const appelsValue = !isInbound
+    ? String(compagne.callStats?.appelsDisponibles ?? 0)
+    : "—";
+
+  const tranches = compagne.tranchesHoraires?.length
+    ? compagne.tranchesHoraires
+    : [
+        {
+          startHour: compagne.startHour || "08:00",
+          endHour: compagne.endHour || "21:00",
+        },
+      ];
+
+  const fichesValue = isInbound
+    ? "—"
+    : parListe.length > 0
+      ? parListe
+          .map((l) => `${l.nomFiche} (${l.disponible}/${l.total})`)
+          .join(", ")
+      : compagne.fiches?.length
+        ? compagne.fiches.map((f) => f.nomFiche).join(", ")
+        : "Non définies";
+
+  const numerosLabel = isInbound
+    ? "Numéros entrants suppl."
+    : "Numéros en rotation";
+  const numerosValue =
+    numerosSecondaires.length > 0 ? numerosSecondaires.join(", ") : "—";
+
+  const societeValue = compagne.companyName || "—";
 
   return (
-    <div className="compagneCard">
-      <div className="compagneCardTop">
-        <div>
-          <h3 className="compagneName">{compagne.nomCompagne}</h3>
-          <div className="compagneNumero">{compagne.numero}</div>
+    <div className={`campCard campCard--${railState}`}>
+      <span className="campCard__rail" aria-hidden="true" />
 
-          <div className="compagneBadges">
+      <div className="campCard__inner">
+        <div className="campCard__head">
+          <div className="campCard__identity">
             <span
-              className={`badge ${compagne.active === 1 ? "success" : "danger"}`}
-            >
-              {compagne.active === 1 ? "Actif" : "Inactif"}
-            </span>
-
-            <span
-              className={`badge ${compagne.backgroundNoise ? "success" : "danger"}`}
-            >
-              <i
-                className={`bi ${
-                  compagne.backgroundNoise
-                    ? "bi-volume-up-fill"
-                    : "bi-volume-mute-fill"
-                }`}
-              />{" "}
-              {compagne.backgroundNoise ? "Fond actif" : "Fond off"}
-            </span>
-
-            <span
-              className={`badge ${isInbound ? "badgeInbound" : "badgeOutbound"}`}
+              className={`campTypeTag ${isInbound ? "campTypeTag--in" : "campTypeTag--out"}`}
             >
               <i
                 className={`bi ${
@@ -50,80 +86,88 @@ export default function CompagneCard({
                     ? "bi-telephone-inbound-fill"
                     : "bi-telephone-outbound-fill"
                 }`}
-              />{" "}
+              />
               {isInbound ? "Entrant" : "Sortant"}
             </span>
 
-            {numerosSecondaires.length > 0 && (
-              <span
-                className={`badge ${
-                  isInbound
-                    ? "badgeInboundNumbers"
-                    : "badgeNumerosRotation"
-                }`}
-              >
-                <i
-                  className={`bi ${
-                    isInbound ? "bi-telephone-inbound-fill" : "bi-arrow-repeat"
-                  }`}
-                />{" "}
+            <h3 className="campCard__name">{compagne.nomCompagne}</h3>
 
-                {isInbound
-                  ? `${numerosSecondaires.length} numéro${
-                      numerosSecondaires.length > 1 ? "s" : ""
-                    } entrant${
-                      numerosSecondaires.length > 1 ? "s" : ""
-                    } supplémentaire${
-                      numerosSecondaires.length > 1 ? "s" : ""
-                    }`
-                  : `${numerosSecondaires.length} numéro${
-                      numerosSecondaires.length > 1 ? "s" : ""
-                    } en rotation`}
-              </span>
-            )}
-
-            <span
-              className={`badge ${
-                compagne.maxConcurrentCalls > 1
-                  ? "badgeConcurrent"
-                  : "badgeSeq"
-              }`}
-            >
-              <i
-                className="bi bi-telephone-fill"
-                style={{ color: "#10b981" }}
-              />
-              <span style={{ color: "#10b981" }}>
-                ×{compagne.maxConcurrentCalls ?? 1}
-              </span>
-            </span>
+            <div className="campCard__number">
+              <i className="bi bi-telephone" />
+              <span>{compagne.numero || "—"}</span>
+            </div>
           </div>
-        </div>
 
-        <div className="compagneStatusWrap">
-          <div className="cardActionHeader">
+          {/* toolbar unique : lancer/arreter + toutes les actions rapides */}
+          <div className="campCard__toolbar">
             {!isInbound && (
               <button
                 type="button"
-                className={`btnAction ${
-                  compagne.isRunning === 1 ? "btnStop" : "btnStart"
-                }`}
+                className={`campBtnStart ${isRunning ? "is-running" : ""}`}
                 onClick={() => lancerCampagne(compagne)}
               >
-                <i
-                  className={`bi ${
-                    compagne.isRunning === 1
-                      ? "bi-stop-fill"
-                      : "bi-play-fill"
-                  }`}
-                />
-                {compagne.isRunning === 1 ? "Arrêter" : "Lancer"}
+                {isRunning ? (
+                  <>
+                    <span className="campWave" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </span>
+                    Arrêter
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-play-fill" />
+                    Lancer
+                  </>
+                )}
               </button>
             )}
 
             <button
               type="button"
-              className="btnIconAction btnIconEdit"
+              className="campIconBtn campIconBtn--tag"
+              onClick={() => onQualifications(compagne)}
+              title="Qualifications"
+              aria-label="Qualifications"
+            >
+              <i className="bi bi-tags-fill" />
+            </button>
+
+            <button
+              type="button"
+              className="campIconBtn campIconBtn--mail"
+              onClick={() => onEmailConfig(compagne)}
+              title="Configuration email"
+              aria-label="Configuration email"
+            >
+              <i className="bi bi-envelope-fill" />
+            </button>
+
+            <button
+              type="button"
+              className={`campIconBtn campIconBtn--noise ${compagne.backgroundNoise ? "is-on" : ""}`}
+              onClick={() => onToggleBackgroundNoise(compagne)}
+              title={
+                compagne.backgroundNoise
+                  ? "Désactiver le bruit de fond"
+                  : "Activer le bruit de fond"
+              }
+              aria-label="Bruit de fond"
+            >
+              <i
+                className={`bi ${
+                  compagne.backgroundNoise
+                    ? "bi-volume-up-fill"
+                    : "bi-volume-mute-fill"
+                }`}
+              />
+            </button>
+
+            <button
+              type="button"
+              className="campIconBtn campIconBtn--edit"
               onClick={() => onEdit(compagne)}
               title="Modifier"
               aria-label="Modifier"
@@ -133,7 +177,7 @@ export default function CompagneCard({
 
             <button
               type="button"
-              className="btnIconAction btnIconDelete"
+              className="campIconBtn campIconBtn--delete"
               onClick={() => onDelete(compagne)}
               title="Supprimer"
               aria-label="Supprimer"
@@ -141,206 +185,124 @@ export default function CompagneCard({
               <i className="bi bi-trash3" />
             </button>
           </div>
-
-          <div className="cardActionTools">
-            <button
-              type="button"
-              className="btnCardAction btnQualification"
-              onClick={() => onQualifications(compagne)}
-            >
-              <i className="bi bi-tags" />
-              <span>Qualifications</span>
-            </button>
-
-            <button
-              type="button"
-              className="btnCardAction"
-              onClick={() => onEmailConfig(compagne)}
-            >
-              <i className="bi bi-envelope-fill" />
-              <span>Email</span>
-            </button>
-
-            <button
-              type="button"
-              className={`btnCardAction ${
-                compagne.backgroundNoise ? "btnNoiseOn" : "btnNoiseOff"
-              }`}
-              onClick={() => onToggleBackgroundNoise(compagne)}
-            >
-              <i
-                className={`bi ${
-                  compagne.backgroundNoise
-                    ? "bi-volume-up-fill"
-                    : "bi-volume-mute-fill"
-                }`}
-              />
-              <span>{compagne.backgroundNoise ? "Fond ON" : "Fond OFF"}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="compagneMetaGrid">
-        <div>
-          <span className="label">Numéro principal</span>
-          <div>{compagne.numero || "-"}</div>
         </div>
 
-        {numerosSecondaires.length > 0 && (
-          <div>
-            <span className="label">
-              {isInbound
-                ? "Autres numéros entrants"
-                : "Numéros sortants en rotation"}
+        <div className="campCard__badges">
+          <span
+            className={`campPill ${isActive ? "campPill--live" : "campPill--off"}`}
+          >
+            <i
+              className={`bi ${isActive ? "bi-check-circle-fill" : "bi-pause-circle-fill"}`}
+            />
+            {isActive ? "Actif" : "Inactif"}
+          </span>
+
+          <span className="campPill campPill--signal">
+            <i className="bi bi-cpu-fill" />×{maxConcurrent} simultané
+            {maxConcurrent > 1 ? "s" : ""}
+          </span>
+        </div>
+
+        {/* 7 lignes fixes, toujours affichées (avec "—" si non applicable),
+            pour garder exactement la même hauteur sur toutes les cartes */}
+        <div className="campSpecs">
+          <div className="campSpecRow">
+            <span className="campSpecRow__label">Agent IA</span>
+            <span className="campSpecRow__value" title={agentValue}>
+              {agentValue}
             </span>
+          </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
-              }}
+          <div className="campSpecRow">
+            <span className="campSpecRow__label">Timeout</span>
+            <span
+              className={`campSpecRow__value campMono ${timeoutValue === "—" ? "campSpecRow__value--muted" : ""}`}
             >
-              {numerosSecondaires.map((numero, index) => (
-                <span
-                  key={`${numero}-${index}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: "0.82rem",
-                    color: "var(--gray-secondaire)",
-                  }}
-                >
-                  <i
-                    className={`bi ${
-                      isInbound ? "bi-telephone-inbound" : "bi-arrow-repeat"
-                    }`}
-                  />
-                  {numero}
+              {timeoutValue}
+            </span>
+          </div>
+
+          <div className="campSpecRow">
+            <span className="campSpecRow__label">Appels disponibles</span>
+            <span
+              className={`campSpecRow__value campMono ${appelsValue === "—" ? "campSpecRow__value--muted" : ""}`}
+            >
+              {appelsValue}
+            </span>
+          </div>
+
+          <div className="campAvailability">
+            <div className="campAvailability__head">
+              <i className="bi bi-calendar-week" />
+              <span>Disponibilité</span>
+              <span className="campAvailability__tz">
+                {compagne.timeZone || "Europe/Paris"}
+              </span>
+            </div>
+
+            <div className="campAvailability__days">
+              {joursLabel.split(", ").map((jour) => (
+                <span key={jour} className="campDayChip">
+                  {jour}
+                </span>
+              ))}
+            </div>
+
+            <div className="campAvailability__slots">
+              {tranches.map((t, i) => (
+                <span key={i} className="campSlotPill">
+                  <i className="bi bi-clock" />
+                  {t.startHour}–{t.endHour}
                 </span>
               ))}
             </div>
           </div>
-        )}
 
-        <div>
-          <span className="label">Type d'appel</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <i
-              className={`bi ${
-                isInbound
-                  ? "bi-telephone-inbound-fill"
-                  : "bi-telephone-outbound-fill"
-              }`}
-              style={{ color: isInbound ? "#6366f1" : "#f59e0b" }}
-            />
-            {isInbound ? "Entrant" : "Sortant"}
+          <div className="campSpecRow">
+            <span className="campSpecRow__label">Fiches</span>
+            <span
+              className={`campSpecRow__value ${fichesValue === "—" ? "campSpecRow__value--muted" : ""}`}
+              title={fichesValue}
+            >
+              {fichesValue}
+            </span>
           </div>
-        </div>
 
-        {!isInbound && (
-          <div>
-            <span className="label">Fiches</span>
-            <div>
-              {compagne.fiches?.length
-                ? compagne.fiches.map((f) => f.nomFiche).join(", ")
-                : "Non définies"}
-            </div>
+          <div className="campSpecRow">
+            <span className="campSpecRow__label">{numerosLabel}</span>
+            <span
+              className={`campSpecRow__value campMono ${numerosValue === "—" ? "campSpecRow__value--muted" : ""}`}
+              title={numerosValue}
+            >
+              {numerosValue}
+            </span>
           </div>
-        )}
 
-        <div>
-          <span className="label">Agent IA</span>
-          <div>{compagne.id_ia?.nomAgent || "Non défini"}</div>
-        </div>
-
-        {!isInbound && (
-          <div>
-            <span className="label">Timeout</span>
-            <div>{compagne.dialTimeout ?? 30}s</div>
-          </div>
-        )}
-
-        {!isInbound && (
-          <>
-            <div>
-              <span className="label">Appels disponibles</span>
-              <div>{compagne.callStats?.appelsDisponibles ?? 0}</div>
-            </div>
-
-            <div>
-              <span className="label">Fiches disponibles</span>
-              {compagne.callStats?.parListe?.length > 0 ? (
-                <div className="formHint">
-                  {compagne.callStats.parListe.map((liste) => (
-                    <div key={liste.listId}>
-                      {liste.nomFiche} : {liste.disponible} disponible(s) sur{" "}
-                      {liste.total}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div>0</div>
-              )}
-            </div>
-          </>
-        )}
-
-        <div>
-          <span className="label">Appels simultanés</span>
-          <div className="concurrentDisplay">
-            <i className="bi bi-telephone-fill concurrentDot" />
-            <span className="concurrentCount">
-              {compagne.maxConcurrentCalls ?? 1}
+          <div className="campSpecRow">
+            <span className="campSpecRow__label">Société</span>
+            <span
+              className={`campSpecRow__value ${societeValue === "—" ? "campSpecRow__value--muted" : ""}`}
+              title={societeValue}
+            >
+              {societeValue}
             </span>
           </div>
         </div>
 
-        <div>
-          <span className="label">Jours autorisés</span>
-          <div>
-            {compagne.allowedDays?.length
-              ? compagne.allowedDays
-                  .map(
-                    (jour) =>
-                      ({
-                        0: "Dim",
-                        1: "Lun",
-                        2: "Mar",
-                        3: "Mer",
-                        4: "Jeu",
-                        5: "Ven",
-                        6: "Sam",
-                      })[jour],
-                  )
-                  .join(", ")
-              : "Lun - Ven"}
+        {/* script toujours visible, hauteur fixe (scroll interne si trop long) */}
+        <div className="campScript">
+          <div className="campScript__label">
+            <i className="bi bi-chat-square-text-fill" />
+            Script final
+          </div>
+          <div className="campScript__body">
+            <p>
+              {compagne.scriptFinal ||
+                compagne.script ||
+                "Aucun script renseigné."}
+            </p>
           </div>
         </div>
-
-        <div>
-          <span className="label">Horaires</span>
-          <div>
-            {compagne.startHour || "08:00"} - {compagne.endHour || "21:00"}
-          </div>
-        </div>
-
-        <div>
-          <span className="label">Fuseau</span>
-          <div>{compagne.timeZone || "Europe/Paris"}</div>
-        </div>
-
-        <div>
-          <span className="label">Société</span>
-          <div>{compagne.companyName || "Aucun"}</div>
-        </div>
-      </div>
-
-      <div className="compagneScriptBlock">
-        <span className="label">Script final</span>
-        <p>{compagne.scriptFinal || compagne.script}</p>
       </div>
     </div>
   );

@@ -1,765 +1,769 @@
-.compagnesPage {
+/* ================================================================
+   CAMPAGNES IA — page de gestion des campagnes d'appels
+   Thème: violet "signal" (IA) + teal "voice" (téléphonie), fond clair
+   ================================================================ */
+
+.campPage {
   min-height: 100vh;
+  background: var(--camp-bg-grad);
 }
 
-.compagnesContainer {
-  max-width: 1280px;
+.campContainer {
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 30px 24px 40px;
+  padding: 32px 24px 56px;
 }
 
-.compagnesTopBar {
+/* ---------------------------------------------------------------
+   HERO / EN-TÊTE
+   --------------------------------------------------------------- */
+
+.campHero {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 24px;
-  padding: 24px 26px;
-  background: var(--gradient-body);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow);
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding: 28px 32px;
+  background: var(--camp-surface);
+  border: 1px solid var(--camp-border);
+  border-radius: var(--camp-r-xl);
+  box-shadow: var(--camp-shadow-card);
+  position: relative;
+  overflow: hidden;
 }
 
-.compagnesTopBar h1 {
+.campHero::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -8%;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, var(--camp-signal-soft) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.campHero__text {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+}
+
+.campHero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--camp-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--camp-signal-dark);
+  background: var(--camp-signal-soft);
+  border: 1px solid var(--camp-signal-border);
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.campHero__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--camp-signal);
+  box-shadow: 0 0 0 0 rgba(91, 61, 240, 0.55);
+  animation: campPulseDot 1.8s ease-out infinite;
+}
+
+@keyframes campPulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(91, 61, 240, 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(91, 61, 240, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 61, 240, 0);
+  }
+}
+
+.campHero__text h1 {
+  font-family: var(--camp-font-display);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--camp-ink);
   margin: 0 0 8px;
-  font-size: 30px;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
 }
 
-.compagnesTopBar p {
+.campHero__text p {
   margin: 0;
-  color: var(--muted);
-  font-size: 15px;
+  color: var(--camp-ink-soft);
+  font-size: 14.5px;
+  line-height: 1.6;
 }
 
-/* GRID */
-.compagnesGrid {
+.campHero__stats {
+  display: flex;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.campStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 12px 16px;
+  border-radius: var(--camp-r-md);
+  background: var(--camp-surface-soft);
+  border: 1px solid var(--camp-border-soft);
+}
+
+.campStat__value {
+  font-family: var(--camp-font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--camp-ink);
+  line-height: 1.1;
+}
+
+.campStat__label {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--camp-ink-soft);
+}
+
+.campStat--live {
+  background: var(--camp-live-soft);
+  border-color: var(--camp-live-border);
+}
+
+.campStat--live .campStat__value {
+  color: var(--camp-live-dark);
+}
+
+.campStat--signal {
+  background: var(--camp-signal-soft);
+  border-color: var(--camp-signal-border);
+}
+
+.campStat--signal .campStat__value {
+  color: var(--camp-signal-dark);
+}
+
+.campBtnPrimary {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  padding: 14px 22px;
+  font-family: var(--camp-font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--camp-signal) 0%, var(--camp-signal-dark) 100%);
+  border-radius: var(--camp-r-md);
+  box-shadow: 0 12px 24px -8px rgba(91, 61, 240, 0.55);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.campBtnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -8px rgba(91, 61, 240, 0.6);
+}
+
+.campBtnPrimary:active {
+  transform: translateY(0);
+}
+
+/* ---------------------------------------------------------------
+   ÉTATS (loading / vide)
+   --------------------------------------------------------------- */
+
+.campState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--camp-surface);
+  border: 1px dashed var(--camp-border);
+  border-radius: var(--camp-r-xl);
+  padding: 56px 24px;
+  color: var(--camp-ink-soft);
+  font-size: 14.5px;
+  text-align: center;
+}
+
+.campState i {
+  font-size: 26px;
+  color: var(--camp-signal);
+}
+
+.campState--empty p {
+  margin: 0;
+  font-weight: 600;
+  color: var(--camp-ink);
+}
+
+/* ---------------------------------------------------------------
+   GRILLE DE CARTES
+   --------------------------------------------------------------- */
+
+.campGridWrap {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  /* grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); */
+  align-items: stretch;
   gap: 20px;
 }
 
-/* CARD */
-.compagneCard {
-  background: var(--gradient-body);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 22px;
-  box-shadow: var(--shadow);
-  transition: all 0.25s ease;
-}
+/* ---------------------------------------------------------------
+   CARTE CAMPAGNE
+   --------------------------------------------------------------- */
 
-.compagneCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 34px var(--gray-box-shadow-primary);
-}
-
-.compagneCardTop {
+.campCard {
+  position: relative;
   display: flex;
-  justify-content: space-between;
+  height: 100%;
+  background: var(--camp-surface);
+  border: 1px solid var(--camp-border);
+  border-radius: var(--camp-r-xl);
+  box-shadow: var(--camp-shadow-card);
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.campCard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--camp-shadow-card-hover);
+}
+
+.campCard__rail {
+  width: 5px;
+  flex-shrink: 0;
+  background: var(--camp-stopped);
+}
+
+.campCard--live .campCard__rail {
+  background: linear-gradient(180deg, var(--camp-live) 0%, var(--camp-voice) 100%);
+}
+
+.campCard--ready .campCard__rail {
+  background: var(--camp-signal);
+}
+
+.campCard__inner {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px;
+}
+
+.campCard__head {
+  display: flex;
   align-items: flex-start;
-  gap: 18px;
-  margin-bottom: 18px;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
-.compagneName {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--dark-principale);
+.campCard__identity {
+  min-width: 0;
 }
 
-.compagneNumero {
-  color: var(--muted);
-  margin-top: 5px;
-  font-size: 14px;
+.campTypeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 8px;
 }
 
-.compagneMetaGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.campTypeTag--in {
+  color: var(--camp-signal-dark);
+  background: var(--camp-signal-soft);
+  border: 1px solid var(--camp-signal-border);
+}
+
+.campTypeTag--out {
+  color: var(--camp-warm-dark);
+  background: var(--camp-warm-soft);
+  border: 1px solid var(--camp-warm-border);
+}
+
+.campCard__name {
+  margin: 0 0 4px;
+  font-family: var(--camp-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--camp-ink);
+  overflow-wrap: anywhere;
+}
+
+.campCard__number {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--camp-font-mono);
+  font-size: 13px;
+  color: var(--camp-ink-soft);
+}
+
+.campCard__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* bouton lancer / arrêter */
+.campBtnStart {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--camp-r-sm);
+  font-family: var(--camp-font-display);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--camp-voice) 0%, var(--camp-voice-dark) 100%);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.campBtnStart:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -6px rgba(10, 163, 152, 0.55);
+}
+
+.campBtnStart.is-running {
+  background: linear-gradient(135deg, var(--camp-danger) 0%, var(--camp-danger-dark) 100%);
+}
+
+.campBtnStart.is-running:hover {
+  box-shadow: 0 8px 18px -6px rgba(222, 49, 89, 0.5);
+}
+
+/* signature: mini onde vocale animée quand la campagne est en appel */
+.campWave {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+.campWave span {
+  width: 2.5px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 2px;
+  animation: campWaveBounce 0.9s ease-in-out infinite;
+}
+
+.campWave span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.campWave span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.campWave span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.campWave span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes campWaveBounce {
+
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.campIconBtn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: var(--camp-r-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.campIconBtn--edit {
+  background: var(--camp-signal-soft);
+  color: var(--camp-signal-dark);
+}
+
+.campIconBtn--edit:hover {
+  background: var(--camp-signal-border);
+  transform: translateY(-1px);
+}
+
+.campIconBtn--delete {
+  background: var(--camp-danger-soft);
+  color: var(--camp-danger-dark);
+}
+
+.campIconBtn--delete:hover {
+  background: var(--camp-danger-border);
+  transform: translateY(-1px);
+}
+
+.campIconBtn--tag {
+  background: var(--camp-surface-soft);
+  color: var(--camp-ink-soft);
+  border: 1px solid var(--camp-border);
+}
+
+.campIconBtn--tag:hover {
+  color: var(--camp-signal-dark);
+  border-color: var(--camp-signal-border);
+  background: var(--camp-signal-soft);
+  transform: translateY(-1px);
+}
+
+.campIconBtn--mail {
+  background: var(--camp-surface-soft);
+  color: var(--camp-ink-soft);
+  border: 1px solid var(--camp-border);
+}
+
+.campIconBtn--mail:hover {
+  color: var(--camp-voice-dark);
+  border-color: var(--camp-voice-border);
+  background: var(--camp-voice-soft);
+  transform: translateY(-1px);
+}
+
+.campIconBtn--noise {
+  background: var(--camp-surface-soft);
+  color: var(--camp-ink-soft);
+  border: 1px solid var(--camp-border);
+}
+
+.campIconBtn--noise:hover {
+  transform: translateY(-1px);
+}
+
+.campIconBtn--noise.is-on {
+  background: var(--camp-voice-soft);
+  color: var(--camp-voice-dark);
+  border-color: var(--camp-voice-border);
+}
+
+/* ---------------------------------------------------------------
+   BADGES (pastilles d'état)
+   --------------------------------------------------------------- */
+
+.campCard__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.campPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.campPill--live {
+  color: var(--camp-live-dark);
+  background: var(--camp-live-soft);
+  border-color: var(--camp-live-border);
+}
+
+.campPill--off {
+  color: var(--camp-stopped);
+  background: var(--camp-stopped-soft);
+  border-color: var(--camp-stopped-border);
+}
+
+.campPill--voice {
+  color: var(--camp-voice-dark);
+  background: var(--camp-voice-soft);
+  border-color: var(--camp-voice-border);
+}
+
+.campPill--signal {
+  color: var(--camp-signal-dark);
+  background: var(--camp-signal-soft);
+  border-color: var(--camp-signal-border);
+}
+
+.campPill--warm {
+  color: var(--camp-warm-dark);
+  background: var(--camp-warm-soft);
+  border-color: var(--camp-warm-border);
+}
+
+/* ---------------------------------------------------------------
+   SPECS — lignes compactes, toujours les mêmes pour toutes les cartes
+   (une seule ligne par info, valeur tronquée pour garder une hauteur fixe)
+   --------------------------------------------------------------- */
+
+.campSpecs {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+  border-top: 1px solid var(--camp-border-soft);
+}
+
+.campSpecRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 14px;
-  margin-bottom: 18px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--camp-border-soft);
 }
 
-.compagneMetaGrid>div {
-  background: var(--white-border);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px 14px;
+.campSpecRow__label {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--camp-ink-soft);
 }
 
-.compagneScriptBlock {
-  background: var(--gradient-body);
-  border: 1px solid var(--ghost-bg);
-  border-radius: 16px;
-  padding: 15px;
-  margin-bottom: 18px;
-  max-height: 300px;
+.campSpecRow__value {
+  min-width: 0;
+  flex: 1;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--camp-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.campSpecRow__value--muted {
+  color: var(--camp-stopped);
+  font-weight: 500;
+}
+
+.campMono {
+  font-family: var(--camp-font-mono);
+}
+
+/* ---------------------------------------------------------------
+   SCRIPT (rendu façon "transcript" d'appel)
+   --------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------
+   SCRIPT (toujours visible, hauteur fixe, ancré en bas de carte)
+   --------------------------------------------------------------- */
+
+.campScript {
+  background: var(--camp-ink);
+  border-radius: var(--camp-r-md);
+  padding: 12px 16px;
+  margin-top: auto;
+}
+
+.campScript__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #a99ee0;
+  margin-bottom: 6px;
+}
+
+.campScript__body {
+  max-height: 200px;
   overflow-y: auto;
 }
 
-.compagneScriptBlock p {
-  margin: 8px 0 0;
+.campScript p {
+  margin: 0;
+  font-family: var(--camp-font-mono);
+  font-size: 12px;
   line-height: 1.6;
-  color: var(--gray-principale);
-  font-size: 14px;
+  color: #e7e4f2;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.compagneActions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* ---------------------------------------------------------------
+   DISPONIBILITÉ — bloc dédié (jours + tranches horaires)
+   --------------------------------------------------------------- */
+
+.campAvailability {
+  background: var(--camp-surface-soft);
+  border: 1px solid var(--camp-border-soft);
+  border-radius: var(--camp-r-md);
+  padding: 12px 14px;
+  margin-bottom: 14px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 860px) {
+.campAvailability__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--camp-ink-soft);
+  margin-bottom: 10px;
+}
 
-  .compagnesTopBar,
-  .compagneCardTop,
-  .agentForm .formGrid {
+.campAvailability__head i {
+  color: var(--camp-signal);
+  font-size: 12px;
+}
+
+.campAvailability__tz {
+  margin-left: auto;
+  font-family: var(--camp-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--camp-ink-soft);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.campAvailability__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.campDayChip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--camp-signal-dark);
+  background: var(--camp-signal-soft);
+  border: 1px solid var(--camp-signal-border);
+}
+
+.campAvailability__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.campSlotPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--camp-font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--camp-r-sm);
+  color: var(--camp-voice-dark);
+  background: var(--camp-voice-soft);
+  border: 1px solid var(--camp-voice-border);
+}
+
+.campSlotPill i {
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------------- */
+
+@media (max-width: 960px) {
+  .campHero {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .compagnesGrid,
-  .compagneMetaGrid,
-  .agentForm .formGrid {
+  .campHero__stats {
+    justify-content: space-between;
+  }
+
+  .campStat {
+    flex: 1;
+  }
+
+  .campBtnPrimary {
+    justify-content: center;
+  }
+
+  .campGridWrap {
     grid-template-columns: 1fr;
   }
-
-  .compagnesContainer {
-    padding: 20px 14px 30px;
-  }
 }
 
-@keyframes pop {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
+@media (max-width: 620px) {
+  .campContainer {
+    padding: 20px 14px 36px;
   }
 
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.btnAction {
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s ease;
-}
-
-/* LANCER */
-.btnStart {
-  background: linear-gradient(135deg, #28a745, #34d058);
-  color: white;
-}
-
-.btnStart:hover {
-  transform: scale(1.05);
-  box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
-}
-
-/* ARRETER */
-.btnStop {
-  background: linear-gradient(135deg, #dc3545, #ff4d4f);
-  color: white;
-}
-
-.btnStop:hover {
-  transform: scale(1.05);
-  box-shadow: 0 3px 10px rgba(220, 53, 69, 0.4);
-}
-
-/* petite animation quand actif */
-.btnStop i {
-  animation: pulse 1s infinite;
-}
-
-.btnCardAction {
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #374151;
-  padding: 8px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btnCardAction:hover {
-  background: #f3f4f6;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.2);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
-.formHint {
-  font-size: 0.78rem;
-  color: #9ca3af;
-  margin-left: 4px;
-  font-weight: 400;
-}
-
-.concurrentWrapper {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 6px;
-}
-
-.formRange {
-  flex: 1;
-  accent-color: #6366f1;
-  cursor: pointer;
-  height: 6px;
-}
-
-.concurrentBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: 36px;
-  background: #6366f1;
-  color: #fff;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.concurrentLabels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 4px;
-  padding: 0 2px;
-}
-
-/* ── Badges campagne ── */
-.compagneBadges {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-}
-
-.badgeConcurrent {
-  background: #ede9fe;
-  color: #7c3aed;
-  border: 1px solid #ddd6fe;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badgeSeq {
-  background: #f1f5f9;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* ── Affichage icônes téléphones dans la card ── */
-.concurrentDisplay {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.concurrentDot {
-  font-size: 0.75rem;
-  color: #7c3aed;
-}
-
-.concurrentCount {
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: #7c3aed;
-  margin-left: 4px;
-}
-
-/* ── Slider dans le formulaire ── */
-.formHint {
-  font-size: 0.78rem;
-  color: #9ca3af;
-  margin-left: 4px;
-  font-weight: 400;
-}
-
-.concurrentWrapper {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 6px;
-}
-
-.formRange {
-  flex: 1;
-  accent-color: #7c3aed;
-  cursor: pointer;
-  height: 6px;
-}
-
-.concurrentBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: 36px;
-  background: #7c3aed;
-  color: #fff;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.concurrentLabels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 4px;
-  padding: 0 2px;
-}
-
-/* ── Multi-select dropdown pour les fiches ── */
-.multiSelectWrapper {
-  position: relative;
-}
-
-.multiSelectTrigger {
-  width: 100%;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--white-border);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.2s ease;
-}
-
-
-.multiSelectPlaceholder {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.multiSelectTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex: 1;
-}
-
-.multiSelectTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: #ede9fe;
-  color: #7c3aed;
-  border: 1px solid #ddd6fe;
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.multiSelectTag i {
-  cursor: pointer;
-  font-size: 11px;
-  opacity: 0.7;
-}
-
-.multiSelectTag i:hover {
-  opacity: 1;
-}
-
-.multiSelectChevron {
-  color: var(--muted);
-  flex-shrink: 0;
-  font-size: 13px;
-}
-
-.multiSelectDropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  max-height: 220px;
-  overflow-y: auto;
-  background: var(--gradient-body);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  z-index: 30;
-  padding: 6px;
-}
-
-label.multiSelectOption {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 8px;
-  padding: 9px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--dark-principale);
-  width: 100%;
-}
-
-label.multiSelectOption input[type="checkbox"] {
-  accent-color: #7c3aed;
-  cursor: pointer;
-  margin: 0;
-  flex-shrink: 0;
-  width: auto !important;
-}
-
-label.multiSelectOption span {
-  flex: none !important;
-  text-align: left;
-  width: auto !important;
-}
-
-.multiSelectEmpty {
-  padding: 8px 10px;
-}
-
-.multiSelectOption:hover {
-  background: var(--white-border);
-}
-
-/* ✅ Badge type d'appel — à ajouter dans votre fichier CSS existant */
-
-.badge.badgeInbound {
-  background-color: #ede9fe;
-  color: #6366f1;
-  border: 1px solid #c4b5fd;
-}
-
-.badge.badgeOutbound {
-  background-color: #fef3c7;
-  color: #d97706;
-  border: 1px solid #fcd34d;
-}
-
-.badge.badgeNumerosRotation {
-  background-color: #f3f4f6;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
-}
-
-.compagneStatusWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  min-width: 230px;
-}
-
-.cardActionPrimary,
-.cardActionTools,
-.cardActionAdmin {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.cardActionPrimary .btnAction {
-  min-width: 140px;
-  justify-content: center;
-}
-
-.cardActionTools {
-  padding-top: 4px;
-}
-
-.cardActionAdmin {
-  padding-top: 6px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.btnEdit,
-.btnDelete,
-.btnCardAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btnNoiseOn {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-}
-
-.btnNoiseOff {
-  background: #f9fafb;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
-}
-
-@media (max-width: 768px) {
-  .compagneCardTop {
+  .campCard__head {
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .compagneStatusWrap {
-    align-items: stretch;
-    min-width: 100%;
+  .campCard__toolbar {
+    width: 100%;
   }
 
-  .cardActionPrimary,
-  .cardActionTools,
-  .cardActionAdmin {
-    justify-content: flex-start;
-  }
-
-  .cardActionPrimary .btnAction,
-  .cardActionTools button,
-  .cardActionAdmin button {
+  .campBtnStart {
     flex: 1;
-  }
-}
-
-.compagneStatusWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  min-width: 260px;
-}
-
-.cardActionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  width: 100%;
-}
-
-.cardActionTools {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  width: 100%;
-}
-
-.cardActionHeader .btnAction {
-  height: 38px;
-  min-width: 130px;
-  padding: 0 18px;
-  border-radius: 9px;
-  font-weight: 700;
-  justify-content: center;
-}
-
-.btnIconAction {
-  width: 38px;
-  height: 38px;
-  border: none;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 15px;
-  transition: all 0.2s ease;
-}
-
-.btnIconEdit {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.btnIconEdit:hover {
-  background: #dbeafe;
-  transform: translateY(-1px);
-}
-
-.btnIconDelete {
-  background: #fef2f2;
-  color: #ef4444;
-}
-
-.btnIconDelete:hover {
-  background: #fee2e2;
-  transform: translateY(-1px);
-}
-
-.btnCardAction {
-  height: 40px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #4b5563;
-  padding: 0 14px;
-  border-radius: 11px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: all 0.2s ease;
-}
-
-.btnCardAction:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  transform: translateY(-1px);
-}
-
-.btnNoiseOn {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
-}
-
-.btnNoiseOn:hover {
-  background: #d1fae5;
-}
-
-.btnNoiseOff {
-  background: #f9fafb;
-  color: #6b7280;
-  border-color: #e5e7eb;
-}
-
-.btnStart {
-  background: #22c55e;
-  color: #ffffff;
-}
-
-.btnStart:hover {
-  background: #16a34a;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.28);
-}
-
-.btnStop {
-  background: #ef4444;
-  color: #ffffff;
-}
-
-.btnStop:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.28);
-}
-
-@media (max-width: 768px) {
-  .compagneCardTop {
-    flex-direction: column;
-    align-items: stretch;
+    justify-content: center;
   }
 
-  .compagneStatusWrap {
-    min-width: 100%;
-    align-items: stretch;
+  .campSpecRow__value {
+    white-space: normal;
+    text-align: left;
+    text-overflow: clip;
   }
-
-  .cardActionHeader,
-  .cardActionTools {
-    justify-content: flex-start;
-  }
-
-  .cardActionHeader .btnAction {
-    flex: 1;
-  }
-
-  .btnCardAction {
-    flex: 1;
-  }
-}
-
-/* Bouton Qualifications */
-.btnQualification {
-  background: #eef2ff;
-  color: #4f46e5;
-  border-color: #c7d2fe;
-}
-
-.btnQualification:hover {
-  background: #e0e7ff;
-  color: #4338ca;
-  border-color: #a5b4fc;
-}
-
-/* Fond ON */
-.btnNoiseOn {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
-}
-
-.btnNoiseOn:hover {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #6ee7b7;
-}
-
-/* Fond OFF */
-.btnNoiseOff {
-  background: #fff7ed;
-  color: #ea580c;
-  border-color: #fed7aa;
-}
-
-.btnNoiseOff:hover {
-  background: #ffedd5;
-  color: #c2410c;
-  border-color: #fdba74;
-}
-
-.badgeInboundNumbers {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #4f46e5;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
 }

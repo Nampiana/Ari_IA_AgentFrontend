@@ -46,16 +46,16 @@ export default function CompagnesPage({ showToast }) {
   };
 
   const [emailConfigModal, setEmailConfigModal] = useState({
-  open: false,
-  compagne: null,
-});
-
-const handleEmailConfig = (compagne) => {
-  setEmailConfigModal({
-    open: true,
-    compagne,
+    open: false,
+    compagne: null,
   });
-};
+
+  const handleEmailConfig = (compagne) => {
+    setEmailConfigModal({
+      open: true,
+      compagne,
+    });
+  };
 
   const fetchLists = async () => {
     try {
@@ -166,10 +166,7 @@ const handleEmailConfig = (compagne) => {
         return;
       }
 
-      showToast(
-        message || "Erreur lors du lancement de la campagne",
-        "danger",
-      );
+      showToast(message || "Erreur lors du lancement de la campagne", "danger");
     }
   };
 
@@ -225,9 +222,7 @@ const handleEmailConfig = (compagne) => {
     try {
       setCompagnes((prev) =>
         prev.map((c) =>
-          c._id === compagne._id
-            ? { ...c, backgroundNoise: nextValue }
-            : c,
+          c._id === compagne._id ? { ...c, backgroundNoise: nextValue } : c,
         ),
       );
 
@@ -256,35 +251,73 @@ const handleEmailConfig = (compagne) => {
     }
   };
 
+  const totalCount = compagnes.length;
+  const activeCount = compagnes.filter((c) => c.active === 1).length;
+  const runningCount = compagnes.filter((c) => c.isRunning === 1).length;
+
   return (
-    <div className="compagnesPage">
+    <div className="campPage">
       <HeaderBar />
 
-      <div className="agentsContainer">
-        <div className="agentsTopBar">
-          <div>
-            <h1>Gestion des campagnes</h1>
+      <div className="campContainer">
+        <section className="campHero">
+          <div className="campHero__text">
+            <span className="campHero__eyebrow">
+              <span className="campHero__dot" />
+              Centre d'appel piloté par IA
+            </span>
+            <h1>Campagnes</h1>
             <p>
-              Gérez les campagnes, les numéros, les scripts et les agents IA
-              associés.
+              Configurez les numéros, scripts et agents IA de vos campagnes
+              d'appels automatiques et manuels.
             </p>
+          </div>
+
+          <div className="campHero__stats">
+            <div className="campStat">
+              <span className="campStat__value">{totalCount}</span>
+              <span className="campStat__label">Campagnes</span>
+            </div>
+            <div className="campStat campStat--live">
+              <span className="campStat__value">{activeCount}</span>
+              <span className="campStat__label">Actives</span>
+            </div>
+            <div className="campStat campStat--signal">
+              <span className="campStat__value">{runningCount}</span>
+              <span className="campStat__label">En appel</span>
+            </div>
           </div>
 
           <button
             type="button"
-            className="btnPrimary"
+            className="campBtnPrimary"
             onClick={handleCreateClick}
           >
-            <i className="bi bi-plus-lg" /> Nouvelle campagne
+            <i className="bi bi-plus-lg" />
+            Nouvelle campagne
           </button>
-        </div>
+        </section>
 
         {loading ? (
-          <div className="loadingBox">Chargement des campagnes...</div>
+          <div className="campState">
+            <i className="bi bi-hourglass-split" />
+            Chargement des campagnes...
+          </div>
         ) : compagnes.length === 0 ? (
-          <div className="emptyBox">Aucune campagne trouvée.</div>
+          <div className="campState campState--empty">
+            <i className="bi bi-inboxes" />
+            <p>Aucune campagne pour le moment.</p>
+            <button
+              type="button"
+              className="campBtnPrimary"
+              onClick={handleCreateClick}
+            >
+              <i className="bi bi-plus-lg" />
+              Créer une campagne
+            </button>
+          </div>
         ) : (
-          <div className="compagnesGrid">
+          <div className="campGridWrap">
             {compagnes.map((compagne) => (
               <CompagneCard
                 key={compagne._id}
@@ -326,7 +359,8 @@ const handleEmailConfig = (compagne) => {
           })
         }
       />
-            <EmailConfigModal
+
+      <EmailConfigModal
         open={emailConfigModal.open}
         compagne={emailConfigModal.compagne}
         showToast={showToast}
@@ -345,7 +379,9 @@ const handleEmailConfig = (compagne) => {
 
             <p>
               Voulez-vous vraiment supprimer{" "}
-              <strong>{deleteModal.compagne?.nomCompagne || "cette campagne"}</strong>
+              <strong>
+                {deleteModal.compagne?.nomCompagne || "cette campagne"}
+              </strong>
             </p>
 
             <div className="deleteActions">
