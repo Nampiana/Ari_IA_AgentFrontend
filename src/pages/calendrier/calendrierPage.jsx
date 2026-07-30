@@ -3,188 +3,19 @@ import HeaderBar from "../../components/agents/HeaderBar";
 import useScheduledCall from "../../hooks/useScheduledCall";
 import useHistoriqueIa from "../../hooks/useHistoriqueIa";
 import useCrmLead from "../../hooks/useCrmLead";
+import DayDetailModal from "../../components/calendrier/DayDetailModal";
+import {
+  WEEK_DAYS,
+  SOURCE_DEFS,
+  REASON_DEFS,
+  STATUS_TO_REASON,
+  FILTER_CHIPS,
+  getSourceDef,
+  getReasonDef,
+  mondayFirstIndex,
+  toLocalDateKey,
+} from "../../components/calendrier/calendrierConstants";
 import "../../assets/css/calendrierPage.css";
-import { buildRecordUrl } from "../../utils/buildPathAudio";
-
-// ─── Constantes ────────────────────────────────────────────────────────────────
-
-const WEEK_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-
-const SOURCE_DEFS = {
-  1: { label: "Auto", color: "#6b7280", bg: "#f3f4f6", icon: "bi-robot" },
-  2: {
-    label: "Manuel",
-    color: "#d97706",
-    bg: "#fef3c7",
-    icon: "bi-person-fill",
-  },
-  3: {
-    label: "CRM",
-    color: "#7c3aed",
-    bg: "#ede9fe",
-    icon: "bi-person-badge-fill",
-  },
-};
-
-const getSourceDef = (source) => SOURCE_DEFS[source] || SOURCE_DEFS[1];
-
-// Codes couleur CRM — alignés sur ceux déjà utilisés dans CrmKanbanPage
-const CRM_STATUS_DEFS = {
-  1: {
-    label: "Confirmé",
-    color: "#16a34a",
-    bg: "#dcfce7",
-    icon: "bi-check-circle-fill",
-  },
-  2: {
-    label: "Non confirmé",
-    color: "#6b7280",
-    bg: "#f3f4f6",
-    icon: "bi-x-circle-fill",
-  },
-  3: {
-    label: "À relancer",
-    color: "#2563eb",
-    bg: "#dbeafe",
-    icon: "bi-arrow-repeat",
-  },
-};
-
-function mondayFirstIndex(date) {
-  return (date.getDay() + 6) % 7;
-}
-
-function toLocalDateKey(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function formatDuration(billsec) {
-  if (!billsec && billsec !== 0) return "—";
-  const min = Math.floor(billsec / 60);
-  const sec = billsec % 60;
-  if (min === 0) return `${sec}s`;
-  return `${min}min ${sec}s`;
-}
-
-// ─── Couleurs & Labels ─────────────────────────────────────────────────────────
-
-const REASON_COLOR = {
-  RAPPEL: "bg-warning",
-  CALLBACK: "bg-warning",
-  NI: "bg-danger",
-  OCCUPE: "bg-gris",
-  REPONDEUR: "bg-info",
-  SALE: "bg-success",
-  SVI: "bg-cyan",
-};
-
-const REASON_LABEL = {
-  RAPPEL: "Rappel",
-  CALLBACK: "Rappel",
-  NI: "Non intéressé",
-  OCCUPE: "Occupé",
-  REPONDEUR: "Répondeur",
-  SALE: "Vente / RDV",
-  SVI: "SVI",
-};
-
-const STATUS_LABEL = {
-  1: { label: "Non intéressé", cls: "bg-danger", reason: "NI" },
-  2: { label: "Vente / RDV", cls: "bg-success", reason: "SALE" },
-  3: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
-  4: { label: "Occupé", cls: "bg-gris", reason: "OCCUPE" },
-  5: { label: "Répondeur", cls: "bg-info", reason: "REPONDEUR" },
-  6: { label: "SVI", cls: "bg-cyan text-dark", reason: "SVI" },
-  CALLBACK: { label: "Rappel", cls: "bg-warning text-dark", reason: "RAPPEL" },
-};
-
-const FILTER_CHIPS = [
-  { key: "ALL", label: "Tous", cls: "btn-outline-secondary" },
-  { key: "RAPPEL", label: "Rappel", cls: "btn-warning", dotCls: "bg-warning" },
-  { key: "NI", label: "Non intéressé", cls: "btn-danger", dotCls: "bg-danger" },
-  { key: "OCCUPE", label: "Occupé", cls: "btn-gris", dotCls: "bg-gris" },
-  { key: "REPONDEUR", label: "Répondeur", cls: "btn-info", dotCls: "bg-info" },
-  { key: "SVI", label: "SVI", cls: "btn-cyan", dotCls: "bg-cyan" },
-
-  {
-    key: "SALE",
-    label: "Vente / RDV",
-    cls: "btn-success",
-    dotCls: "bg-success",
-  },
-];
-
-const SCHEDULED_STATUS = {
-  pending: { label: "En attente", cls: "bg-warning text-dark" },
-  running: { label: "En cours", cls: "bg-info text-dark" },
-  done: { label: "Terminé", cls: "bg-success" },
-  failed: { label: "Échec", cls: "bg-danger" },
-};
-
-// ── Composant carte unifié — même structure, couleurs différentes ──────────
-const UnifiedCard = ({
-  sourceBadge,
-  accentColor,
-  title,
-  subtitle,
-  description,
-  metaItems,
-  statusBadges,
-  audioPath,
-  actions,
-}) => {
-  const recordUrl = buildRecordUrl(audioPath);
-
-  return (
-    <div className="unifiedCard" style={{ borderLeftColor: accentColor }}>
-      <div className="unifiedCardTop">
-        <div className="unifiedCardLeft">
-          <div className="unifiedCardBadgeRow">{sourceBadge}</div>
-          <div className="unifiedCardTitle">{title}</div>
-          {subtitle && <div className="unifiedCardSubtitle">{subtitle}</div>}
-          {description && (
-            <div className="unifiedCardDescription">{description}</div>
-          )}
-          {metaItems?.length > 0 && (
-            <div className="unifiedCardMeta">
-              {metaItems.map((m, i) => (
-                <span key={i} className="unifiedCardMetaItem">
-                  <i className={`bi ${m.icon}`} />
-                  {m.text}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="unifiedCardRight">
-          {statusBadges}
-          {actions}
-        </div>
-      </div>
-
-      {/* Audio toujours présent dans la même position pour tous les types */}
-      <div className="unifiedCardAudio" onClick={(e) => e.stopPropagation()}>
-        {recordUrl ? (
-          <audio controls className="w-100" style={{ height: 34 }}>
-            <source src={recordUrl} />
-            Votre navigateur ne supporte pas l'audio.
-          </audio>
-        ) : (
-          <span className="unifiedCardNoAudio">
-            <i className="bi bi-volume-mute me-1" />
-            Pas d'enregistrement
-          </span>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ─── Composant principal ───────────────────────────────────────────────────────
 
 export default function CalendrierPage() {
   const { getScheduledCalls, deleteScheduledCall } = useScheduledCall();
@@ -218,8 +49,6 @@ export default function CalendrierPage() {
           getCrmLeads({ crmStatus: 1, isArchived: false }),
           getCrmLeads({ crmStatus: 2, isArchived: false }),
         ]);
-      console.log(crmLeadStatus1?.data?.data);
-      console.log(crmLeadStatus2?.data?.data);
 
       setScheduledCalls(scheduledRes?.data?.data || []);
       setHistoriques(historiquesRes?.data?.data || []);
@@ -231,7 +60,7 @@ export default function CalendrierPage() {
         (l) => l.crmStatus == 2,
       );
 
-      // Un seul tableau global, distribué ensuite par crmStatus dans groupedData
+      // Un seul tableau global, redistribué ensuite par crmStatus dans groupedData
       setCrmLeads([...confirmed, ...nonConfirmed]);
     } catch (err) {
       console.error("Erreur chargement calendrier:", err);
@@ -296,7 +125,7 @@ export default function CalendrierPage() {
       if (statusFilter !== "ALL" && type !== "crm") {
         const reason =
           type === "historique"
-            ? STATUS_LABEL[item.status]?.reason || ""
+            ? STATUS_TO_REASON[item.status] || ""
             : item.reason || "";
         if (reason !== statusFilter) return false;
       }
@@ -341,7 +170,8 @@ export default function CalendrierPage() {
 
   const todayKey = toLocalDateKey(new Date());
 
-  // Les leads CRM sans callbackDate ne sont PAS groupés ici — section dédiée plus bas.
+  // Les leads CRM sans callbackDate ne sont pas groupés ici (étagère dédiée
+  // désactivée pour le moment, cf. bloc commenté plus bas dans le rendu).
   const groupedData = useMemo(() => {
     const map = {};
 
@@ -365,19 +195,18 @@ export default function CalendrierPage() {
         map[key].scheduled.push(s);
       });
 
-    // ── crmStatus 1 (Confirmé) → section CRM, peu importe la date ──────────────
+    // crmStatus 1 (Confirmé) → section CRM, peu importe la date
     crmLeads
       .filter((l) => l.crmStatus === 1 && matchesFilters(l, "crm"))
       .forEach((l) => {
-        if (!l.historiqueId.callDate) return; // sans date → section dédiée plus bas
-        const key = toLocalDateKey(new Date(l.historiqueId.callDate)); // ← corrigé
+        if (!l.historiqueId?.callDate) return; // sans date → étagère dédiée
+        const key = toLocalDateKey(new Date(l.historiqueId.callDate));
         if (!map[key])
           map[key] = { historiques: [], scheduled: [], crmLeads: [] };
         map[key].crmLeads.push(l);
       });
 
-    // ── crmStatus 2 (Non confirmé) avec date → traité comme un rappel ──────────
-    // ── crmStatus 2 (Non confirmé) avec date → traité comme un rappel ──────────
+    // crmStatus 2 (Non confirmé) avec date → traité comme un rappel
     crmLeads
       .filter(
         (l) => l.crmStatus === 2 && l.callbackDate && matchesFilters(l, "crm"),
@@ -407,15 +236,6 @@ export default function CalendrierPage() {
     return map;
   }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
 
-  // Leads CRM confirmés SANS callbackDate — section dédiée hors grille calendrier
-  const crmLeadsWithoutDate = useMemo(
-    () =>
-      crmLeads.filter(
-        (l) => l.crmStatus === 1 && matchesFilters(l, "crm") && !l.callbackDate,
-      ),
-    [crmLeads, matchesFilters],
-  );
-
   const filteredTotal = useMemo(() => {
     const fH = historiques.filter((h) =>
       matchesFilters(h, "historique"),
@@ -426,6 +246,34 @@ export default function CalendrierPage() {
     const fC = crmLeads.filter((l) => matchesFilters(l, "crm")).length;
     return fH + fS + fC;
   }, [historiques, scheduledCalls, crmLeads, matchesFilters]);
+
+  // Stats du bandeau hero — vue d'ensemble, non filtrée par les contrôles fins
+  const heroStats = useMemo(() => {
+    const totalEvents =
+      historiques.length + scheduledCalls.length + crmLeads.length;
+    const rappelsPending = scheduledCalls.filter(
+      (s) => s.status === "pending",
+    ).length;
+    const ventes = historiques.filter((h) => h.status === 2).length;
+    const crmConfirmed = crmLeads.filter((l) => l.crmStatus === 1).length;
+    return { totalEvents, rappelsPending, ventes, crmConfirmed };
+  }, [historiques, scheduledCalls, crmLeads]);
+
+  // Densité par jour du mois affiché — alimente la jauge .calDay__volume,
+  // signature visuelle du calendrier (le remplissage montre en un coup d'œil
+  // les jours les plus chargés du mois, relativement au jour le plus actif).
+  const maxDayTotal = useMemo(() => {
+    let max = 0;
+    cells.forEach((day) => {
+      if (!day) return;
+      const data = groupedData[toLocalDateKey(day)];
+      if (!data) return;
+      const total =
+        data.historiques.length + data.scheduled.length + data.crmLeads.length;
+      if (total > max) max = total;
+    });
+    return max || 1;
+  }, [groupedData, month, year]);
 
   const hasActiveFilter =
     searchQuery.trim() !== "" ||
@@ -459,148 +307,72 @@ export default function CalendrierPage() {
     }
   };
 
-  // Badge de source réutilisable — icône + couleur + libellé
-  const renderSourceBadge = (source, size) => {
-    const def = getSourceDef(source);
-    return (
-      <span
-        className={`calSourceBadge ${size === "lg" ? "calSourceBadgeLg" : ""}`}
-        style={{ color: def.color, background: def.bg }}
-        title={`Source : ${def.label}`}
-      >
-        <i className={`bi ${def.icon} me-1`} />
-        {def.label}
-      </span>
-    );
-  };
-
-  const renderCrmLeadItem = (lead) => (
-    <div key={lead._id} className="calItem calItemCrm">
-      {renderSourceBadge(3)}
-      <span className="calItemPhone">
-        {lead.telephone || lead.fiche?.phone || "-"}
-      </span>
-      <span className="calItemReason">
-        {lead.nom || lead.fiche?.nom || "Lead confirmé"}
-      </span>
-    </div>
-  );
-
-  // Carte détaillée d'un lead CRM — section dédiée + modale jour
-  const renderCrmLeadCard = (lead) => {
-    const statusDef = CRM_STATUS_DEFS[lead.crmStatus] || CRM_STATUS_DEFS[1];
-    const recordUrl = lead.historiqueId?.pathRecord
-      ? buildRecordUrl(lead.historiqueId.pathRecord)
-      : "";
-    const displayNom = lead.nom || lead.fiche?.nom || "Lead sans nom";
-    const displayTelephone = lead.telephone || lead.fiche?.phone || "—";
-    const displayEntreprise = lead.entreprise || lead.fiche?.entreprise;
-    const displayEmail = lead.email || lead.fiche?.email;
-
-    return (
-      <div key={lead._id} className="crmLeadCard">
-        <div className="crmLeadCardHeader">
-          <div className="crmLeadCardIdentity">
-            {renderSourceBadge(3)}
-            <span
-              className="crmLeadStatusDot"
-              style={{ background: statusDef.color }}
-              title={statusDef.label}
-            />
-            <strong className="crmLeadName">{displayNom}</strong>
-          </div>
-          <span
-            className="crmLeadStatusBadge"
-            style={{ color: statusDef.color, background: statusDef.bg }}
-          >
-            <i className={`bi ${statusDef.icon} me-1`} />
-            {statusDef.label}
-          </span>
-        </div>
-
-        <div className="crmLeadCardBody">
-          <div className="crmLeadCardRow">
-            <i className="bi bi-telephone-fill" />
-            {displayTelephone}
-          </div>
-          {displayEntreprise && (
-            <div className="crmLeadCardRow">
-              <i className="bi bi-building" />
-              {displayEntreprise}
-            </div>
-          )}
-          {displayEmail && (
-            <div className="crmLeadCardRow">
-              <i className="bi bi-envelope-fill" />
-              {displayEmail}
-            </div>
-          )}
-          <div className="crmLeadCardRow text-muted">
-            <i className="bi bi-megaphone" />
-            {lead.campagneId?.nomCompagne || "Campagne inconnue"}
-          </div>
-
-          {lead.note && <div className="crmLeadCardNote">{lead.note}</div>}
-
-          {recordUrl && (
-            <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-              <audio controls className="w-100" style={{ height: 32 }}>
-                <source src={recordUrl} />
-                Votre navigateur ne supporte pas l'audio.
-              </audio>
-            </div>
-          )}
-        </div>
-
-        <div className="crmLeadCardFooter">
-          <span>
-            <i className="bi bi-calendar-event me-1" />
-            {lead.historiqueId?.callDate
-              ? new Date(lead.historiqueId.callDate).toLocaleDateString(
-                  "fr-FR",
-                  {
-                    day: "numeric",
-                    month: "short",
-                  },
-                )
-              : "—"}
-          </span>
-          {lead.assignedTo && (
-            <span className="crmLeadCardAssigned">{lead.assignedTo}</span>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="calendrierPage bg-light min-vh-100">
+    <div className="calPage">
       <HeaderBar />
 
-      <div className="container-fluid p-1 p-md-5">
-        <div
-          className="card border-0 shadow-sm mb-4 p-3"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div className="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center mb-3">
-            <div className="input-group mobile-min-width">
-              <span className="input-group-text bg-white">
-                <i className="bi bi-search" />
+      <div className="calContainer">
+        {/* ── HERO ── */}
+        <section className="calHero">
+          <div className="calHero__text">
+            <span className="calHero__eyebrow">
+              <span className="calHero__dot" />
+              Planning des appels
+            </span>
+            <h1>Calendrier</h1>
+            <p>
+              Suivez en un coup d'œil les appels réalisés, les rappels
+              programmés et les leads CRM à relancer.
+            </p>
+          </div>
+
+          <div className="calHero__stats">
+            <div className="calStat">
+              <span className="calStat__icon">
+                <i className="bi bi-calendar-event" />
               </span>
+              <span className="calStat__value">{heroStats.totalEvents}</span>
+              <span className="calStat__label">Événements</span>
+            </div>
+            <div className="calStat calStat--rappel">
+              <span className="calStat__icon">
+                <i className="bi bi-telephone-outbound" />
+              </span>
+              <span className="calStat__value">{heroStats.rappelsPending}</span>
+              <span className="calStat__label">Rappels en attente</span>
+            </div>
+            <div className="calStat calStat--sale">
+              <span className="calStat__icon">
+                <i className="bi bi-trophy" />
+              </span>
+              <span className="calStat__value">{heroStats.ventes}</span>
+              <span className="calStat__label">Ventes / RDV</span>
+            </div>
+            <div className="calStat calStat--crm">
+              <span className="calStat__icon">
+                <i className="bi bi-person-badge" />
+              </span>
+              <span className="calStat__value">{heroStats.crmConfirmed}</span>
+              <span className="calStat__label">Leads confirmés</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── TOOLBAR : recherche + filtres + statuts ── */}
+        <section className="calToolbar">
+          <div className="calToolbar__row">
+            <div className="calSearch">
+              <i className="bi bi-search" />
               <input
                 type="text"
-                className="form-control"
                 placeholder="N° de téléphone, nom client…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
                 <button
-                  className="btn btn-outline-secondary"
+                  type="button"
+                  className="calSearch__clear"
                   onClick={() => setSearchQuery("")}
                   title="Effacer"
                 >
@@ -610,8 +382,7 @@ export default function CalendrierPage() {
             </div>
 
             <select
-              className="form-select mobile-min-width"
-              style={{ flex: 1 }}
+              className="calSelect"
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
             >
@@ -622,8 +393,7 @@ export default function CalendrierPage() {
             </select>
 
             <select
-              className="form-select mobile-min-width"
-              style={{ flex: 1 }}
+              className="calSelect"
               value={agentFilter}
               onChange={(e) => setAgentFilter(e.target.value)}
             >
@@ -636,8 +406,7 @@ export default function CalendrierPage() {
             </select>
 
             <select
-              className="form-select mobile-min-width"
-              style={{ flex: 1 }}
+              className="calSelect"
               value={campagneFilter}
               onChange={(e) => setCampagneFilter(e.target.value)}
             >
@@ -651,32 +420,29 @@ export default function CalendrierPage() {
 
             {hasActiveFilter && (
               <button
-                className="btn btn-sm btn-outline-danger"
+                type="button"
+                className="calResetBtn"
                 onClick={resetFilters}
               >
-                ✕ Réinitialiser les filtres
+                <i className="bi bi-x-circle" />
+                Réinitialiser
               </button>
             )}
           </div>
 
-          <div className="d-flex flex-wrap gap-2 align-items-center">
-            {FILTER_CHIPS.map(({ key, label, cls, dotCls }) => (
+          <div className="calToolbar__chips">
+            {FILTER_CHIPS.map(({ key, label, chipClass }) => (
               <button
                 key={key}
-                className={`btn btn-sm d-flex align-items-center gap-1 ${
-                  statusFilter === key ? cls : "btn-outline-secondary"
-                }`}
+                type="button"
+                className={`calChip ${chipClass}`}
+                data-active={statusFilter === key}
                 onClick={() => setStatusFilter(key)}
               >
-                {dotCls && (
+                {key !== "ALL" && (
                   <span
-                    className={`rounded-circle ${statusFilter === key ? "bg-white" : dotCls}`}
-                    style={{
-                      width: 8,
-                      height: 8,
-                      display: "inline-block",
-                      flexShrink: 0,
-                    }}
+                    className="calChip__dot"
+                    style={{ background: getReasonDef(key).dotVar }}
                   />
                 )}
                 {label}
@@ -684,91 +450,62 @@ export default function CalendrierPage() {
             ))}
 
             {hasActiveFilter && (
-              <span className="ms-2 text-muted small">
+              <span className="calToolbar__resultCount">
                 {filteredTotal} résultat{filteredTotal > 1 ? "s" : ""}
               </span>
             )}
-          </div>
-        </div>
 
-        {/* ── LÉGENDE ── */}
-        <div className="d-flex flex-wrap gap-4 mb-4">
-          {[
-            { cls: "bg-warning", label: "Rappel" },
-            { cls: "bg-danger", label: "Non intéressé" },
-            { cls: "bg-gris", label: "Occupé" },
-            { cls: "bg-info", label: "Répondeur" },
-            { cls: "bg-success", label: "RDV / Vente" },
-            { cls: "bg-cyan", label: "SVI" },
-          ].map(({ cls, label }) => (
-            <div key={label} className="d-flex align-items-center gap-2">
-              <span
-                className={`rounded-circle ${cls}`}
-                style={{ width: 12, height: 12, display: "inline-block" }}
-              />
-              <small className="text-muted">{label}</small>
+            <div className="calToolbar__sources">
+              {Object.entries(SOURCE_DEFS).map(([key, def]) => (
+                <span
+                  key={key}
+                  className={`calSourceLegend ${def.legendClass}`}
+                >
+                  <i className={`bi ${def.icon}`} />
+                  {def.label}
+                </span>
+              ))}
             </div>
-          ))}
-
-          <div className="d-flex align-items-center gap-3 ms-md-auto">
-            {Object.entries(SOURCE_DEFS).map(([key, def]) => (
-              <div key={key} className="d-flex align-items-center gap-1">
-                <i className={`bi ${def.icon}`} style={{ color: def.color }} />
-                <small className="text-muted">{def.label}</small>
-              </div>
-            ))}
           </div>
-        </div>
+        </section>
 
         {/* ── NAVIGATION MOIS ── */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <button className="btn btn-outline-primary" onClick={prevMonth}>
-            ←
+        <div className="calMonthNav">
+          <button type="button" className="calNavBtn" onClick={prevMonth}>
+            <i className="bi bi-chevron-left" />
           </button>
-          <div className="d-flex align-items-center gap-3">
-            <h3 className="fw-bold text-capitalize m-0">{monthLabel}</h3>
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={goToday}
-            >
+          <div className="calMonthNav__center">
+            <h3>{monthLabel}</h3>
+            <button type="button" className="calTodayBtn" onClick={goToday}>
               Aujourd'hui
             </button>
           </div>
-          <button className="btn btn-outline-primary" onClick={nextMonth}>
-            →
+          <button type="button" className="calNavBtn" onClick={nextMonth}>
+            <i className="bi bi-chevron-right" />
           </button>
         </div>
 
         {loading && (
-          <div className="alert alert-info">Chargement du calendrier…</div>
+          <div className="calLoading">
+            <span className="calLoading__spinner" />
+            Chargement du calendrier…
+          </div>
         )}
 
-        <div className="row g-1 mb-1 text-center fw-bold text-muted small">
+        {/* ── GRILLE CALENDRIER ── */}
+        <div className="calWeekHeader">
           {WEEK_DAYS.map((d) => (
-            <div
-              key={d}
-              className="col"
-              style={{ minWidth: "14.2%", maxWidth: "14.2%" }}
-            >
+            <div key={d} className="calWeekHeader__day">
               {d}
             </div>
           ))}
         </div>
 
-        {/* ── GRILLE CALENDRIER ── */}
-        <div className="row g-1">
+        <div className="calGrid">
           {cells.map((day, index) => {
             if (!day) {
               return (
-                <div
-                  key={`empty-${index}`}
-                  className="col"
-                  style={{
-                    minWidth: "14.2%",
-                    maxWidth: "14.2%",
-                    minHeight: 120,
-                  }}
-                />
+                <div key={`empty-${index}`} className="calDay calDay--empty" />
               );
             }
 
@@ -784,384 +521,118 @@ export default function CalendrierPage() {
               data.crmLeads.length;
             const isToday = key === todayKey;
             const hasData = total > 0;
+            const densityPct = Math.min(
+              100,
+              Math.round((total / maxDayTotal) * 100),
+            );
+
+            const dayClasses = [
+              "calDay",
+              hasData ? "calDay--has-data" : "",
+              isToday ? "calDay--today" : "",
+              hasActiveFilter && !hasData ? "calDay--faded" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
               <div
                 key={key}
-                className="col"
-                style={{ minWidth: "14.2%", maxWidth: "14.2%" }}
+                className={dayClasses}
+                onClick={() => hasData && setSelectedDay({ date: key, data })}
               >
-                <div
-                  className={`card border-0 shadow-sm h-100 ${isToday ? "border border-primary border-2" : ""}`}
-                  style={{
-                    minHeight: 120,
-                    cursor: hasData ? "pointer" : "default",
-                    outline: isToday ? "2px solid #0d6efd" : "none",
-                    opacity: hasActiveFilter && !hasData ? 0.45 : 1,
-                  }}
-                  onClick={() => hasData && setSelectedDay({ date: key, data })}
-                >
-                  <div className="card-body p-2">
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                      <div
-                        className={`fw-bold ${isToday ? "text-white bg-primary rounded-circle d-flex align-items-center justify-content-center" : ""}`}
-                        style={
-                          isToday ? { width: 26, height: 26, fontSize: 13 } : {}
-                        }
-                      >
-                        {day.getDate()}
-                      </div>
-                      {total > 0 && (
-                        <span
-                          className="badge bg-dark"
-                          style={{ fontSize: 10 }}
-                        >
-                          {total}
-                        </span>
-                      )}
-                    </div>
-
-                    {data.historiques.slice(0, 2).map((h) => {
-                      const sm = STATUS_LABEL[h.status];
-                      return (
-                        <div
-                          key={h._id}
-                          className="d-flex align-items-center gap-1 mb-1"
-                          style={{ fontSize: 11 }}
-                        >
-                          <span
-                            className={`rounded-circle flex-shrink-0 ${sm?.cls?.split(" ")[0] || "bg-secondary"}`}
-                            style={{
-                              width: 8,
-                              height: 8,
-                              display: "inline-block",
-                            }}
-                          />
-                          <span className="text-truncate text-muted">
-                            {h.fiche?.nom || h.calledNumber}
-                          </span>
-                        </div>
-                      );
-                    })}
-
-                    {data.scheduled.slice(0, 2).map((s) => (
-                      <div
-                        key={s._id}
-                        className="d-flex align-items-center gap-1 mb-1"
-                        style={{ fontSize: 11 }}
-                      >
-                        <i
-                          className={`bi ${getSourceDef(s.source).icon}`}
-                          style={{
-                            color: getSourceDef(s.source).color,
-                            fontSize: 9,
-                          }}
-                          title={getSourceDef(s.source).label}
-                        />
-                        <span
-                          className={`rounded-circle flex-shrink-0 ${REASON_COLOR[s.reason] ?? "bg-secondary"}`}
-                          style={{
-                            width: 8,
-                            height: 8,
-                            display: "inline-block",
-                          }}
-                        />
-                        <span className="text-truncate text-muted">
-                          {s.calledNumber}
-                        </span>
-                      </div>
-                    ))}
-
-                    {data.crmLeads.slice(0, 2).map((l) => (
-                      <div
-                        key={l._id}
-                        className="d-flex align-items-center gap-1 mb-1"
-                        style={{ fontSize: 11 }}
-                      >
-                        <i
-                          className="bi bi-person-badge-fill"
-                          style={{ color: "#7c3aed", fontSize: 9 }}
-                          title="CRM"
-                        />
-                        <span
-                          className="rounded-circle flex-shrink-0"
-                          style={{
-                            width: 8,
-                            height: 8,
-                            display: "inline-block",
-                            background: "#16a34a",
-                          }}
-                        />
-                        <span className="text-truncate text-muted">
-                          {l.telephone || l.fiche?.phone || "-"}
-                        </span>
-                      </div>
-                    ))}
-
-                    {total > 6 && (
-                      <div style={{ fontSize: 10 }} className="text-muted">
-                        +{total - 6} autre{total - 6 > 1 ? "s" : ""}
-                      </div>
-                    )}
-                  </div>
+                <div className="calDay__top">
+                  <span className="calDay__num">{day.getDate()}</span>
+                  {total > 0 && <span className="calDay__count">{total}</span>}
                 </div>
+
+                {data.historiques.slice(0, 2).map((h) => {
+                  const reasonDef = getReasonDef(STATUS_TO_REASON[h.status]);
+                  return (
+                    <div key={h._id} className="calDay__item">
+                      <span
+                        className="calDay__itemDot"
+                        style={{ background: reasonDef.dotVar }}
+                      />
+                      <span>{h.fiche?.nom || h.calledNumber}</span>
+                    </div>
+                  );
+                })}
+
+                {data.scheduled.slice(0, 2).map((s) => {
+                  const sourceDef = getSourceDef(s.source);
+                  const reasonDef = getReasonDef(s.reason);
+                  return (
+                    <div key={s._id} className="calDay__item">
+                      <i
+                        className={`bi ${sourceDef.icon} calDay__itemIcon`}
+                        title={sourceDef.label}
+                      />
+                      <span
+                        className="calDay__itemDot"
+                        style={{ background: reasonDef.dotVar }}
+                      />
+                      <span>{s.calledNumber}</span>
+                    </div>
+                  );
+                })}
+
+                {data.crmLeads.slice(0, 2).map((l) => (
+                  <div key={l._id} className="calDay__item">
+                    <i
+                      className="bi bi-person-badge-fill calDay__itemIcon"
+                      style={{ color: "var(--cal-source-crm)" }}
+                      title="CRM"
+                    />
+                    <span
+                      className="calDay__itemDot"
+                      style={{ background: "var(--cal-sale)" }}
+                    />
+                    <span>{l.telephone || l.fiche?.phone || "-"}</span>
+                  </div>
+                ))}
+
+                {total > 6 && (
+                  <div className="calDay__more">
+                    +{total - 6} autre{total - 6 > 1 ? "s" : ""}
+                  </div>
+                )}
+
+                {hasData && (
+                  <div className="calDay__volume">
+                    <div
+                      className="calDay__volumeFill"
+                      style={{ width: `${densityPct}%` }}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+
+        {/* ── LÉGENDE STATUTS ── */}
+        <div className="calLegend">
+          {Object.entries(REASON_DEFS)
+            .filter(([key]) => key !== "CALLBACK")
+            .map(([key, def]) => (
+              <div key={key} className="calLegend__item">
+                <span
+                  className="calLegend__dot"
+                  style={{ background: def.dotVar }}
+                />
+                {def.label}
+              </div>
+            ))}
+        </div>
       </div>
 
-      {/* ── MODAL DÉTAIL DU JOUR ── */}
-      {selectedDay && (
-        <div
-          className="modal fade show d-block"
-          style={{ background: "rgba(0,0,0,0.5)" }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedDay(null);
-          }}
-        >
-          <div className="modal-dialog modal-xl modal-dialog-scrollable">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title fw-bold">
-                  {new Date(selectedDay.date + "T12:00:00").toLocaleDateString(
-                    "fr-FR",
-                    {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    },
-                  )}
-                </h5>
-                <button
-                  className="btn-close"
-                  onClick={() => setSelectedDay(null)}
-                />
-              </div>
-
-              <div className="modal-body">
-                {/* ── HISTORIQUE APPELS ── */}
-                <h6 className="fw-bold mb-3 text-primary">
-                  📞 Historique appels ({selectedDay.data.historiques.length})
-                </h6>
-
-                {selectedDay.data.historiques.length === 0 && (
-                  <div className="alert alert-light text-muted">
-                    Aucun appel ce jour{hasActiveFilter && " (filtre actif)"}
-                  </div>
-                )}
-
-                {selectedDay.data.historiques.map((h) => {
-                  const sm = STATUS_LABEL[h.status] ?? {
-                    label: "—",
-                    cls: "bg-light text-dark",
-                  };
-                  const time = new Date(h.callDate).toLocaleTimeString(
-                    "fr-FR",
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    },
-                  );
-                  const displayTitle = h.fiche?.nom || h.calledNumber;
-
-                  return (
-                    <UnifiedCard
-                      key={h._id}
-                      sourceBadge={
-                        <span
-                          className="calSourceBadge"
-                          style={{ color: "#1d4ed8", background: "#dbeafe" }}
-                        >
-                          <i className="bi bi-telephone-fill me-1" />
-                          Appel réel
-                        </span>
-                      }
-                      accentColor="#1d4ed8"
-                      title={displayTitle}
-                      subtitle={h.aiResponse?.nameUser || h.calledNumber}
-                      description={h.aiResponse?.description}
-                      metaItems={[
-                        { icon: "bi-clock", text: time },
-                        ...(h.billsec !== undefined
-                          ? [
-                              {
-                                icon: "bi-stopwatch",
-                                text: formatDuration(h.billsec),
-                              },
-                            ]
-                          : []),
-                        ...(h.callerNumber
-                          ? [
-                              {
-                                icon: "bi-telephone-inbound",
-                                text: h.callerNumber,
-                              },
-                            ]
-                          : []),
-                      ]}
-                      statusBadges={
-                        <span className={`badge ${sm.cls}`}>{sm.label}</span>
-                      }
-                      audioPath={h.pathRecord}
-                    />
-                  );
-                })}
-
-                {/* ── CRM CONFIRMÉS ── */}
-                <h6 className="fw-bold mt-4 mb-3" style={{ color: "#7c3aed" }}>
-                  <i className="bi bi-person-badge-fill me-1" />
-                  Leads CRM confirmés ({selectedDay.data.crmLeads.length})
-                </h6>
-
-                {selectedDay.data.crmLeads.length === 0 && (
-                  <div className="alert alert-light text-muted">
-                    Aucun lead CRM ce jour{hasActiveFilter && " (filtre actif)"}
-                  </div>
-                )}
-
-                {selectedDay.data.crmLeads.map((lead) => {
-                  const statusDef =
-                    CRM_STATUS_DEFS[lead.crmStatus] || CRM_STATUS_DEFS[1];
-                  const displayNom =
-                    lead.nom || lead.fiche?.nom || "Lead sans nom";
-                  const displayTelephone = lead.telephone || lead.fiche?.phone;
-                  const displayEntreprise =
-                    lead.entreprise || lead.fiche?.entreprise;
-                  const displayEmail = lead.email || lead.fiche?.email;
-
-                  return (
-                    <UnifiedCard
-                      key={lead._id}
-                      sourceBadge={renderSourceBadge(3)}
-                      accentColor="#7c3aed"
-                      title={displayNom}
-                      subtitle={displayTelephone}
-                      description={lead.note || displayEntreprise}
-                      metaItems={[
-                        ...(displayEmail
-                          ? [{ icon: "bi-envelope-fill", text: displayEmail }]
-                          : []),
-                        {
-                          icon: "bi-megaphone",
-                          text:
-                            lead.campagneId?.nomCompagne || "Campagne inconnue",
-                        },
-                        ...(lead.assignedTo
-                          ? [{ icon: "bi-person-check", text: lead.assignedTo }]
-                          : []),
-                      ]}
-                      statusBadges={
-                        <span
-                          className="badge"
-                          style={{
-                            color: statusDef.color,
-                            background: statusDef.bg,
-                          }}
-                        >
-                          <i className={`bi ${statusDef.icon} me-1`} />
-                          {statusDef.label}
-                        </span>
-                      }
-                      audioPath={lead.historiqueId?.pathRecord}
-                    />
-                  );
-                })}
-
-                {/* ── RAPPELS PLANIFIÉS ── */}
-                <h6 className="fw-bold mt-4 mb-3 text-warning d-flex align-items-center gap-2">
-                  <i className="bi bi-telephone-outbound-fill" />
-                  Rappels planifiés ({selectedDay.data.scheduled.length})
-                </h6>
-
-                {selectedDay.data.scheduled.length === 0 && (
-                  <div className="alert alert-light text-muted">
-                    Aucun rappel ce jour{hasActiveFilter && " (filtre actif)"}
-                  </div>
-                )}
-
-                {selectedDay.data.scheduled.map((s) => {
-                  const ssObj = SCHEDULED_STATUS[s.status] ?? {
-                    label: s.status,
-                    cls: "bg-secondary",
-                  };
-                  const time = new Date(s.scheduledAt).toLocaleTimeString(
-                    "fr-FR",
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    },
-                  );
-                  const accent = getSourceDef(s.source).color;
-                  const displayTitle = s.fiche?.nom || s.calledNumber;
-
-                  return (
-                    <UnifiedCard
-                      key={s._id}
-                      sourceBadge={renderSourceBadge(s.source)}
-                      accentColor={accent}
-                      title={displayTitle}
-                      subtitle={s.aiResponse?.nameUser || "Inconnu"}
-                      description={s.aiResponse?.description}
-                      metaItems={[
-                        { icon: "bi-clock", text: time },
-                        { icon: "bi-telephone-inbound", text: s.callerNumber },
-                      ]}
-                      statusBadges={
-                        <>
-                          <span
-                            className={`badge ${REASON_COLOR[s.reason] ?? "bg-secondary"} ${s.reason === "RAPPEL" ? "text-dark" : ""}`}
-                          >
-                            {REASON_LABEL[s.reason] ?? s.reason}
-                          </span>
-                          {!s._isCrmReminder && (
-                            <span className={`badge ${ssObj.cls}`}>
-                              {ssObj.label}
-                            </span>
-                          )}
-                          {s._isCrmReminder && (
-                            <span
-                              className="badge"
-                              style={{
-                                background: "#f3f4f6",
-                                color: "#6b7280",
-                              }}
-                            >
-                              <i className="bi bi-x-circle me-1" />
-                              Non confirmé
-                            </span>
-                          )}
-                          {s.resultStatus && (
-                            <span className="badge bg-light text-dark border">
-                              <i className="bi bi-flag me-1" />
-                              {REASON_LABEL[s.resultStatus] || s.resultStatus}
-                            </span>
-                          )}
-                        </>
-                      }
-                      audioPath={s._pathRecord}
-                      actions={
-                        !s._isCrmReminder && (
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(s._id);
-                            }}
-                          >
-                            <i className="bi bi-trash3" />
-                          </button>
-                        )
-                      }
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DayDetailModal
+        selectedDay={selectedDay}
+        onClose={() => setSelectedDay(null)}
+        hasActiveFilter={hasActiveFilter}
+        onDeleteScheduled={handleDelete}
+      />
     </div>
   );
 }

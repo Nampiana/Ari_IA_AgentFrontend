@@ -1,35 +1,31 @@
-/* ── Status Dropdown ─────────────────────────────────── */
+/* ── Status Dropdown — thème --hist-* ────────────────────────── */
 
 .status-dropdown-wrap {
     position: relative;
     display: inline-block;
 }
 
-
 /* ── Dropdown panel ──────────────────────────────────── */
 
 .status-dropdown {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     z-index: 999;
-    background: #ffffff;
-    border: 0.5px solid rgba(0, 0, 0, 0.12);
-    border-radius: 12px;
-    box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.04),
-        0 10px 30px rgba(0, 0, 0, 0.1);
-    min-width: 190px;
+    background: var(--hist-surface);
+    border: 1px solid var(--hist-border);
+    border-radius: var(--hist-r-md);
+    box-shadow: var(--hist-shadow-pop);
+    min-width: 210px;
     overflow: hidden;
-    padding: 5px;
+    padding: 6px;
 
-    /* Animation d'ouverture */
-    animation: dropdownOpen 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: histDropdownOpen 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     transform-origin: top center;
 }
 
-@keyframes dropdownOpen {
+@keyframes histDropdownOpen {
     from {
         opacity: 0;
         transform: translateX(-50%) scaleY(0.85) translateY(-6px);
@@ -50,9 +46,9 @@
     transform: translateX(-50%);
     width: 10px;
     height: 10px;
-    background: #ffffff;
-    border-left: 0.5px solid rgba(0, 0, 0, 0.1);
-    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+    background: var(--hist-surface);
+    border-left: 1px solid var(--hist-border);
+    border-top: 1px solid var(--hist-border);
     rotate: 45deg;
     border-radius: 2px 0 0 0;
 }
@@ -63,18 +59,18 @@
     display: flex;
     align-items: center;
     gap: 9px;
-    padding: 8px 10px;
-    border-radius: 8px;
+    padding: 9px 11px;
+    border-radius: var(--hist-r-sm);
     cursor: pointer;
     font-size: 13px;
-    font-weight: 500;
-    color: #444441;
-    transition: background 0.1s ease;
+    font-weight: 600;
+    color: var(--hist-ink);
+    transition: background 0.12s ease;
     position: relative;
 }
 
 .status-option:hover {
-    background: #f1efe8;
+    background: var(--hist-surface-soft);
 }
 
 .status-option .bi {
@@ -87,120 +83,86 @@
 .status-option .bi-check {
     margin-left: auto;
     font-size: 15px;
-    color: #3b6d11;
+    color: var(--hist-accent);
 }
 
-/* Couleur des icônes par statut */
+/* Couleur de l'icône par statut (cohérente avec .historiqueBadge) */
 .status-option.RÉUSSI .bi:first-child {
-    color: #3b6d11;
+    color: var(--hist-success);
 }
 
 .status-option.RAPPEL .bi:first-child {
-    color: #185fa5;
+    color: var(--hist-info);
 }
 
 .status-option.OCCUPÉ .bi:first-child {
-    color: #854f0b;
-}
-
-.status-option.PAS_INT .bi:first-child {
-    color: #a32d2d;
+    color: var(--hist-warning);
 }
 
 .status-option.RÉPONDEUR .bi:first-child {
-    color: #534ab7;
+    color: var(--hist-purple);
+}
+
+.status-option.PAS_INT .bi:first-child {
+    color: var(--hist-danger);
 }
 
 .status-option.SVI .bi:first-child {
-    color: #0891b2;
+    color: var(--hist-cyan);
 }
 
 .status-option.AMD_RÉPONDEUR .bi:first-child {
-    color: #0891b2;
+    color: var(--hist-gray);
 }
 
 .status-option.HORS_CIBLE .bi:first-child {
-    color: #eee8e8;
+    color: var(--hist-brown);
 }
 
-/* Option active : fond coloré subtil */
+/* Option active : fond coloré subtil, identique aux tokens du badge */
 .status-option.active.RÉUSSI {
-    background: #eaf3de;
-    color: #27500a;
+    background: var(--hist-success-soft);
+    color: var(--hist-success);
 }
 
 .status-option.active.RAPPEL {
-    background: #e6f1fb;
-    color: #0c447c;
+    background: var(--hist-info-soft);
+    color: var(--hist-info);
 }
 
 .status-option.active.OCCUPÉ {
-    background: #faeeda;
-    color: #633806;
-}
-
-.status-option.active.PAS_INT {
-    background: #fcebeb;
-    color: #791f1f;
+    background: var(--hist-warning-soft);
+    color: var(--hist-warning);
 }
 
 .status-option.active.RÉPONDEUR {
-    background: #eeedfe;
-    color: #3c3489;
+    background: var(--hist-purple-soft);
+    color: var(--hist-purple);
+}
+
+.status-option.active.PAS_INT {
+    background: var(--hist-danger-soft);
+    color: var(--hist-danger);
+}
+
+.status-option.active.SVI {
+    background: var(--hist-cyan-soft);
+    color: var(--hist-cyan);
+}
+
+.status-option.active.AMD_RÉPONDEUR {
+    background: var(--hist-gray-soft);
+    color: var(--hist-gray);
+}
+
+.status-option.active.HORS_CIBLE {
+    background: var(--hist-brown-soft);
+    color: var(--hist-brown);
 }
 
 /* Séparateur visuel entre items */
 .status-option+.status-option {
-    border-top: 0.5px solid rgba(0, 0, 0, 0.04);
-}
-
-/* ── Dark mode ───────────────────────────────────────── */
-
-@media (prefers-color-scheme: dark) {
-    .status-dropdown {
-        background: #1e1e1e;
-        border-color: rgba(255, 255, 255, 0.1);
-        box-shadow:
-            0 4px 6px rgba(0, 0, 0, 0.2),
-            0 10px 30px rgba(0, 0, 0, 0.4);
-    }
-
-    .status-dropdown::before {
-        background: #1e1e1e;
-        border-color: rgba(255, 255, 255, 0.08);
-    }
-
-    .status-option {
-        color: #d3d1c7;
-    }
-
-    .status-option:hover {
-        background: rgba(255, 255, 255, 0.06);
-    }
-
-    .status-option.active.RÉUSSI {
-        background: rgba(99, 153, 34, 0.15);
-        color: #c0dd97;
-    }
-
-    .status-option.active.RAPPEL {
-        background: rgba(55, 138, 221, 0.15);
-        color: #b5d4f4;
-    }
-
-    .status-option.active.OCCUPÉ {
-        background: rgba(186, 117, 23, 0.15);
-        color: #fac775;
-    }
-
-    .status-option.active.PAS_INT {
-        background: rgba(226, 75, 74, 0.15);
-        color: #f7c1c1;
-    }
-
-    .status-option.active.RÉPONDEUR {
-        background: rgba(127, 119, 221, 0.15);
-        color: #cecbf6;
-    }
-
+    border-top: 1px solid var(--hist-border-soft);
+    margin-top: 2px;
+    padding-top: 10px;
 }

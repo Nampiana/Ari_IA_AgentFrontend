@@ -3,32 +3,36 @@ import HeaderBar from "../../components/agents/HeaderBar";
 import useCrmLead from "../../hooks/useCrmLead";
 import "../../assets/css/CrmLeadPage.css";
 
-// ── Colonnes du Section — mêmes codes couleur que les badges de qualification
+// ── Colonnes du board — les couleurs réutilisent les tokens de
+// qualification déjà en place sur la page Historique (--hist-*),
+// pour que le code couleur d'un même statut reste identique dans
+// tout le produit.
 // crmStatus : 1 = confirmé, 2 = non confirmé, 3 = à relancer
 const COLUMNS = [
   {
     key: 3,
     title: "Client potentiel",
-    color: "#2563eb",
-    bg: "#dbeafe",
+    color: "var(--hist-info)",
+    bg: "var(--hist-info-soft)",
     icon: "bi-arrow-repeat",
   },
   {
     key: 1,
     title: "Confirmé",
-    color: "#16a34a",
-    bg: "#dcfce7",
+    color: "var(--hist-success)",
+    bg: "var(--hist-success-soft)",
     icon: "bi-check-circle-fill",
   },
-
   {
     key: 2,
     title: "Non confirmé",
-    color: "#6b7280",
-    bg: "#f3f4f6",
+    color: "var(--hist-gray)",
+    bg: "var(--hist-gray-soft)",
     icon: "bi-x-circle-fill",
   },
 ];
+
+const getColumn = (key) => COLUMNS.find((c) => c.key === key) || COLUMNS[0];
 
 function getInitials(nom) {
   if (!nom) return "SN";
@@ -80,10 +84,12 @@ function LeadCard({ lead, onDragStart, onDragEnd, onOpen, onArchive }) {
   const recordUrl = buildRecordUrl(lead.historiqueId?.pathRecord);
   const displayNom = lead.nom || lead.fiche?.nom || "Sans nom";
   const displayTelephone = lead.telephone || lead.fiche?.phone || "-";
+  const stage = getColumn(lead.crmStatus ?? 3);
 
   return (
     <div
       className="crmCard"
+      style={{ "--stage-color": stage.color, "--stage-soft": stage.bg }}
       draggable
       onDragStart={(e) => onDragStart(e, lead._id)}
       onDragEnd={onDragEnd}
@@ -112,15 +118,15 @@ function LeadCard({ lead, onDragStart, onDragEnd, onOpen, onArchive }) {
         {lead?.historiqueId?.typeCall == 2 ? (
           <i
             className="bi bi-telephone-inbound-fill"
-            style={{ color: "rgb(108, 192, 112)" }}
+            style={{ color: "var(--hist-success)" }}
           />
         ) : (
           <i
             className="bi bi-telephone-outbound-fill"
-            style={{ color: "rgb(0, 231, 235)" }}
+            style={{ color: "var(--crm-accent)" }}
           />
         )}
-        <span style={{ marginLeft: "5px" }}>{displayTelephone}</span>
+        <span>{displayTelephone}</span>
       </div>
 
       {(lead.entreprise || lead.fiche?.entreprise) && (
@@ -235,7 +241,7 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
       <div className="crmModalContent" onClick={(e) => e.stopPropagation()}>
         <div className="crmModalHeader">
           <h3>
-            <i className="bi bi-person-badge me-2" />
+            <i className="bi bi-person-badge" />
             {displayNom}
           </h3>
           <button className="crmModalClose" onClick={onClose}>
@@ -376,14 +382,11 @@ function LeadDetailModal({ lead, onClose, onSave, showToast }) {
         </div>
 
         <div className="crmModalFooter">
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={onClose}
-          >
+          <button className="btnGhost" onClick={onClose}>
             Annuler
           </button>
           <button
-            className="btn btn-primary btn-sm"
+            className="btnPrimary"
             onClick={handleSave}
             disabled={saving || !canSave}
             title={!canSave ? "Complétez la date et l'heure du rappel" : ""}
@@ -410,6 +413,7 @@ export default function CrmLeadPage({ showToast }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [modalArchive, setModalArchive] = useState(false);
   const [selectedLeadArchive, setSelectedLeadArchive] = useState(null);
+  const [archiving, setArchiving] = useState(false);
 
   const fetchLeads = async () => {
     try {
@@ -560,6 +564,7 @@ export default function CrmLeadPage({ showToast }) {
 
   const handleArchiveLead = async () => {
     try {
+      setArchiving(true);
       await updateCrmLead(selectedLeadArchive._id, { isArchived: true });
       setLeads((prev) => prev.filter((l) => l._id !== selectedLeadArchive._id));
       showToast?.("Lead archivé", "success");
@@ -567,6 +572,8 @@ export default function CrmLeadPage({ showToast }) {
       setSelectedLeadArchive(null);
     } catch {
       showToast?.("Erreur lors de l'archivage", "danger");
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -576,13 +583,41 @@ export default function CrmLeadPage({ showToast }) {
         <HeaderBar />
 
         <div className="crmSectionContainer">
-          {/* En-tête */}
-          <div className="crmSectionHeader">
-            <div>
-              <h1>CRM — Leads réussis</h1>
-              <p>Qualifiez et suivez les leads issus des appels IA réussis.</p>
+          {/* ── Hero ── */}
+          <section className="crmHero">
+            <div className="crmHero__text">
+              <span className="crmHero__eyebrow">
+                <span className="crmHero__dot" />
+                Suivi commercial
+              </span>
+              <h1>Leads CRM</h1>
+              <p>
+                Qualifiez, relancez et suivez les leads issus des appels IA
+                réussis, du premier contact jusqu'à la confirmation.
+              </p>
             </div>
 
+            <div className="crmHero__legend">
+              {COLUMNS.map((col) => (
+                <div
+                  key={col.key}
+                  className="crmLegendStat"
+                  style={{ "--stage-color": col.color }}
+                >
+                  <span className="crmLegendStat__value">
+                    {leadsByColumn[col.key]?.length ?? 0}
+                  </span>
+                  <span className="crmLegendStat__label">
+                    <i className="bi bi-circle-fill" />
+                    {col.title}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Barre de contrôle ── */}
+          <div className="crmSectionHeader">
             <div className="crmSectionActions">
               <div className="crmSectionSearch">
                 <i className="bi bi-search" />
@@ -595,7 +630,7 @@ export default function CrmLeadPage({ showToast }) {
               </div>
               <button
                 type="button"
-                className="btn btn-outline-secondary btn-sm"
+                className="crmRefreshBtn"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
               >
@@ -607,7 +642,7 @@ export default function CrmLeadPage({ showToast }) {
             </div>
           </div>
 
-          {/* Colonnes Section */}
+          {/* ── Board ── */}
           {loading ? (
             <div className="crmSectionEmpty">Chargement des leads…</div>
           ) : (
@@ -616,6 +651,7 @@ export default function CrmLeadPage({ showToast }) {
                 <div
                   key={col.key}
                   className={`crmSectionColumn ${dragOverCol === col.key ? "dragOver" : ""}`}
+                  style={{ "--stage-color": col.color, "--stage-soft": col.bg }}
                   onDragOver={(e) => handleColumnDragOver(e, col.key)}
                   onDragLeave={() => setDragOverCol(null)}
                   onDrop={(e) => handleDrop(e, col.key)} // drop sur zone vide de colonne = fin de liste
@@ -676,33 +712,42 @@ export default function CrmLeadPage({ showToast }) {
           showToast={showToast}
         />
       </div>
-      {/* Modal de confirmation pour archiver */}
+
+      {/* ── Confirmation d'archivage ── */}
       {modalArchive && (
-        <div className="modal" tabIndex="-1" style={{ display: "block" }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Confirmer l'archivage</h5>
-              </div>
-              <div className="modal-body">
-                <p>Êtes-vous sûr de vouloir archiver ce lead ?</p>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setModalArchive(false)}
-                >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleArchiveLead}
-                >
-                  Archiver
-                </button>
-              </div>
+        <div className="deleteModalOverlay">
+          <div className="deleteModal crmArchiveModal">
+            <div className="crmArchiveIcon">
+              <i className="bi bi-archive" />
+            </div>
+            <h3>Archiver ce lead</h3>
+            <p>
+              Voulez-vous vraiment archiver{" "}
+              <strong>
+                {selectedLeadArchive?.nom ||
+                  selectedLeadArchive?.fiche?.nom ||
+                  "ce lead"}
+              </strong>{" "}
+              ? Il sera retiré du board mais restera consultable dans les
+              archives.
+            </p>
+
+            <div className="deleteActions">
+              <button
+                className="btnGhost"
+                onClick={() => setModalArchive(false)}
+                disabled={archiving}
+              >
+                Annuler
+              </button>
+
+              <button
+                className="btnDelete"
+                onClick={handleArchiveLead}
+                disabled={archiving}
+              >
+                {archiving ? "Archivage..." : "Archiver"}
+              </button>
             </div>
           </div>
         </div>
