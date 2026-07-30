@@ -37,10 +37,16 @@ function TimezoneLiveClock({ timeZone, allowedDays, tranches }) {
     timeZone: tz,
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   });
 
-  const hhmm = timeLabel;
+  const hhmm = now.toLocaleTimeString("fr-FR", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
   const zonedDay = new Date(
     now.toLocaleString("en-US", { timeZone: tz }),
   ).getDay();
