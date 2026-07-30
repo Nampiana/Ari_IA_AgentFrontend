@@ -716,6 +716,154 @@
   font-size: 10px;
 }
 
+/* ================================================================
+   AJOUTS — fuseau horaire & horloge live (campagnes)
+   Ne réutilise que des tokens --camp-* déjà présents dans index.css
+   (aucune nouvelle variable de couleur à ajouter).
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   1) À coller dans CompagneFormModal.css
+      Widget affiché dans l'onglet "Planning" de la modale, à côté
+      du select de fuseau horaire.
+   --------------------------------------------------------------- */
+
+.campTzWidget {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--camp-surface-soft);
+  border: 1px solid var(--camp-border);
+  border-radius: var(--camp-r-md);
+}
+
+.campTzWidget__zone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.campTzWidget__zone strong {
+  display: block;
+  font-size: 13.5px;
+  color: var(--camp-ink);
+}
+
+.campTzWidget__flag {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.campTzWidget__offset {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--camp-ink-soft);
+  text-transform: capitalize;
+}
+
+.campTzWidget__time {
+  font-family: var(--camp-font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--camp-signal-dark);
+}
+
+.campTzWidget__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.campTzWidget__status.is-open {
+  background: var(--camp-live-soft);
+  color: var(--camp-live-dark);
+}
+
+.campTzWidget__status.is-closed {
+  background: var(--camp-warm-soft);
+  color: var(--camp-warm-dark);
+}
+
+/* ---------------------------------------------------------------
+   2) À coller dans la feuille de style qui gère CompagneCard
+      (ex. CompagnesPage.css) — chip compacte à côté de
+      "Disponibilité" sur chaque carte de campagne.
+   --------------------------------------------------------------- */
+
+.campAvailability__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.campTzClock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: var(--camp-font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.campTzClock__flag {
+  font-size: 12.5px;
+}
+
+.campTzClock__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-left: 2px;
+}
+
+.campTzClock.is-open {
+  background: var(--camp-live-soft);
+  color: var(--camp-live-dark);
+  border-color: var(--camp-live-border);
+}
+
+.campTzClock.is-open .campTzClock__dot {
+  background: var(--camp-live);
+  animation: campTzPulse 1.8s ease-out infinite;
+}
+
+.campTzClock.is-closed {
+  background: var(--camp-warm-soft);
+  color: var(--camp-warm-dark);
+  border-color: var(--camp-warm-border);
+}
+
+.campTzClock.is-closed .campTzClock__dot {
+  background: var(--camp-warm);
+}
+
+@keyframes campTzPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(24, 154, 83, 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(24, 154, 83, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 154, 83, 0);
+  }
+}
+
 /* ---------------------------------------------------------------
    RESPONSIVE
    --------------------------------------------------------------- */

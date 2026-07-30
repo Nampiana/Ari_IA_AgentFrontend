@@ -16,6 +16,7 @@ export default function ListsPage({ showToast }) {
     deleteFiche,
   } = useLists();
 
+  const [refreshing, setRefreshing] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [lists, setLists] = useState([]);
   const [selectedList, setSelectedList] = useState(null);
@@ -303,6 +304,30 @@ export default function ListsPage({ showToast }) {
     [lists],
   );
 
+  // ── Fiches restant à appeler (whitelist + non appelées) ────────────────────
+  // Tolère plusieurs noms de champs selon ce que renvoie l'API (getLists) :
+  // le back peut exposer directement le compte (totalToCall / remainingToCall /
+  // totalNotCalled), ou seulement totalCalled (+ totalBlackList en option),
+  // auquel cas on le déduit. Si rien n'est disponible, on affiche "—".
+  const getRemainingToCall = (list) => {
+    if (list.totalToCall != null) return list.totalToCall;
+    if (list.remainingToCall != null) return list.remainingToCall;
+    if (list.totalNotCalled != null) return list.totalNotCalled;
+
+    if (list.totalFiches != null && list.totalCalled != null) {
+      const blacklisted = list.totalBlackList ?? 0;
+      return Math.max(list.totalFiches - list.totalCalled - blacklisted, 0);
+    }
+
+    return null;
+  };
+
+  const totalRemainingGlobal = useMemo(() => {
+    const values = lists.map(getRemainingToCall).filter((v) => v != null);
+    if (!values.length) return null;
+    return values.reduce((sum, v) => sum + v, 0);
+  }, [lists]);
+
   const getInitials = (name) =>
     String(name || "")
       .trim()
@@ -488,6 +513,21 @@ export default function ListsPage({ showToast }) {
     { key: "commentaire", label: "Commentaire" },
   ];
 
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await fetchLists();
+      if (selectedList) {
+        await fetchFiches(selectedList._id, fichePage, ficheLimit);
+      }
+      showToast("Liste actualisée", "success");
+    } catch (err) {
+      showToast("Erreur lors de l'actualisation", "danger");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="listsPage">
       <HeaderBar />
@@ -516,7 +556,26 @@ export default function ListsPage({ showToast }) {
               <span className="listStat__value">{totalFichesGlobal}</span>
               <span className="listStat__label">Fiches</span>
             </div>
+            <div className="listStat listStat--callable">
+              <span className="listStat__value">
+                {totalRemainingGlobal ?? "—"}
+              </span>
+              <span className="listStat__label">À appeler</span>
+            </div>
           </div>
+
+          <button
+            type="button"
+            className="listBtnGhost listBtnRefresh"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Rafraîchir les listes"
+          >
+            <i
+              className={`bi bi-arrow-clockwise ${refreshing ? "listSpin" : ""}`}
+            />
+            {refreshing ? "Actualisation..." : "Rafraîchir"}
+          </button>
 
           <button
             type="button"
@@ -556,6 +615,7 @@ export default function ListsPage({ showToast }) {
                 <tr>
                   <th>Nom</th>
                   <th>Total fiches</th>
+                  <th>Reste à appeler</th>
                   <th>Date insertion</th>
                   <th>Dernière modification</th>
                   <th>Actions</th>
@@ -577,6 +637,21 @@ export default function ListsPage({ showToast }) {
                         <i className="bi bi-person-lines-fill" />
                         {list.totalFiches ?? 0}
                       </span>
+                    </td>
+                    <td>
+                      {getRemainingToCall(list) != null ? (
+                        <span className="listCountPill listCountPill--callable">
+                          <i className="bi bi-telephone-outbound" />
+                          {getRemainingToCall(list)}
+                        </span>
+                      ) : (
+                        <span
+                          className="listCountPill listCountPill--muted"
+                          title="Donnée non fournie par l'API pour cette liste"
+                        >
+                          <i className="bi bi-dash-circle" />—
+                        </span>
+                      )}
                     </td>
                     <td className="listDateCell">
                       {list.createdAt?.split("T")[0]}
@@ -630,6 +705,17 @@ export default function ListsPage({ showToast }) {
                   <h2>Détails de la liste</h2>
                   <span>({selectedList?.nomFiche})</span>
                 </span>
+
+                <button
+                  className="listIconBtn"
+                  onClick={() =>
+                    fetchFiches(selectedList._id, fichePage, ficheLimit)
+                  }
+                  title="Rafraîchir les fiches"
+                  aria-label="Rafraîchir"
+                >
+                  <i className="bi bi-arrow-clockwise" />
+                </button>
 
                 <button
                   className="listModal__close"

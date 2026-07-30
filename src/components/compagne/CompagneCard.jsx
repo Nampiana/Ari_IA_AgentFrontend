@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const JOURS = {
   0: "Dim",
@@ -9,6 +9,60 @@ const JOURS = {
   5: "Ven",
   6: "Sam",
 };
+
+// Doit rester cohérent avec TIMEZONES dans CompagneFormModal.jsx
+const TIMEZONE_META = {
+  "Europe/Paris": { flag: "🇫🇷", label: "France" },
+  "Indian/Antananarivo": { flag: "🇲🇬", label: "Madagascar" },
+};
+
+const getTimezoneMeta = (tz) =>
+  TIMEZONE_META[tz] || { flag: "🌍", label: tz || "Europe/Paris" };
+
+// ── Horloge locale live (se met à jour chaque seconde) ──────────────────────
+// Affiche l'heure dans le fuseau de la campagne, et indique si l'heure
+// actuelle tombe dans une des tranches horaires autorisées.
+function TimezoneLiveClock({ timeZone, allowedDays, tranches }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const tz = timeZone || "Europe/Paris";
+  const meta = getTimezoneMeta(tz);
+
+  const timeLabel = now.toLocaleTimeString("fr-FR", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const hhmm = timeLabel;
+  const zonedDay = new Date(
+    now.toLocaleString("en-US", { timeZone: tz }),
+  ).getDay();
+
+  const validTranches = (tranches || []).filter(
+    (t) => t.startHour && t.endHour,
+  );
+  const isOpen =
+    (allowedDays || []).includes(zonedDay) &&
+    validTranches.some((t) => hhmm >= t.startHour && hhmm <= t.endHour);
+
+  return (
+    <span
+      className={`campTzClock ${isOpen ? "is-open" : "is-closed"}`}
+      title={`Heure locale — ${meta.label} (${tz})`}
+    >
+      <span className="campTzClock__flag">{meta.flag}</span>
+      {timeLabel}
+      <span className="campTzClock__dot" aria-hidden="true" />
+    </span>
+  );
+}
 
 export default function CompagneCard({
   compagne,
@@ -30,9 +84,11 @@ export default function CompagneCard({
 
   const railState = isRunning ? "live" : isActive ? "ready" : "off";
 
-  const joursLabel = compagne.allowedDays?.length
-    ? compagne.allowedDays.map((jour) => JOURS[jour]).join(", ")
-    : "Lun – Ven";
+  const allowedDays = compagne.allowedDays?.length
+    ? compagne.allowedDays
+    : [1, 2, 3, 4, 5];
+
+  const joursLabel = allowedDays.map((jour) => JOURS[jour]).join(", ");
 
   // --- valeurs des 7 lignes fixes : toujours affichées, "—" si non applicable
   const agentValue = compagne.id_ia?.nomAgent || "—";
@@ -235,9 +291,11 @@ export default function CompagneCard({
             <div className="campAvailability__head">
               <i className="bi bi-calendar-week" />
               <span>Disponibilité</span>
-              <span className="campAvailability__tz">
-                {compagne.timeZone || "Europe/Paris"}
-              </span>
+              <TimezoneLiveClock
+                timeZone={compagne.timeZone}
+                allowedDays={allowedDays}
+                tranches={tranches}
+              />
             </div>
 
             <div className="campAvailability__days">

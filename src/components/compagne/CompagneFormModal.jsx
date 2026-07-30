@@ -57,6 +57,52 @@ const TABS = [
   { id: "options", label: "Options", icon: "bi-sliders" },
 ];
 
+// ── Fuseaux horaires disponibles ────────────────────────────────────────────
+// S'applique à TOUTES les tranches horaires de la campagne (un seul champ
+// timeZone en base, pas un par tranche).
+const TIMEZONES = [
+  { value: "Europe/Paris", label: "France — Paris", flag: "🇫🇷" },
+  {
+    value: "Indian/Antananarivo",
+    label: "Madagascar — Antananarivo",
+    flag: "🇲🇬",
+  },
+];
+
+const getTimezoneMeta = (tz) =>
+  TIMEZONES.find((t) => t.value === tz) || {
+    value: tz || "Europe/Paris",
+    label: tz || "Europe/Paris",
+    flag: "🌍",
+  };
+
+// Heure "HH:mm" dans un fuseau donné, à partir d'un objet Date
+const getZonedTime = (date, timeZone) =>
+  date.toLocaleTimeString("fr-FR", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+// Jour de semaine (0 = Dim … 6 = Sam, comme DAYS) dans un fuseau donné
+const getZonedWeekday = (date, timeZone) =>
+  new Date(date.toLocaleString("en-US", { timeZone })).getDay();
+
+// Décalage UTC affiché (ex : "UTC+1", "UTC+3")
+const getZonedOffsetLabel = (date, timeZone) => {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      timeZoneName: "shortOffset",
+    }).formatToParts(date);
+    const tzPart = parts.find((p) => p.type === "timeZoneName");
+    return tzPart?.value?.replace("GMT", "UTC") || "";
+  } catch {
+    return "";
+  }
+};
+
 function FichesMultiSelect({ lists, selectedIds, onToggle }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -125,6 +171,72 @@ function FichesMultiSelect({ lists, selectedIds, onToggle }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Widget horloge live + statut "dans/hors plage d'appel" ─────────────────
+// Se met à jour chaque seconde tant que la modale est ouverte.
+function TimezoneScheduleWidget({ timeZone, allowedDays, tranches }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const tz = timeZone || "Europe/Paris";
+  const meta = getTimezoneMeta(tz);
+
+  const timeLabel = now.toLocaleTimeString("fr-FR", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const dateLabel = now.toLocaleDateString("fr-FR", {
+    timeZone: tz,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const offsetLabel = getZonedOffsetLabel(now, tz);
+
+  const hhmm = getZonedTime(now, tz);
+  const zonedDay = getZonedWeekday(now, tz);
+
+  const validTranches = (tranches || []).filter(
+    (t) => t.startHour && t.endHour,
+  );
+  const isDayAllowed = (allowedDays || []).includes(zonedDay);
+  const isInTranche = validTranches.some(
+    (t) => hhmm >= t.startHour && hhmm <= t.endHour,
+  );
+  const isOpen = isDayAllowed && isInTranche;
+
+  return (
+    <div className="campTzWidget">
+      <div className="campTzWidget__zone">
+        <span className="campTzWidget__flag">{meta.flag}</span>
+        <div>
+          <strong>{meta.label}</strong>
+          <span className="campTzWidget__offset">
+            {offsetLabel} · {dateLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="campTzWidget__time">{timeLabel}</div>
+
+      <span
+        className={`campTzWidget__status ${isOpen ? "is-open" : "is-closed"}`}
+      >
+        <i
+          className={`bi ${isOpen ? "bi-telephone-fill" : "bi-moon-stars-fill"}`}
+        />
+        {isOpen ? "Dans la plage d'appel" : "Hors plage d'appel"}
+      </span>
     </div>
   );
 }
@@ -507,62 +619,106 @@ export default function CompagneFormModal({
               )}
 
               {activeTab === "planning" && (
-                <div className="campFormGroup campFormGroup--full">
-                  <label className="campLabel">
-                    Tranches horaires
-                    <span className="campHint">
-                      {" "}
-                      (une ou plusieurs plages d'appel autorisées)
-                    </span>
-                  </label>
+                <section className="campSection">
+                  <h3 className="campSection__title">
+                    Fuseau horaire & tranches d'appel
+                  </h3>
+                  <p className="campSection__desc">
+                    Le fuseau choisi s'applique à toutes les tranches horaires
+                    ci-dessous et détermine l'heure locale utilisée pour
+                    respecter le planning.
+                  </p>
 
-                  <div className="campTranches">
-                    {formData.tranchesHoraires.map((tranche, index) => (
-                      <div className="campTrancheRow" key={index}>
-                        <input
-                          type="time"
-                          className="campInput campMono"
-                          value={tranche.startHour}
-                          onChange={(e) =>
-                            updateTranche(index, "startHour", e.target.value)
-                          }
-                        />
-                        <span className="campTrancheRow__sep">à</span>
-                        <input
-                          type="time"
-                          className="campInput campMono"
-                          value={tranche.endHour}
-                          onChange={(e) =>
-                            updateTranche(index, "endHour", e.target.value)
-                          }
-                        />
-                        {formData.tranchesHoraires.length > 1 && (
-                          <button
-                            type="button"
-                            className="campIconBtn campIconBtn--delete"
-                            onClick={() => removeTranche(index)}
-                            aria-label="Supprimer cette tranche"
-                          >
-                            <i className="bi bi-x-lg" />
-                          </button>
-                        )}
+                  <div className="campFormGrid">
+                    <div className="campFormGroup">
+                      <label className="campLabel">Fuseau horaire</label>
+                      <select
+                        className="campSelect"
+                        name="timeZone"
+                        value={formData.timeZone}
+                        onChange={handleChange}
+                      >
+                        {TIMEZONES.map((tz) => (
+                          <option key={tz.value} value={tz.value}>
+                            {tz.flag} {tz.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="campHint">
+                        S'applique à l'ensemble des tranches horaires de cette
+                        campagne.
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="campFormGroup">
+                      <label className="campLabel">Heure locale actuelle</label>
+                      <TimezoneScheduleWidget
+                        timeZone={formData.timeZone}
+                        allowedDays={formData.allowedDays}
+                        tranches={formData.tranchesHoraires}
+                      />
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="campBtnGhost campBtnGhost--sm"
-                    onClick={addTranche}
-                  >
-                    <i className="bi bi-plus-lg" /> Ajouter une tranche horaire
-                  </button>
+                  <div className="campFormGroup campFormGroup--full">
+                    <label className="campLabel">
+                      Tranches horaires
+                      <span className="campHint">
+                        {" "}
+                        (une ou plusieurs plages d'appel autorisées, en heure
+                        locale du fuseau sélectionné)
+                      </span>
+                    </label>
 
-                  <div className="campHint">
-                    Exemple : 08:00–12:00 puis 14:00–18:00 pour une pause
-                    déjeuner.
+                    <div className="campTranches">
+                      {formData.tranchesHoraires.map((tranche, index) => (
+                        <div className="campTrancheRow" key={index}>
+                          <input
+                            type="time"
+                            className="campInput campMono"
+                            value={tranche.startHour}
+                            onChange={(e) =>
+                              updateTranche(index, "startHour", e.target.value)
+                            }
+                          />
+                          <span className="campTrancheRow__sep">à</span>
+                          <input
+                            type="time"
+                            className="campInput campMono"
+                            value={tranche.endHour}
+                            onChange={(e) =>
+                              updateTranche(index, "endHour", e.target.value)
+                            }
+                          />
+                          {formData.tranchesHoraires.length > 1 && (
+                            <button
+                              type="button"
+                              className="campIconBtn campIconBtn--delete"
+                              onClick={() => removeTranche(index)}
+                              aria-label="Supprimer cette tranche"
+                            >
+                              <i className="bi bi-x-lg" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="campBtnGhost campBtnGhost--sm"
+                      onClick={addTranche}
+                    >
+                      <i className="bi bi-plus-lg" /> Ajouter une tranche
+                      horaire
+                    </button>
+
+                    <div className="campHint">
+                      Exemple : 08:00–12:00 puis 14:00–18:00 pour une pause
+                      déjeuner.
+                    </div>
                   </div>
-                </div>
+                </section>
               )}
 
               {activeTab === "options" && (
