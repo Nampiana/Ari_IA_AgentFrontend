@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useQualification from "../../hooks/useQualification";
+import useCompagne from "../../hooks/useCompagne";
 import "../../assets/css/QualificationModal.css";
 
 const defaultForm = {
@@ -10,8 +11,6 @@ const defaultForm = {
   active: 1,
 };
 
-// Couleur cyclique stable pour la puce "Valeur historique" : chaque valeur
-// garde toujours la même couleur d'une session à l'autre.
 const valueColorClass = (value) => {
   const n = Math.abs(Number(value) || 0) % 5;
   return `qk-value qk-value--${n}`;
@@ -22,6 +21,7 @@ export default function QualificationModal({
   onClose,
   compagne,
   showToast,
+  onCompagneUpdated,
 }) {
   const {
     getQualificationsByCompagne,
@@ -30,12 +30,20 @@ export default function QualificationModal({
     deleteQualification,
     createDefaultQualifications,
   } = useQualification();
+  const { updateCompagne } = useCompagne();
 
   const [qualifications, setQualifications] = useState([]);
   const [form, setForm] = useState(defaultForm);
   const [selectedQualification, setSelectedQualification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // --- contexte IA (analyse / qualification) rattaché à la campagne ---
+  const [contextForm, setContextForm] = useState({
+    contextIaAnalyse: "",
+    contextIaQualification: "",
+  });
+  const [savingContext, setSavingContext] = useState(false);
 
   const fetchQualifications = async () => {
     if (!compagne?._id) return;
@@ -61,6 +69,10 @@ export default function QualificationModal({
       fetchQualifications();
       setForm(defaultForm);
       setSelectedQualification(null);
+      setContextForm({
+        contextIaAnalyse: compagne.contextIaAnalyse || "",
+        contextIaQualification: compagne.contextIaQualification || "",
+      });
     }
   }, [open, compagne?._id]);
 
@@ -73,6 +85,43 @@ export default function QualificationModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleContextChange = (e) => {
+    const { name, value } = e.target;
+    setContextForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveContext = async () => {
+    if (!compagne?._id) {
+      showToast?.("Campagne introuvable", "danger");
+      return;
+    }
+
+    try {
+      setSavingContext(true);
+
+      const res = await updateCompagne(compagne._id, {
+        contextIaAnalyse: contextForm.contextIaAnalyse,
+        contextIaQualification: contextForm.contextIaQualification,
+      });
+
+      const updated = res?.data?.data;
+      onCompagneUpdated?.(updated);
+
+      showToast?.("Contexte IA enregistré avec succès", "success");
+    } catch (error) {
+      console.error("Erreur enregistrement contexte IA :", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Erreur lors de l'enregistrement du contexte IA";
+
+      showToast?.(message, "danger");
+    } finally {
+      setSavingContext(false);
+    }
   };
 
   const setActive = (value) => {
@@ -247,6 +296,53 @@ export default function QualificationModal({
           >
             <i className="bi bi-x-lg" />
           </button>
+        </div>
+
+        {/* CONTEXTE IA — analyse & qualification, propre à la campagne */}
+        <div className="qk-contextPanel">
+          <div className="qk-contextHeader">
+            <div>
+              <h4>Contexte IA</h4>
+              <p>
+                Instructions injectées à l'IA pour l'analyse et la qualification
+                automatique de cet appel.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="qk-btn qk-btnPrimary"
+              onClick={handleSaveContext}
+              disabled={savingContext}
+            >
+              {savingContext ? "Enregistrement..." : "Enregistrer le contexte"}
+            </button>
+          </div>
+
+          <div className="qk-contextGrid">
+            <div className="qk-contextField">
+              <label>Contexte d'analyse</label>
+              <textarea
+                name="contextIaAnalyse"
+                value={contextForm.contextIaAnalyse}
+                onChange={handleContextChange}
+                rows={6}
+                placeholder="Ex : Analyse la conversation et détermine si le client a exprimé un intérêt, une objection de prix, ou une demande de rappel..."
+                disabled={savingContext}
+              />
+            </div>
+
+            <div className="qk-contextField">
+              <label>Contexte de qualification</label>
+              <textarea
+                name="contextIaQualification"
+                value={contextForm.contextIaQualification}
+                onChange={handleContextChange}
+                rows={6}
+                placeholder="Ex : Choisis le code de qualification le plus adapté parmi la liste ci-dessous selon l'issue de l'appel..."
+                disabled={savingContext}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="qk-body">
