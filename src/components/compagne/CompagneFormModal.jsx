@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../../assets/css/CompagneFormModal.css";
+import {
+  TIMEZONES,
+  getTimezoneMeta,
+  getZonedOffsetLabel,
+  isWithinSchedule,
+} from "../../utils/timezoneUtils";
 
 const normalizePhoneNumber = (value) =>
   String(value || "")
@@ -56,52 +62,6 @@ const TABS = [
   { id: "planning", label: "Planning", icon: "bi-calendar-week" },
   { id: "options", label: "Options", icon: "bi-sliders" },
 ];
-
-// ── Fuseaux horaires disponibles ────────────────────────────────────────────
-// S'applique à TOUTES les tranches horaires de la campagne (un seul champ
-// timeZone en base, pas un par tranche).
-const TIMEZONES = [
-  { value: "Europe/Paris", label: "France — Paris", flag: "🇫🇷" },
-  {
-    value: "Indian/Antananarivo",
-    label: "Madagascar — Antananarivo",
-    flag: "🇲🇬",
-  },
-];
-
-const getTimezoneMeta = (tz) =>
-  TIMEZONES.find((t) => t.value === tz) || {
-    value: tz || "Europe/Paris",
-    label: tz || "Europe/Paris",
-    flag: "🌍",
-  };
-
-// Heure "HH:mm" dans un fuseau donné, à partir d'un objet Date
-const getZonedTime = (date, timeZone) =>
-  date.toLocaleTimeString("fr-FR", {
-    timeZone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-
-// Jour de semaine (0 = Dim … 6 = Sam, comme DAYS) dans un fuseau donné
-const getZonedWeekday = (date, timeZone) =>
-  new Date(date.toLocaleString("en-US", { timeZone })).getDay();
-
-// Décalage UTC affiché (ex : "UTC+1", "UTC+3")
-const getZonedOffsetLabel = (date, timeZone) => {
-  try {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      timeZoneName: "shortOffset",
-    }).formatToParts(date);
-    const tzPart = parts.find((p) => p.type === "timeZoneName");
-    return tzPart?.value?.replace("GMT", "UTC") || "";
-  } catch {
-    return "";
-  }
-};
 
 function FichesMultiSelect({ lists, selectedIds, onToggle }) {
   const [open, setOpen] = useState(false);
@@ -202,18 +162,7 @@ function TimezoneScheduleWidget({ timeZone, allowedDays, tranches }) {
     month: "long",
   });
   const offsetLabel = getZonedOffsetLabel(now, tz);
-
-  const hhmm = getZonedTime(now, tz);
-  const zonedDay = getZonedWeekday(now, tz);
-
-  const validTranches = (tranches || []).filter(
-    (t) => t.startHour && t.endHour,
-  );
-  const isDayAllowed = (allowedDays || []).includes(zonedDay);
-  const isInTranche = validTranches.some(
-    (t) => hhmm >= t.startHour && hhmm <= t.endHour,
-  );
-  const isOpen = isDayAllowed && isInTranche;
+  const isOpen = isWithinSchedule(now, tz, allowedDays, tranches);
 
   return (
     <div className="campTzWidget">

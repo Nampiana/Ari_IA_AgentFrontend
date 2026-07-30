@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getTimezoneMeta, isWithinSchedule } from "../../utils/timezoneUtils";
 
 const JOURS = {
   0: "Dim",
@@ -9,15 +10,6 @@ const JOURS = {
   5: "Ven",
   6: "Sam",
 };
-
-// Doit rester cohérent avec TIMEZONES dans CompagneFormModal.jsx
-const TIMEZONE_META = {
-  "Europe/Paris": { flag: "🇫🇷", label: "France" },
-  "Indian/Antananarivo": { flag: "🇲🇬", label: "Madagascar" },
-};
-
-const getTimezoneMeta = (tz) =>
-  TIMEZONE_META[tz] || { flag: "🌍", label: tz || "Europe/Paris" };
 
 // ── Horloge locale live (se met à jour chaque seconde) ──────────────────────
 // Affiche l'heure dans le fuseau de la campagne, et indique si l'heure
@@ -41,22 +33,7 @@ function TimezoneLiveClock({ timeZone, allowedDays, tranches }) {
     hour12: false,
   });
 
-  const hhmm = now.toLocaleTimeString("fr-FR", {
-    timeZone: tz,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const zonedDay = new Date(
-    now.toLocaleString("en-US", { timeZone: tz }),
-  ).getDay();
-
-  const validTranches = (tranches || []).filter(
-    (t) => t.startHour && t.endHour,
-  );
-  const isOpen =
-    (allowedDays || []).includes(zonedDay) &&
-    validTranches.some((t) => hhmm >= t.startHour && hhmm <= t.endHour);
+  const isOpen = isWithinSchedule(now, tz, allowedDays, tranches);
 
   return (
     <span
