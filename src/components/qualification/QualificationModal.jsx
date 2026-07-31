@@ -274,7 +274,6 @@ export default function QualificationModal({
   return (
     <div
       className="qk-overlay"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <div className="qk-modal">
         {/* HEADER */}

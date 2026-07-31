@@ -27,7 +27,7 @@
 }
 
 .campModal {
-    position: relative;
+    /* position: relative; */
     width: 100%;
     max-width: 920px;
     max-height: 88vh;

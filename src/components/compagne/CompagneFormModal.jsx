@@ -321,10 +321,7 @@ export default function CompagneFormModal({
     "Aucun agent sélectionné";
 
   return (
-    <div
-      className="campModalOverlay"
-      onClick={!loadingUpdate ? onClose : undefined}
-    >
+    <div className="campModalOverlay">
       <div
         className={`campModal ${loadingUpdate ? "campModal--loading" : ""}`}
         onClick={(e) => e.stopPropagation()}

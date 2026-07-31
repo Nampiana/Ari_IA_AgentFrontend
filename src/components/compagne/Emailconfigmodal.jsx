@@ -221,7 +221,7 @@ export default function EmailConfigModal({
   if (!open) return null;
 
   return (
-    <div className="mailCfgOverlay" onClick={!saving ? onClose : undefined}>
+    <div className="mailCfgOverlay">
       <div className="mailCfgModal" onClick={(e) => e.stopPropagation()}>
         {/* ── Header ── */}
         <div className="mailCfgHeader">
