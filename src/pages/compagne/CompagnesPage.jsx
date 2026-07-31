@@ -119,14 +119,14 @@ export default function CompagnesPage({ showToast }) {
   const lancerCampagne = async (compagne) => {
     try {
       if (compagne.isRunning == 1) {
-        const res = await updateCompagne(compagne._id, {
+        await updateCompagne(compagne._id, {
           isRunning: 0,
         });
 
-        const updated = res?.data?.data;
-
         setCompagnes((prev) =>
-          prev.map((c) => (c._id === compagne._id ? updated : c)),
+          prev.map((c) =>
+            c._id === compagne._id ? { ...c, isRunning: 0 } : c,
+          ),
         );
 
         showToast("Campagne arrêtée", "info");
@@ -135,7 +135,9 @@ export default function CompagnesPage({ showToast }) {
 
       const resLaunch = await lancerAppelCompagne(compagne._id);
 
-      await fetchCompagnes();
+      setCompagnes((prev) =>
+        prev.map((c) => (c._id === compagne._id ? { ...c, isRunning: 1 } : c)),
+      );
 
       showToast(resLaunch?.data?.message || "Campagne lancée", "success");
     } catch (error) {
@@ -152,7 +154,9 @@ export default function CompagnesPage({ showToast }) {
         console.error("Erreur reset isRunning :", resetError);
       }
 
-      await fetchCompagnes();
+      setCompagnes((prev) =>
+        prev.map((c) => (c._id === compagne._id ? { ...c, isRunning: 0 } : c)),
+      );
 
       if (
         status === 403 ||
@@ -358,6 +362,18 @@ export default function CompagnesPage({ showToast }) {
             compagne: null,
           })
         }
+        onCompagneUpdated={(updated) => {
+          if (!updated) return;
+
+          setCompagnes((prev) =>
+            prev.map((c) => (c._id === updated._id ? updated : c)),
+          );
+
+          setQualificationModal((prev) => ({
+            ...prev,
+            compagne: updated,
+          }));
+        }}
       />
 
       <EmailConfigModal
