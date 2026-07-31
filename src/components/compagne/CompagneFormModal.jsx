@@ -604,9 +604,39 @@ export default function CompagneFormModal({
                         tranches={formData.tranchesHoraires}
                       />
                     </div>
-                  </div>
 
-                  <div className="campFormGroup campFormGroup--full">
+                    <div className="campFormGroup campFormGroup--full">
+                      <label className="campLabel">
+                        Jours d'ouverture
+                        <span className="campHint">
+                          {" "}
+                          (jours de la semaine où les appels sont autorisés)
+                        </span>
+                      </label>
+                      <div className="campChipGroup">
+                        {DAYS.map((day) => (
+                          <button
+                            type="button"
+                            key={day.value}
+                            className={`campChip ${
+                              formData.allowedDays.includes(day.value)
+                                ? "is-active"
+                                : ""
+                            }`}
+                            onClick={() => toggleDay(day.value)}
+                          >
+                            {day.label}
+                          </button>
+                        ))}
+                      </div>
+                      {formData.allowedDays.length === 0 && (
+                        <div className="campHint campHint--warning">
+                          <i className="bi bi-exclamation-triangle-fill" />{" "}
+                          Sélectionnez au moins un jour d'ouverture.
+                        </div>
+                      )}
+                    </div>
+
                     <label className="campLabel">
                       Tranches horaires
                       <span className="campHint">

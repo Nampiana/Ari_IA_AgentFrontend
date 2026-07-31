@@ -236,10 +236,12 @@ export default function CompagneCard({
             {isActive ? "Actif" : "Inactif"}
           </span>
 
-          <span className="campPill campPill--signal">
-            <i className="bi bi-cpu-fill" />×{maxConcurrent} simultané
-            {maxConcurrent > 1 ? "s" : ""}
-          </span>
+          {!isInbound && (
+            <span className="campPill campPill--signal">
+              <i className="bi bi-cpu-fill" />×{maxConcurrent} simultané
+              {maxConcurrent > 1 ? "s" : ""}
+            </span>
+          )}
         </div>
 
         {/* 7 lignes fixes, toujours affichées (avec "—" si non applicable),

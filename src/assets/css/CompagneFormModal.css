@@ -453,6 +453,15 @@
     box-shadow: 0 6px 14px -6px rgba(91, 61, 240, 0.55);
 }
 
+.campHint--warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    color: var(--camp-danger-dark);
+    font-weight: 600;
+}
+
 /* Tranche horraire */
 .campTranches {
     display: flex;
