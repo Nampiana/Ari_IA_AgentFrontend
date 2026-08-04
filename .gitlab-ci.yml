@@ -8,7 +8,7 @@ stages:
   - deploy
 
 variables:
-  SOURCE_PROJET: "/mnt/data/vicitelecom/Ari_IA_AgentFrontend"
+  SOURCE_PROJET: "/mnt/data/vicitelecom"
 
 deploy_projet:
   stage: deploy
@@ -19,7 +19,7 @@ deploy_projet:
 
   script:
     - echo "Lancement CI-CD Front"
-    - pm2 restart 10
+    - ls
 
   after_script:
     - echo "✅ Déploiement terminé"
