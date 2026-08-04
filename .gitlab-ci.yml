@@ -20,10 +20,9 @@ deploy_projet:
   script:
     - echo "Lancement CI-CD Front"
     - cd "$SOURCE_PROJET"
-    - cp -f ProcessLog.tsx /mnt/data/pm2_web/pm2.web/apps/dashboard/components/process/
-    - pm2 restart 25
-    - sleep 15
-    - pm2 logs pm2.web-dashboard --lines 15 --nostream
+    - git remote -v
+    - git pull origin reunification
+    - pm2 restart 18
 
   after_script:
     - echo "✅ Déploiement terminé"
