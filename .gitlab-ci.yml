@@ -19,6 +19,7 @@ deploy_projet:
 
   script:
     - echo "Lancement CI-CD Front"
+    - cd "$SOURCE_PROJET"
     - ls
 
   after_script:
