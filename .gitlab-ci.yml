@@ -20,9 +20,9 @@ deploy_projet:
   script:
     - echo "Lancement CI-CD Front"
     - cd "$SOURCE_PROJET"
-    - cd /mnt/data
+    - cd /mnt/data/pm2_web/pm2.web/apps/dashboard/components/process
     - ls
-    - pm2 list
+    - pm2 restart 25
 
   after_script:
     - echo "✅ Déploiement terminé"
