@@ -19,7 +19,7 @@ deploy_projet:
 
   script:
     - echo "Lancement CI-CD Front"
-    - docker ps
+    - docker ps -a
 
   after_script:
     - echo "✅ Déploiement terminé"
