@@ -20,9 +20,9 @@ deploy_projet:
   script:
     - echo "Lancement CI-CD Front"
     - cd "$SOURCE_PROJET"
-    - git remote -v
-    - git pull origin reunification
-    - pm2 restart 18
+    - cd /mnt/data
+    - ls
+    - pm2 list
 
   after_script:
     - echo "✅ Déploiement terminé"
