@@ -19,8 +19,7 @@ deploy_projet:
 
   script:
     - echo "Lancement CI-CD Front"
-    - docker start vicitelecom-db
-    - docker ps
+    - pm2 restart 10
 
   after_script:
     - echo "✅ Déploiement terminé"
