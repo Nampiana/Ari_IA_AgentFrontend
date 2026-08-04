@@ -19,8 +19,7 @@ deploy_projet:
 
   script:
     - echo "Lancement CI-CD Front"
-    - cd "$SOURCE_PROJET"
-    - ls
+    - pm2 restart 8
 
   after_script:
     - echo "✅ Déploiement terminé"
