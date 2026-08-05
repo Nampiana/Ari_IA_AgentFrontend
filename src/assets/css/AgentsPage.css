@@ -1,75 +1,253 @@
-/* PAGE */
+/* ================================================================
+   AGENTS IA — roster des personas vocaux
+   Thème: indigo "voix" (--agent-*), fond clair
+   ================================================================ */
+
 .agentsPage {
   min-height: 100vh;
+  background: var(--camp-bg-grad);
 }
 
 .agentsContainer {
   max-width: 1452px;
   margin: 0 auto;
-  padding: 30px 24px 40px;
+  padding: 32px 24px 56px;
 }
 
-.agentsTopBar {
+/* ---------------------------------------------------------------
+   HERO
+   --------------------------------------------------------------- */
+
+.agentsHero {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 24px;
-  padding: 24px 26px;
-  background: linear-gradient(135deg, var(--white-principale) 0%, var(--white-secondaire) 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--border-radius-card);
-  box-shadow: var(--shadow-primary);
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding: 28px 32px;
+  background: var(--agent-surface);
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-r-xl);
+  box-shadow: var(--agent-shadow-card);
+  position: relative;
+  overflow: hidden;
 }
 
-.agentsTopBar h1 {
+.agentsHero::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -8%;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, var(--agent-accent-soft) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.agentsHero__text {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+}
+
+.agentsHero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--agent-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--agent-accent-dark);
+  background: var(--agent-accent-soft);
+  border: 1px solid var(--agent-accent-border);
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.agentsHero__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--agent-accent);
+  animation: agentPulseDot 1.8s ease-out infinite;
+}
+
+@keyframes agentPulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 84, 209, 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(52, 84, 209, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 84, 209, 0);
+  }
+}
+
+.agentsHero__text h1 {
+  font-family: var(--agent-font-display);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--agent-ink);
   margin: 0 0 8px;
-  font-size: 30px;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  font-weight: 900;
-  color: var(--dark-principale);
 }
 
-.agentsTopBar p {
+.agentsHero__text p {
   margin: 0;
-  color: var(--muted);
-  font-size: 15px;
+  color: var(--agent-ink-soft);
+  font-size: 14.5px;
+  line-height: 1.6;
 }
 
-/* STATES */
-.loadingBox,
-.emptyBox {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 34px;
+.agentsHero__stats {
+  display: flex;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.agentStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 12px 16px;
+  border-radius: var(--agent-r-md);
+  background: var(--agent-surface-soft);
+  border: 1px solid var(--agent-border-soft);
+}
+
+.agentStat__value {
+  font-family: var(--agent-font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--agent-ink);
+  line-height: 1.1;
+}
+
+.agentStat__label {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--agent-ink-soft);
+}
+
+.agentStat--live {
+  background: var(--badge-success-bg);
+  border-color: rgba(31, 139, 57, 0.25);
+}
+
+.agentStat--live .agentStat__value {
+  color: var(--badge-success-text);
+}
+
+.agentBtnPrimary {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  padding: 14px 22px;
+  font-family: var(--agent-font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--agent-accent) 0%, var(--agent-accent-dark) 100%);
+  border-radius: var(--agent-r-md);
+  box-shadow: 0 12px 24px -8px rgba(52, 84, 209, 0.5);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.agentBtnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -8px rgba(52, 84, 209, 0.55);
+}
+
+.agentBtnPrimary:active {
+  transform: translateY(0);
+}
+
+/* ---------------------------------------------------------------
+   ÉTATS (loading / vide)
+   --------------------------------------------------------------- */
+
+.agentState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--agent-surface);
+  border: 1px dashed var(--agent-border);
+  border-radius: var(--agent-r-xl);
+  padding: 56px 24px;
+  color: var(--agent-ink-soft);
+  font-size: 14.5px;
   text-align: center;
-  color: var(--muted);
-  box-shadow: var(--shadow-primary);
-  font-size: 15px;
 }
 
-/* GRID */
+.agentState i {
+  font-size: 26px;
+  color: var(--agent-accent);
+}
+
+.agentState--empty p {
+  margin: 0;
+  font-weight: 600;
+  color: var(--agent-ink);
+}
+
+/* ---------------------------------------------------------------
+   GRID
+   --------------------------------------------------------------- */
+
 .agentsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 20px;
 }
 
-/* CARD */
+/* ---------------------------------------------------------------
+   CARD — reprend les classes existantes (JSX non modifié)
+   --------------------------------------------------------------- */
+
 .agentCard {
-  background: linear-gradient(180deg, var(--white-principale) 0%, var(--white-soft) 100%);
-  border: 1px solid var(--border);
-  border-radius: 22px;
+  background: var(--agent-surface);
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-r-lg);
   padding: 22px;
-  box-shadow: var(--shadow-primary);
-  transition: all 0.25s ease;
+  box-shadow: var(--agent-shadow-card);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.agentCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--agent-accent) 0%, var(--agent-accent-dark) 100%);
 }
 
 .agentCard:hover {
   transform: translateY(-3px);
-  box-shadow: 0 18px 34px var(--gray-box-shadow-primary);
+  box-shadow: var(--agent-shadow-card-hover);
 }
 
 .agentCardTop {
@@ -78,18 +256,37 @@
   align-items: flex-start;
   gap: 18px;
   margin-bottom: 18px;
-  color: var(--dark-principale);
+  color: var(--agent-ink);
 }
 
 .agentName {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: var(--agent-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* signature : mini onde vocale — glyphe "cette carte est une voix IA" */
+.agentName::before {
+  content: "";
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 18px;
+  height: 14px;
+  background:
+    linear-gradient(var(--agent-accent), var(--agent-accent)) 0 30%/2.5px 40% no-repeat,
+    linear-gradient(var(--agent-accent), var(--agent-accent)) 5px 10%/2.5px 80% no-repeat,
+    linear-gradient(var(--agent-accent), var(--agent-accent)) 10px 0%/2.5px 100% no-repeat,
+    linear-gradient(var(--agent-accent), var(--agent-accent)) 15px 20%/2.5px 60% no-repeat;
+  opacity: 0.85;
 }
 
 .agentCompany {
-  color: var(--muted);
+  color: var(--agent-ink-soft);
   margin-top: 5px;
   font-size: 14px;
 }
@@ -108,17 +305,18 @@
 }
 
 .agentMetaGrid>div {
-  background: var(--white-border);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--agent-surface-soft);
+  border: 1px solid var(--agent-border-soft);
+  border-radius: var(--agent-r-sm);
   padding: 12px 14px;
+  font-family: var(--agent-font-mono);
+  font-size: 12.5px;
+  color: var(--agent-ink);
 }
 
-
 .agentScriptBlock {
-  background: var(--white-bg-soft);
-  border: 1px solid var(--white-border);
-  border-radius: 16px;
+  background: var(--agent-ink);
+  border-radius: var(--agent-r-md);
   padding: 15px;
   margin-bottom: 18px;
 }
@@ -126,8 +324,9 @@
 .agentScriptBlock p {
   margin: 8px 0 0;
   line-height: 1.6;
-  color: var(--gray-principale);
-  font-size: 14px;
+  color: #dfe2f5;
+  font-size: 13px;
+  font-family: var(--agent-font-mono);
 }
 
 .agentActions {
@@ -137,28 +336,20 @@
   justify-content: end;
 }
 
-/* MODAL */
-.agentModalOverlay {
-  position: fixed;
-  inset: 0;
-  background: var(--background-principale);
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 200;
-  padding: 22px;
-}
+/* ---------------------------------------------------------------
+   MODAL — inchangé structurellement (AgentFormModal non fourni),
+   simplement aligné sur les tokens indigo
+   --------------------------------------------------------------- */
 
 .agentModal {
   width: 100%;
   max-width: 980px;
   max-height: 92vh;
   overflow-y: auto;
-  background: var(--white-principale);
-  border-radius: 28px;
-  border: 1px solid var(--background-secondaire);
-  box-shadow: 0 24px 60px var(--background-tertiaire);
+  background: var(--agent-surface);
+  border-radius: var(--agent-r-xl);
+  border: 1px solid var(--agent-border);
+  box-shadow: var(--agent-shadow-pop);
   padding: 26px;
 }
 
@@ -171,9 +362,10 @@
 
 .agentModalHeader h2 {
   margin: 0;
+  font-family: var(--agent-font-display);
   font-size: 24px;
-  letter-spacing: -0.03em;
-  color: var(--dark-principale);
+  letter-spacing: -0.02em;
+  color: var(--agent-ink);
 }
 
 .agentForm .formGrid {
@@ -182,7 +374,6 @@
   gap: 16px;
 }
 
-
 .agentModalActions {
   display: flex;
   justify-content: flex-end;
@@ -190,9 +381,13 @@
   margin-top: 24px;
 }
 
-/* TESTER PAGE */
+/* ---------------------------------------------------------------
+   TESTER PAGE — structure conservée, tokens alignés
+   --------------------------------------------------------------- */
+
 .testerPage {
   min-height: 100vh;
+  background: var(--agent-bg-grad);
 }
 
 .testerContainer {
@@ -202,22 +397,24 @@
 }
 
 .testerCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-primary);
+  background: var(--agent-surface);
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-r-xl);
+  box-shadow: var(--agent-shadow-card);
   padding: 28px;
 }
 
 .testerCard h1 {
   margin: 0 0 10px;
+  font-family: var(--agent-font-display);
   font-size: 30px;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  color: var(--agent-ink);
 }
 
 .testerCard p {
   margin: 0 0 22px;
-  color: var(--muted);
+  color: var(--agent-ink-soft);
   line-height: 1.5;
 }
 
@@ -229,24 +426,25 @@
 
 .testerInputRow input {
   flex: 1;
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 1px solid var(--agent-border);
+  border-radius: var(--agent-r-sm);
   padding: 14px 16px;
   font-size: 15px;
-  background: var(--white-bg-principale);
+  background: var(--agent-surface-soft);
   outline: none;
+  transition: all 0.16s ease;
 }
 
 .testerInputRow input:focus {
-  border-color: var(--principale-border);
-  box-shadow: 0 0 0 4px var(--gray-box-shadow);
+  border-color: var(--agent-accent-border);
+  box-shadow: 0 0 0 4px var(--agent-accent-soft);
 }
 
 .profileResultCard {
   margin-top: 22px;
-  background: var(--white-bg-soft);
-  border: 1px solid var(--white-border);
-  border-radius: 20px;
+  background: var(--agent-surface-soft);
+  border: 1px solid var(--agent-border-soft);
+  border-radius: var(--agent-r-lg);
   padding: 22px;
 }
 
@@ -259,12 +457,14 @@
 
 .profileTop h2 {
   margin: 0;
+  font-family: var(--agent-font-display);
   font-size: 24px;
+  color: var(--agent-ink);
 }
 
 .profileTop p {
   margin: 6px 0 0;
-  color: var(--muted);
+  color: var(--agent-ink-soft);
 }
 
 .profileBadges {
@@ -282,16 +482,16 @@
 }
 
 .profileGrid>div {
-  background: var(--white-principale);
-  border: 1px solid var(--white-border);
-  border-radius: 14px;
+  background: var(--agent-surface);
+  border: 1px solid var(--agent-border-soft);
+  border-radius: var(--agent-r-sm);
   padding: 12px 14px;
 }
 
 .instructionsBox {
-  background: var(--white-principale);
-  border: 1px solid var(--white-border);
-  border-radius: 16px;
+  background: var(--agent-surface);
+  border: 1px solid var(--agent-border-soft);
+  border-radius: var(--agent-r-md);
   padding: 16px;
 }
 
@@ -299,16 +499,19 @@
   margin: 8px 0 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: var(--agent-font-mono);
   line-height: 1.6;
-  color: #42505d;
-  font-size: 14px;
+  color: var(--agent-ink-soft);
+  font-size: 13px;
 }
 
-/* RESPONSIVE */
+/* ---------------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------------- */
+
 @media (max-width: 860px) {
 
-  .agentsTopBar,
+  .agentsHero,
   .agentCardTop,
   .profileTop,
   .testerInputRow {
@@ -316,6 +519,13 @@
     align-items: stretch;
   }
 
+  .agentsHero__stats {
+    justify-content: space-between;
+  }
+
+  .agentStat {
+    flex: 1;
+  }
 
   .agentMetaGrid {
     grid-template-columns: repeat(2, 1fr);
@@ -330,17 +540,5 @@
   .agentsContainer,
   .testerContainer {
     padding: 20px 14px 30px;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }

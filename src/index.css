@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -97,6 +99,412 @@
   --rgb-primary: rgba(0, 0, 0, 0.55);
 
   --border-input: #d7dde4;
+
+  /* ================================================================
+     CAMPAGNES IA — thème dédié (page /campagnes)
+     Un violet "signal" pour l'IA, un teal "voice" pour la téléphonie.
+     N'affecte que les composants préfixés .camp*, le reste de l'app
+     garde ses tokens (--primary, --info, --danger, ...) inchangés.
+     ================================================================ */
+  --camp-font-display: 'Space Grotesk', var(--heading);
+  --camp-font-mono: 'JetBrains Mono', var(--mono);
+
+  --camp-bg-grad: linear-gradient(180deg, #faf9fe 0%, #f2eefb 55%, #efeafb 100%);
+  --camp-surface: #ffffff;
+  --camp-surface-soft: #faf9fe;
+  --camp-border: #e7e2f3;
+  --camp-border-soft: #efebf8;
+
+  --camp-ink: #17141f;
+  --camp-ink-soft: #6a6478;
+
+  --camp-signal: #5b3df0;
+  --camp-signal-dark: #4527d1;
+  --camp-signal-soft: #efeafd;
+  --camp-signal-border: #d9cdfb;
+
+  --camp-voice: #0aa398;
+  --camp-voice-dark: #078077;
+  --camp-voice-soft: #e1f7f5;
+  --camp-voice-border: #b9e9e4;
+
+  --camp-warm: #dd8c1c;
+  --camp-warm-dark: #b8730f;
+  --camp-warm-soft: #fdf1e0;
+  --camp-warm-border: #f3ddb0;
+
+  --camp-live: #189a53;
+  --camp-live-dark: #0f7a40;
+  --camp-live-soft: #e5f8ec;
+  --camp-live-border: #b9ecc9;
+
+  --camp-stopped: #8f8a9c;
+  --camp-stopped-soft: #f1eff5;
+  --camp-stopped-border: #e2ddec;
+
+  --camp-danger: #de3159;
+  --camp-danger-dark: #b91f43;
+  --camp-danger-soft: #fdeaf0;
+  --camp-danger-border: #f6c3d2;
+
+  --camp-shadow-card: 0 1px 2px rgba(23, 20, 31, .04), 0 16px 34px -18px rgba(76, 49, 199, .28);
+  --camp-shadow-card-hover: 0 1px 2px rgba(23, 20, 31, .05), 0 26px 48px -18px rgba(76, 49, 199, .34);
+  --camp-shadow-pop: 0 20px 50px -12px rgba(23, 20, 31, .22);
+
+  --camp-r-xl: 24px;
+  --camp-r-lg: 18px;
+  --camp-r-md: 13px;
+  --camp-r-sm: 9px;
+
+
+  --agent-font-display: 'Space Grotesk', var(--heading);
+  --agent-font-mono: 'JetBrains Mono', var(--mono);
+
+  --agent-bg-grad: linear-gradient(180deg, #faf9fe 0%, #f2eefb 55%, #efeafb 100%);
+  --agent-surface: #ffffff;
+  --agent-surface-soft: #f5f7ff;
+  --agent-border: #e3e6f5;
+  --agent-border-soft: #edeffa;
+
+  --agent-ink: #161a2c;
+  --agent-ink-soft: #666f8f;
+
+  --agent-accent: #5b3df0;
+  --agent-accent-dark: #4527d1;
+  --agent-accent-soft: #efeafd;
+  --agent-accent-border: #d9cdfb;
+
+  --agent-shadow-card: 0 1px 2px rgba(23, 20, 31, .04), 0 16px 34px -18px rgba(76, 49, 199, .28);
+  --agent-shadow-card-hover: 0 1px 2px rgba(23, 20, 31, .05), 0 26px 48px -18px rgba(76, 49, 199, .34);
+  --agent-shadow-pop: 0 20px 50px -12px rgba(23, 20, 31, .22);
+
+  --agent-r-xl: 24px;
+  --agent-r-lg: 18px;
+  --agent-r-md: 13px;
+  --agent-r-sm: 9px;
+
+  /* ================================================================
+     LISTES / FICHES — thème dédié (page /listes)
+     Un teal "annuaire" — évoque le classement, les fiches, les
+     répertoires d'appel. Se distingue du violet campagnes et de
+     l'indigo agents tout en restant dans la même famille claire.
+     N'affecte que les composants préfixés .list*.
+     ================================================================ */
+  --list-font-display: 'Space Grotesk', var(--heading);
+  --list-font-mono: 'JetBrains Mono', var(--mono);
+
+  --list-bg-grad: linear-gradient(180deg, #faf9fe 0%, #f2eefb 55%, #efeafb 100%);
+  --list-surface: #ffffff;
+  --list-surface-soft: #f3faf9;
+  --list-border: #dcece9;
+  --list-border-soft: #e9f4f2;
+
+  --list-ink: #12211f;
+  --list-ink-soft: #5f7975;
+
+  --list-accent: #5b3df0;
+  --list-accent-dark: #4527d1;
+  --list-accent-soft: #efeafd;
+  --list-accent-border: #d9cdfb;
+
+  --list-shadow-card: 0 1px 2px rgba(18, 33, 31, .04), 0 16px 34px -18px rgba(76, 49, 199, .24);
+  --list-shadow-card-hover: 0 1px 2px rgba(18, 33, 31, .05), 0 26px 46px -18px rgba(76, 49, 199, .30);
+  --list-shadow-pop: 0 20px 50px -12px rgba(23, 20, 31, .22);
+
+  --list-r-xl: 24px;
+  --list-r-lg: 18px;
+  --list-r-md: 13px;
+  --list-r-sm: 9px;
+
+  /* ================================================================
+     HISTORIQUE / JOURNAL D'APPELS — thème dédié (page /historiques)
+     Un bleu "journal", clair et neutre, dédié au suivi des appels.
+     Les tokens de qualification (--hist-success, --hist-info, ...)
+     centralisent les couleurs de statut utilisées dans les badges.
+     N'affecte que les composants préfixés .hist*.
+     ================================================================ */
+  --hist-font-display: 'Space Grotesk', var(--heading);
+  --hist-font-mono: 'JetBrains Mono', var(--mono);
+
+  --hist-bg-grad: linear-gradient(180deg, #faf9fe 0%, #f2eefb 55%, #efeafb 100%);
+  --hist-surface: #ffffff;
+  --hist-surface-soft: #f4f8ff;
+  --hist-border: #dfe6f5;
+  --hist-border-soft: #eaf0fb;
+
+  --hist-ink: #131b2e;
+  --hist-ink-soft: #64708a;
+
+  --hist-accent: #5b3df0;
+  --hist-accent-dark: #4527d1;
+  --hist-accent-soft: #efeafd;
+  --hist-accent-border: #d9cdfb;
+
+  --hist-cost: #0aa398;
+  --hist-cost-soft: #e1f7f5;
+  --hist-cost-border: #b9e9e4;
+
+  --hist-shadow-card: 0 1px 2px rgba(19, 27, 46, .04), 0 16px 34px -18px rgba(47, 111, 237, .22);
+  --hist-shadow-card-hover: 0 1px 2px rgba(19, 27, 46, .05), 0 26px 48px -18px rgba(47, 111, 237, .28);
+  --hist-shadow-pop: 0 20px 50px -12px rgba(19, 27, 46, .2);
+
+  --hist-r-xl: 24px;
+  --hist-r-lg: 18px;
+  --hist-r-md: 13px;
+  --hist-r-sm: 9px;
+
+  /* Statuts de qualification — utilisés par STATUS_DEFS dans HistoriquesPage.jsx */
+  --hist-success: #16a34a;
+  --hist-success-soft: #dcfce7;
+  --hist-success-border: rgba(22, 163, 74, .28);
+
+  --hist-info: #2563eb;
+  --hist-info-soft: #dbeafe;
+  --hist-info-border: rgba(37, 99, 235, .28);
+
+  --hist-warning: #d97706;
+  --hist-warning-soft: #fef3c7;
+  --hist-warning-border: rgba(217, 119, 6, .28);
+
+  --hist-purple: #7c3aed;
+  --hist-purple-soft: #ede9fe;
+  --hist-purple-border: rgba(124, 58, 237, .28);
+
+  --hist-danger: #dc2626;
+  --hist-danger-soft: #fde2e2;
+  --hist-danger-border: rgba(220, 38, 38, .28);
+
+  --hist-cyan: #0891b2;
+  --hist-cyan-soft: #cffafe;
+  --hist-cyan-border: rgba(8, 145, 178, .28);
+
+  --hist-gray: #52525b;
+  --hist-gray-soft: #e4e4e7;
+  --hist-gray-border: rgba(82, 82, 91, .24);
+
+  --hist-brown: #92400e;
+  --hist-brown-soft: #fbe4c6;
+  --hist-brown-border: rgba(146, 64, 14, .28);
+
+  /* ================================================================
+     CRM / LEADS — thème dédié (page /crm)
+     Un corail "relation" chaleureux, pour la relance et le suivi
+     commercial — se distingue du violet campagnes, de l'indigo
+     agents, du teal listes et du bleu historique tout en restant
+     dans la même famille claire. Les statuts de qualification
+     réutilisent volontairement les tokens --hist-info / --hist-success
+     / --hist-gray, déjà la référence de couleur du pipeline d'appel
+     dans tout le produit. N'affecte que les composants préfixés .crm*.
+     ================================================================ */
+  --crm-font-display: 'Space Grotesk', var(--heading);
+  --crm-font-mono: 'JetBrains Mono', var(--mono);
+
+  --crm-bg-grad: linear-gradient(180deg, #faf9fe 0%, #f2eefb 55%, #efeafb 100%);
+  --crm-surface: #ffffff;
+  --crm-surface-soft: #f7fdf6;
+  --crm-border: #e1f2df;
+  --crm-border-soft: #ecf8eb;
+
+  --crm-ink: #241419;
+  --crm-ink-soft: #8a6b72;
+
+  --crm-accent: #5b3df0;
+  --crm-accent-dark: #4527d1;
+  --crm-accent-soft: #eafdeb;
+  --crm-accent-border: #d9cdfb;
+
+  --crm-shadow-card: 0 1px 2px rgba(20, 36, 22, 0.04), 0 16px 34px -18px rgba(91, 232, 84, 0.24);
+  --crm-shadow-card-hover: 0 1px 2px rgba(25, 36, 20, 0.05), 0 26px 48px -18px rgba(84, 232, 84, 0.3);
+  --crm-shadow-pop: 0 20px 50px -12px rgba(36, 20, 25, .22);
+
+  --crm-r-xl: 24px;
+  --crm-r-lg: 18px;
+  --crm-r-md: 13px;
+  --crm-r-sm: 9px;
+
+  /* ================================================================
+     CALENDRIER — thème dédié (page /calendrier)
+     Un ambre "planning" chaleureux et lisible, qui évoque le temps
+     et la programmation d'appels — se distingue du violet campagnes,
+     de l'indigo agents, du teal listes, du bleu historique et du
+     corail CRM tout en restant dans la même famille claire.
+     Les couleurs de qualification (statuts d'appel/CRM/planification)
+     sont centralisées ici en 6 teintes sémantiques réutilisées par
+     tous les badges de la page, pour ne JAMAIS coder une couleur en
+     dur dans le JS/JSX. N'affecte que les composants préfixés .cal*.
+     ================================================================ */
+  --cal-font-display: 'Space Grotesk', var(--heading);
+  --cal-font-mono: 'JetBrains Mono', var(--mono);
+
+  --cal-bg-grad: linear-gradient(180deg, #faf9fe 0%, #f2eefb 55%, #efeafb 100%);
+  --cal-surface: #ffffff;
+  --cal-surface-soft: #f7fdf6;
+  --cal-border: #e1f2df;
+  --cal-border-soft: #ecf8eb;
+  --cal-white: #ffffff;
+  --cal-overlay: rgba(23, 20, 15, 0.42);
+
+  --cal-ink: #241c0f;
+  --cal-ink-soft: #8a7857;
+
+  --cal-accent: #5b3df0;
+  --cal-accent-dark: #4527d1;
+  --cal-accent-soft: #eafdeb;
+  --cal-accent-border: #d9cdfb;
+  --cal-accent-glow: rgba(91, 61, 240, 0.35);
+
+  --cal-shadow-card: 0 1px 2px rgba(36, 28, 15, .04), 0 16px 34px -18px rgba(201, 130, 15, .26);
+  --cal-shadow-card-hover: 0 1px 2px rgba(36, 28, 15, .05), 0 26px 48px -18px rgba(201, 130, 15, .32);
+  --cal-shadow-pop: 0 20px 50px -12px rgba(36, 28, 15, .22);
+
+  --cal-r-xl: 24px;
+  --cal-r-lg: 18px;
+  --cal-r-md: 13px;
+  --cal-r-sm: 9px;
+
+  /* Statuts d'appel / qualification — repris à l'identique des
+     couleurs de .historiqueBadge (historiquesPage.css / --hist-*)
+     pour rester cohérent entre la page Historique et le Calendrier.
+     RAPPEL -> hist-info, PAS_INTÉRESSÉ -> hist-danger,
+     OCCUPÉ -> hist-warning, RÉPONDEUR -> hist-purple,
+     RÉUSSI/vente -> hist-success, SVI -> hist-cyan. */
+  --cal-rappel: var(--hist-info);
+  --cal-rappel-soft: var(--hist-info-soft);
+  --cal-rappel-border: var(--hist-info-border);
+
+  --cal-ni: var(--hist-danger);
+  --cal-ni-soft: var(--hist-danger-soft);
+  --cal-ni-border: var(--hist-danger-border);
+
+  --cal-occupe: var(--hist-warning);
+  --cal-occupe-soft: var(--hist-warning-soft);
+  --cal-occupe-border: var(--hist-warning-border);
+
+  --cal-repondeur: var(--hist-purple);
+  --cal-repondeur-soft: var(--hist-purple-soft);
+  --cal-repondeur-border: var(--hist-purple-border);
+
+  --cal-sale: var(--hist-success);
+  --cal-sale-soft: var(--hist-success-soft);
+  --cal-sale-border: var(--hist-success-border);
+
+  --cal-svi: var(--hist-cyan);
+  --cal-svi-soft: var(--hist-cyan-soft);
+  --cal-svi-border: var(--hist-cyan-border);
+
+  /* Statut neutre ("non confirmé", "répondeur AMD", ...) — repris de
+     --hist-gray, pour rester distinct de OCCUPÉ (désormais ambre). */
+  --cal-gray: var(--hist-gray);
+  --cal-gray-soft: var(--hist-gray-soft);
+  --cal-gray-border: var(--hist-gray-border);
+
+  /* Sources d'appel */
+  --cal-source-auto: #6b6355;
+  --cal-source-auto-soft: #f1eee6;
+  --cal-source-manuel: #b45309;
+  --cal-source-manuel-soft: #fef3c7;
+  --cal-source-crm: #7c3aed;
+  --cal-source-crm-soft: #ede9fe;
+  --cal-crm-border: rgba(124, 58, 237, .28);
+
+  /* Statuts de planification (rappels programmés) */
+  --cal-pending: var(--cal-rappel);
+  --cal-pending-soft: var(--cal-rappel-soft);
+  --cal-running: var(--cal-repondeur);
+  --cal-running-soft: var(--cal-repondeur-soft);
+  --cal-done: var(--cal-sale);
+  --cal-done-soft: var(--cal-sale-soft);
+  --cal-failed: var(--cal-ni);
+  --cal-failed-soft: var(--cal-ni-soft);
+
+  /* ================================================================
+     LOGIN — porte d'entrée de l'admin
+     Le vert reste la couleur signature (--primary / --gradient-primary,
+     déjà utilisés partout ailleurs dans l'app pour les actions
+     principales) : ce thème ne fait qu'habiller ce même vert dans un
+     panneau immersif, plus profond, réservé à l'écran de connexion.
+     N'affecte que les composants préfixés .login*.
+     ================================================================ */
+  --login-font-display: 'Space Grotesk', var(--heading);
+  --login-font-mono: 'JetBrains Mono', var(--mono);
+
+  --login-page-bg: radial-gradient(circle at 15% 20%, #eef8f0 0%, transparent 45%), linear-gradient(180deg, #f4f8f5 0%, #eef3ef 100%);
+
+  --login-panel-grad: linear-gradient(160deg, #0d2417 0%, #144a2c 40%, #1e6d3c 72%, #2f8f57 100%);
+  --login-panel-glow-a: rgba(76, 175, 80, 0.45);
+  --login-panel-glow-b: rgba(154, 202, 160, 0.35);
+  --login-panel-ink: #f3faf4;
+  --login-panel-ink-soft: rgba(243, 250, 244, 0.72);
+  --login-panel-border: rgba(255, 255, 255, 0.16);
+  --login-panel-chip-bg: rgba(255, 255, 255, 0.09);
+  --login-panel-chip-border: rgba(255, 255, 255, 0.16);
+
+  --login-surface: #ffffff;
+  --login-surface-soft: #f6faf7;
+  --login-border: #e6ede8;
+  --login-ink: var(--text-h);
+  --login-ink-soft: var(--muted);
+
+  --login-accent: var(--primary);
+  --login-accent-dark: var(--primary-dark);
+  --login-accent-soft: var(--primary-soft);
+  --login-accent-border: var(--principale-border);
+
+  --login-shadow-card: 0 30px 80px -24px rgba(15, 42, 28, 0.35), 0 10px 30px rgba(15, 23, 42, 0.06);
+  --login-shadow-focus: 0 0 0 4px rgba(76, 175, 80, 0.16);
+
+  --login-r-xl: 28px;
+  --login-r-lg: 18px;
+  --login-r-md: 13px;
+  --login-r-sm: 9px;
+
+
+
+  --mail-font-display: var(--camp-font-display);
+  --mail-font-mono: var(--camp-font-mono);
+
+  --mail-overlay: rgba(23, 20, 31, 0.5);
+  --mail-surface: var(--camp-surface);
+  --mail-surface-soft: var(--camp-surface-soft);
+  --mail-border: var(--camp-border);
+  --mail-border-soft: var(--camp-border-soft);
+  --mail-paper: #fffefb;
+
+  --mail-ink: var(--camp-ink);
+  --mail-ink-soft: var(--camp-ink-soft);
+
+  --mail-accent: var(--camp-signal);
+  --mail-accent-dark: var(--camp-signal-dark);
+  --mail-accent-soft: var(--camp-signal-soft);
+  --mail-accent-border: var(--camp-signal-border);
+
+  --mail-success: var(--camp-live);
+  --mail-success-dark: var(--camp-live-dark);
+  --mail-success-soft: var(--camp-live-soft);
+  --mail-success-border: var(--camp-live-border);
+
+  --mail-warn: var(--camp-warm);
+  --mail-warn-dark: var(--camp-warm-dark);
+  --mail-warn-soft: var(--camp-warm-soft);
+  --mail-warn-border: var(--camp-warm-border);
+
+  --mail-danger: var(--camp-danger);
+  --mail-danger-dark: var(--camp-danger-dark);
+  --mail-danger-soft: var(--camp-danger-soft);
+  --mail-danger-border: var(--camp-danger-border);
+
+  --mail-stopped: var(--camp-stopped);
+  --mail-stopped-soft: var(--camp-stopped-soft);
+  --mail-stopped-border: var(--camp-stopped-border);
+
+  --mail-shadow-card: var(--camp-shadow-card);
+  --mail-shadow-card-hover: var(--camp-shadow-card-hover);
+  --mail-shadow-pop: var(--camp-shadow-pop);
+
+  --mail-r-xl: var(--camp-r-xl);
+  --mail-r-lg: var(--camp-r-lg);
+  --mail-r-md: var(--camp-r-md);
+  --mail-r-sm: var(--camp-r-sm);
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
@@ -203,10 +611,6 @@ body {
   font-size: 14px;
 }
 
-/* .ficheCheckItem{
-  margin-left: 5px;
-} */
-
 .formGroup input,
 .formGroup select,
 .formGroup textarea {
@@ -225,7 +629,6 @@ body {
 .formGroup select:focus,
 .formGroup textarea:focus {
   border-color: 1px solid var(--border-input);
-  /* box-shadow: 0 0 1px 1px var(--primary); */
   background: var(--white-principale);
 }
 
@@ -370,7 +773,6 @@ body {
   position: relative;
 }
 
-/* spinner déjà existant — à ajouter si pas encore présent */
 .loadingSpinner {
   display: inline-block;
   width: 16px;
@@ -385,5 +787,17 @@ body {
 @keyframes spinnerRotate {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

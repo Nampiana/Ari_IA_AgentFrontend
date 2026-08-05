@@ -16,6 +16,7 @@ export default function ListsPage({ showToast }) {
     deleteFiche,
   } = useLists();
 
+  const [refreshing, setRefreshing] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [lists, setLists] = useState([]);
   const [selectedList, setSelectedList] = useState(null);
@@ -298,6 +299,43 @@ export default function ListsPage({ showToast }) {
     return { called, notCalled, total: fiches.length };
   }, [fiches]);
 
+  const totalFichesGlobal = useMemo(
+    () => lists.reduce((sum, l) => sum + (l.totalFiches || 0), 0),
+    [lists],
+  );
+
+  // ── Fiches restant à appeler (whitelist + non appelées) ────────────────────
+  // Tolère plusieurs noms de champs selon ce que renvoie l'API (getLists) :
+  // le back peut exposer directement le compte (totalToCall / remainingToCall /
+  // totalNotCalled), ou seulement totalCalled (+ totalBlackList en option),
+  // auquel cas on le déduit. Si rien n'est disponible, on affiche "—".
+  const getRemainingToCall = (list) => {
+    if (list.totalToCall != null) return list.totalToCall;
+    if (list.remainingToCall != null) return list.remainingToCall;
+    if (list.totalNotCalled != null) return list.totalNotCalled;
+
+    if (list.totalFiches != null && list.totalCalled != null) {
+      const blacklisted = list.totalBlackList ?? 0;
+      return Math.max(list.totalFiches - list.totalCalled - blacklisted, 0);
+    }
+
+    return null;
+  };
+
+  const totalRemainingGlobal = useMemo(() => {
+    const values = lists.map(getRemainingToCall).filter((v) => v != null);
+    if (!values.length) return null;
+    return values.reduce((sum, v) => sum + v, 0);
+  }, [lists]);
+
+  const getInitials = (name) =>
+    String(name || "")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join("") || "L";
+
   const handleUpdateName = async () => {
     if (!editList || !newName.trim()) {
       return showToast("Nom invalide", "warning");
@@ -475,713 +513,574 @@ export default function ListsPage({ showToast }) {
     { key: "commentaire", label: "Commentaire" },
   ];
 
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await fetchLists();
+      if (selectedList) {
+        await fetchFiches(selectedList._id, fichePage, ficheLimit);
+      }
+      showToast("Liste actualisée", "success");
+    } catch (err) {
+      showToast("Erreur lors de l'actualisation", "danger");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="listsPage">
       <HeaderBar />
 
-      <div className="agentsContainer">
-        <div className="agentsTopBar">
-          <div>
-            <h1>Gestion des listes</h1>
-            <p>Liste des fiches clients</p>
+      <div className="listsContainer">
+        {/* ---------------------------------------------------------- HERO */}
+        <section className="listsHero">
+          <div className="listsHero__text">
+            <span className="listsHero__eyebrow">
+              <span className="listsHero__dot" />
+              Répertoires d'appel
+            </span>
+            <h1>Listes &amp; fiches</h1>
+            <p>
+              Importez vos contacts, organisez vos répertoires et suivez
+              l'avancement des appels de vos campagnes.
+            </p>
           </div>
 
-          <button className="btnPrimary" onClick={openImportModal}>
+          <div className="listsHero__stats">
+            <div className="listStat">
+              <span className="listStat__value">{lists.length}</span>
+              <span className="listStat__label">Listes</span>
+            </div>
+            <div className="listStat">
+              <span className="listStat__value">{totalFichesGlobal}</span>
+              <span className="listStat__label">Fiches</span>
+            </div>
+            <div className="listStat listStat--callable">
+              <span className="listStat__value">
+                {totalRemainingGlobal ?? "—"}
+              </span>
+              <span className="listStat__label">À appeler</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="listBtnGhost listBtnRefresh"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Rafraîchir les listes"
+          >
+            <i
+              className={`bi bi-arrow-clockwise ${refreshing ? "listSpin" : ""}`}
+            />
+            {refreshing ? "Actualisation..." : "Rafraîchir"}
+          </button>
+
+          <button
+            type="button"
+            className="listBtnPrimary"
+            onClick={openImportModal}
+          >
+            <i className="bi bi-upload" />
             Import CSV
           </button>
-        </div>
+        </section>
 
+        {/* ---------------------------------------------------------- TABLE LISTES */}
         {loading ? (
-          <div className="loadingBox">Chargement...</div>
+          <div className="listState">
+            <i className="bi bi-hourglass-split" />
+            Chargement des listes...
+          </div>
+        ) : lists.length === 0 ? (
+          <div className="listState">
+            <i className="bi bi-inboxes" />
+            <p style={{ margin: 0, fontWeight: 600, color: "var(--list-ink)" }}>
+              Aucune liste trouvée.
+            </p>
+            <button
+              type="button"
+              className="listBtnPrimary"
+              onClick={openImportModal}
+            >
+              <i className="bi bi-upload" />
+              Importer une liste
+            </button>
+          </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Total fiches</th>
-                <th>Date instertion</th>
-                <th>Dernière modification</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lists.map((list) => (
-                <tr key={list._id}>
-                  <td>{list.nomFiche}</td>
-                  <td>{list.totalFiches ?? 0}</td>
-                  <td>{list.createdAt?.split("T")[0]}</td>
-                  <td>{list.updatedAt?.split("T")[0]}</td>
-                  <td>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => {
-                        setSelectedList(list);
-                      }}
-                    >
-                      Voir
-                    </button>
-
-                    <button
-                      className="btn btn-danger"
-                      style={{ marginLeft: "2px" }}
-                      onClick={() => handleDeleteClick(list)}
-                    >
-                      Supprimer
-                    </button>
-
-                    <button
-                      className="btn btn-warning"
-                      style={{ marginLeft: "5px" }}
-                      onClick={() => {
-                        setEditList(list);
-                        setNewName(list.nomFiche);
-                      }}
-                    >
-                      Modifier
-                    </button>
-                  </td>
+          <div className="listTableCard">
+            <table className="listTable">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Total fiches</th>
+                  <th>Reste à appeler</th>
+                  <th>Date insertion</th>
+                  <th>Dernière modification</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {lists.map((list) => (
+                  <tr key={list._id}>
+                    <td>
+                      <div className="listNameCell">
+                        <span className="listNameCell__avatar">
+                          {getInitials(list.nomFiche)}
+                        </span>
+                        {list.nomFiche}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="listCountPill">
+                        <i className="bi bi-person-lines-fill" />
+                        {list.totalFiches ?? 0}
+                      </span>
+                    </td>
+                    <td>
+                      {getRemainingToCall(list) != null ? (
+                        <span className="listCountPill listCountPill--callable">
+                          <i className="bi bi-telephone-outbound" />
+                          {getRemainingToCall(list)}
+                        </span>
+                      ) : (
+                        <span
+                          className="listCountPill listCountPill--muted"
+                          title="Donnée non fournie par l'API pour cette liste"
+                        >
+                          <i className="bi bi-dash-circle" />—
+                        </span>
+                      )}
+                    </td>
+                    <td className="listDateCell">
+                      {list.createdAt?.split("T")[0]}
+                    </td>
+                    <td className="listDateCell">
+                      {list.updatedAt?.split("T")[0]}
+                    </td>
+                    <td>
+                      <div className="listRowActions">
+                        <button
+                          className="listActionBtn listActionBtn--view"
+                          onClick={() => setSelectedList(list)}
+                        >
+                          <i className="bi bi-eye" /> Voir
+                        </button>
+
+                        <button
+                          className="listActionBtn listActionBtn--edit"
+                          onClick={() => {
+                            setEditList(list);
+                            setNewName(list.nomFiche);
+                          }}
+                        >
+                          <i className="bi bi-pencil" /> Modifier
+                        </button>
+
+                        <button
+                          className="listActionBtn listActionBtn--delete"
+                          onClick={() => handleDeleteClick(list)}
+                        >
+                          <i className="bi bi-trash" /> Supprimer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
+        {/* ---------------------------------------------------------- DÉTAILS */}
+        {/* Modale plein écran, volontairement non fermable au clic extérieur :
+            la liste des fiches est une zone de travail (édition, filtres...),
+            un clic accidentel en dehors ne doit pas faire perdre le contexte. */}
         {selectedList && (
-          <div className="listDetails">
-            <div className="listDetailsHeader">
-              <span>
-                <h2>Détails de la liste</h2>({selectedList?.nomFiche})
-              </span>
+          <div className="listDetailsOverlay">
+            <div className="listDetails">
+              <div className="listDetailsHeader">
+                <span>
+                  <h2>Détails de la liste</h2>
+                  <span>({selectedList?.nomFiche})</span>
+                </span>
 
-              <button
-                className="closeBtn"
-                onClick={() => setSelectedList(null)}
-              >
-                <i className="bi bi-x-lg"></i>
-              </button>
-            </div>
-            <div className="callStatsBar">
-              <div className="callStatItem callStatItem--total">
-                <span className="callStatNumber">{statsFiches.total}</span>
-                <span className="callStatLabel">Total</span>
-              </div>
-              <div className="callStatItem callStatItem--notCalled">
-                <span className="callStatNumber">{statsFiches.notCalled}</span>
-                <span className="callStatLabel">Non appelés</span>
-              </div>
-              <div className="callStatItem callStatItem--called">
-                <span className="callStatNumber">{statsFiches.called}</span>
-                <span className="callStatLabel">Appelés</span>
-              </div>
-            </div>
-            <div className="card shadow-sm mb-3">
-              <div
-                className="card-header d-flex justify-content-between align-items-center"
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowToolsPanel(!showToolsPanel)}
-              >
-                <div className="fw-bold">🔍 Filtres & colonnes</div>
+                <button
+                  className="listIconBtn"
+                  onClick={() =>
+                    fetchFiches(selectedList._id, fichePage, ficheLimit)
+                  }
+                  title="Rafraîchir les fiches"
+                  aria-label="Rafraîchir"
+                >
+                  <i className="bi bi-arrow-clockwise" />
+                </button>
 
-                <i
-                  className={`bi ${
-                    showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
-                  }`}
-                />
+                <button
+                  className="listModal__close"
+                  onClick={() => setSelectedList(null)}
+                  aria-label="Fermer"
+                >
+                  <i className="bi bi-x-lg"></i>
+                </button>
               </div>
 
-              {showToolsPanel && (
-                <div className="card-body py-2">
-                  {/* TOP ROW : SEARCH + RESET + TOGGLES */}
-                  <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-                    {/* SEARCH */}
-                    <div style={{ flex: 1, minWidth: "220px" }}>
+              <div className="callStatsBar">
+                <div className="callStatItem callStatItem--total">
+                  <span className="callStatNumber">{statsFiches.total}</span>
+                  <span className="callStatLabel">Total</span>
+                </div>
+                <div className="callStatItem callStatItem--notCalled">
+                  <span className="callStatNumber">
+                    {statsFiches.notCalled}
+                  </span>
+                  <span className="callStatLabel">Non appelés</span>
+                </div>
+                <div className="callStatItem callStatItem--called">
+                  <span className="callStatNumber">{statsFiches.called}</span>
+                  <span className="callStatLabel">Appelés</span>
+                </div>
+              </div>
+
+              <div className="listToolsCard">
+                <div
+                  className="listToolsCard__header"
+                  onClick={() => setShowToolsPanel(!showToolsPanel)}
+                >
+                  <span className="listToolsCard__title">
+                    <i className="bi bi-sliders" />
+                    Filtres &amp; colonnes
+                  </span>
+
+                  <i
+                    className={`bi ${
+                      showToolsPanel ? "bi-chevron-up" : "bi-chevron-down"
+                    }`}
+                  />
+                </div>
+
+                {showToolsPanel && (
+                  <div className="listToolsCard__body">
+                    {/* TOP ROW : SEARCH + RESET + TOGGLES */}
+                    <div className="listFilterRow">
                       <input
                         type="text"
-                        className="form-control form-control-sm"
+                        className="listSearchInput"
                         placeholder="🔍 Rechercher..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                       />
+
+                      <button
+                        className="listBtnGhost"
+                        onClick={() => {
+                          setSearch("");
+                          setFilterFields(["nom"]);
+                          setFilterBlackList("");
+                          setFilterCalled("");
+                        }}
+                      >
+                        Réinitialiser
+                      </button>
+
+                      <select
+                        className="listSelect"
+                        value={filterBlackList}
+                        onChange={(e) => setFilterBlackList(e.target.value)}
+                      >
+                        <option value="">Liste noire : tous</option>
+                        <option value="1">Whitelist</option>
+                        <option value="2">Blacklist</option>
+                      </select>
+
+                      <select
+                        className="listSelect"
+                        value={filterCalled}
+                        onChange={(e) => setFilterCalled(e.target.value)}
+                      >
+                        <option value="">Appel : tous</option>
+                        <option value="0">Non appelé</option>
+                        <option value="1">Appelé</option>
+                      </select>
                     </div>
 
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => {
-                        setSearch("");
-                        setFilterFields(["nom"]);
-                        setFilterBlackList("");
-                        setFilterCalled("");
-                      }}
-                    >
-                      Reset
-                    </button>
+                    {/* VISIBILITÉ DES COLONNES */}
+                    <div className="columnsPanel">
+                      <div className="columnsPanel__head">
+                        <div>
+                          <strong>Colonnes à afficher</strong>
+                          <br />
+                          <small>
+                            {visibleColumns.length} / {ALL_COLUMNS.length}{" "}
+                            colonnes visibles
+                          </small>
+                        </div>
 
-                    <select
-                      className="form-select form-select-sm"
-                      style={{ width: "200px" }}
-                      value={filterBlackList}
-                      onChange={(e) => setFilterBlackList(e.target.value)}
-                    >
-                      <option value="">Liste noire : tous</option>
-                      <option value="1">Whitelist</option>
-                      <option value="2">Blacklist</option>
-                    </select>
-
-                    <select
-                      className="form-select form-select-sm"
-                      style={{ width: "160px" }}
-                      value={filterCalled}
-                      onChange={(e) => setFilterCalled(e.target.value)}
-                    >
-                      <option value="">Appel : tous</option>
-                      <option value="0">Non appelé</option>
-                      <option value="1">Appelé</option>
-                    </select>
-                  </div>
-
-                  <div className="d-flex flex-wrap gap-3">
-                    {/* FILTER COLUMNS (compact pills style) */}
-                    {/* <div className="d-flex align-items-center gap-2 flex-wrap">
-                      <span className="text-muted small">Recherche dans :</span>
-
-                      <div className="d-flex flex-wrap gap-1">
-                        {ALL_COLUMNS.map((col) => (
-                          <label
-                            key={col}
-                            className={`badge rounded-pill border px-2 py-1 ${
-                              filterFields.includes(col)
-                                ? "bg-primary text-white"
-                                : "bg-light text-dark"
-                            }`}
-                            style={{ cursor: "pointer", fontSize: "11px" }}
-                          >
-                            <input
-                              type="checkbox"
-                              className="d-none"
-                              checked={filterFields.includes(col)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setFilterFields([...filterFields, col]);
-                                } else {
-                                  setFilterFields(
-                                    filterFields.filter((c) => c !== col),
-                                  );
-                                }
-                              }}
-                            />
-                            {col}
-                          </label>
-                        ))}
+                        <div className="columnsPanel__actions">
+                          <button type="button" onClick={showImportantColumns}>
+                            Importantes
+                          </button>
+                          <button type="button" onClick={showAllColumns}>
+                            Tout afficher
+                          </button>
+                          <button type="button" onClick={hideOptionalColumns}>
+                            Minimal
+                          </button>
+                        </div>
                       </div>
-                    </div> */}
 
-                    {/* VISIBILITY (dropdown style compact) */}
-                    <div>
-                      <div className="columnsPanel">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <div>
-                            <div className="fw-semibold">
-                              Colonnes à afficher
-                            </div>
-                            <small className="text-muted">
-                              {visibleColumns.length} / {ALL_COLUMNS.length}{" "}
-                              colonnes visibles
-                            </small>
-                          </div>
+                      <div className="columnsCheckboxGrid">
+                        {ALL_COLUMNS.map((col) => {
+                          const checked = visibleColumns.includes(col);
 
-                          <div className="d-flex gap-2 flex-wrap">
-                            <button
-                              type="button"
-                              className="btn btn-outline-primary btn-sm"
-                              onClick={showImportantColumns}
+                          return (
+                            <label
+                              key={col}
+                              className={`columnCheckPill ${checked ? "columnCheckPill--active" : ""}`}
+                              htmlFor={`col-${col}`}
                             >
-                              Importantes
-                            </button>
-
-                            <button
-                              type="button"
-                              className="btn btn-outline-secondary btn-sm"
-                              onClick={showAllColumns}
-                            >
-                              Tout afficher
-                            </button>
-
-                            <button
-                              type="button"
-                              className="btn btn-outline-dark btn-sm"
-                              onClick={hideOptionalColumns}
-                            >
-                              Minimal
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="columnsCheckboxGrid">
-                          {ALL_COLUMNS.map((col) => {
-                            const checked = visibleColumns.includes(col);
-
-                            return (
-                              <label
-                                key={col}
-                                className={`columnCheckPill ${checked ? "columnCheckPill--active" : ""}`}
-                                htmlFor={`col-${col}`}
-                              >
-                                <input
-                                  id={`col-${col}`}
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => toggleColumn(col)}
-                                />
-
-                                <span>{COLUMN_LABELS[col] || col}</span>
-                              </label>
-                            );
-                          })}
-                        </div>
+                              <input
+                                id={`col-${col}`}
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleColumn(col)}
+                              />
+                              <span>{COLUMN_LABELS[col] || col}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            <div className="content_btn_saving">
-              <button
-                className="btn btn-success mb-2 ml-2"
-                onClick={() => setShowAddForm(true)}
-              >
-                + Ajouter une fiche
-              </button>
-
-              {Object.keys(dirtyFiches).length > 0 && (
-                <button
-                  className="btn btn-success mb-2"
-                  onClick={() => {
-                    saveAll();
-                  }}
-                  style={{ marginLeft: "2px" }}
-                >
-                  Enregistrer modifications
-                </button>
-              )}
-            </div>
-            {showAddForm && (
-              <div className="card shadow-sm mt-3 border-0">
-                <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">Ajouter une fiche</h5>
-
-                  <button
-                    className="btn btn-sm btn-light"
-                    onClick={() => setShowAddForm(false)}
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="card-body">
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label">Nom *</label>
-                      <input
-                        className="form-control"
-                        placeholder="Nom"
-                        value={newFiche.nom}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, nom: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Nom responsable</label>
-                      <input
-                        className="form-control"
-                        placeholder="Nom responsable"
-                        value={newFiche.nomResponsable}
-                        onChange={(e) =>
-                          setNewFiche({
-                            ...newFiche,
-                            nomResponsable: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">
-                        Téléphone responsable
-                      </label>
-                      <input
-                        className="form-control"
-                        placeholder="Téléphone responsable"
-                        value={newFiche.phoneResponsable}
-                        onChange={(e) =>
-                          setNewFiche({
-                            ...newFiche,
-                            phoneResponsable: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Téléphone *</label>
-                      <input
-                        className="form-control"
-                        placeholder="Téléphone"
-                        value={newFiche.phone}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, phone: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Téléphone 2</label>
-                      <input
-                        className="form-control"
-                        placeholder="Téléphone 2"
-                        value={newFiche.phone2}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, phone2: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Email</label>
-                      <input
-                        className="form-control"
-                        placeholder="Email"
-                        value={newFiche.email}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, email: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Ville</label>
-                      <input
-                        className="form-control"
-                        placeholder="Ville"
-                        value={newFiche.ville}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, ville: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Habitation</label>
-                      <input
-                        className="form-control"
-                        placeholder="Habitation"
-                        value={newFiche.habitation}
-                        onChange={(e) =>
-                          setNewFiche({
-                            ...newFiche,
-                            habitation: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Âge</label>
-                      <input
-                        className="form-control"
-                        placeholder="Âge"
-                        value={newFiche.age}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, age: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Effectif</label>
-                      <input
-                        className="form-control"
-                        placeholder="Effectif"
-                        value={newFiche.effectif}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, effectif: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Code postal</label>
-                      <input
-                        className="form-control"
-                        placeholder="Code postal"
-                        value={newFiche.codePostale}
-                        onChange={(e) =>
-                          setNewFiche({
-                            ...newFiche,
-                            codePostale: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Entreprise</label>
-                      <input
-                        className="form-control"
-                        placeholder="Entreprise"
-                        value={newFiche.entreprise}
-                        onChange={(e) =>
-                          setNewFiche({
-                            ...newFiche,
-                            entreprise: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label">Pays</label>
-                      <input
-                        className="form-control"
-                        placeholder="Pays"
-                        value={newFiche.pays}
-                        onChange={(e) =>
-                          setNewFiche({ ...newFiche, pays: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="col-12">
-                      <label className="form-label">Commentaire</label>
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        placeholder="Commentaire"
-                        value={newFiche.commentaire}
-                        onChange={(e) =>
-                          setNewFiche({
-                            ...newFiche,
-                            commentaire: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="d-flex justify-content-end gap-2 mt-3">
-                    <button
-                      className="btn btn-outline-secondary"
-                      onClick={() => setShowAddForm(false)}
-                    >
-                      Annuler
-                    </button>
-
-                    <button
-                      className="btn btn-success"
-                      onClick={async () => {
-                        await addFiche(selectedList._id, newFiche);
-
-                        setNewFiche({
-                          nom: "",
-                          nomResponsable: "",
-                          phoneResponsable: "",
-                          phone: "",
-                          phone2: "",
-                          email: "",
-                          ville: "",
-                          habitation: "",
-                          age: "",
-                          effectif: "",
-                          codePostale: "",
-                          entreprise: "",
-                          pays: "",
-                          commentaire: "",
-                        });
-
-                        await fetchFiches(selectedList._id);
-                        await fetchLists();
-
-                        setShowAddForm(false);
-                      }}
-                    >
-                      Enregistrer
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
-            )}
 
-            {loadingFiche ? (
-              <p>Chargement...</p>
-            ) : (
-              <>
-                <div className="table-responsive">
-                  <table className="table fiche-table-fixed">
-                    <thead>
-                      <tr>
-                        {visibleColumns.map((col) => (
-                          <th key={col}>{COLUMN_LABELS[col] || col}</th>
-                        ))}
-                        <th>Action</th>
-                      </tr>
-                    </thead>
+              <div className="listFichesActions">
+                <button
+                  className="listBtnPrimary"
+                  onClick={() => setShowAddForm(true)}
+                >
+                  <i className="bi bi-plus-lg" />
+                  Ajouter une fiche
+                </button>
 
-                    <tbody>
-                      {fiches.map((row) => (
-                        <tr key={row._id}>
-                          {visibleColumns.map((key) => (
-                            <td
-                              key={key}
-                              onClick={() => {
-                                if (key === "phone") return;
+                {Object.keys(dirtyFiches).length > 0 && (
+                  <button className="listBtnSubmit" onClick={() => saveAll()}>
+                    <i className="bi bi-check2" /> Enregistrer les modifications
+                  </button>
+                )}
+              </div>
 
-                                setEditingCell({
-                                  id: row._id,
-                                  field: key,
-                                  value: row[key],
-                                });
-                              }}
-                              style={{
-                                cursor: key === "phone" ? "default" : "pointer",
-                              }}
-                            >
-                              {editingCell?.id === row._id &&
-                              editingCell?.field === key ? (
-                                <>
-                                  {key === "isAlreadyCalled" ||
-                                  key === "isBlackList" ||
-                                  key === "emailEnvoye" ? (
-                                    <select
-                                      style={{
-                                        width: "100%",
-                                        minWidth: "120px",
-                                        padding: "2px 24px 2px 6px",
-                                        appearance: "auto",
-                                      }}
-                                      value={String(
-                                        dirtyFiches[row._id]?.[key] ??
-                                          row[key] ??
-                                          (key === "isBlackList" ? 1 : 0),
-                                      )}
-                                      onChange={(e) => {
-                                        const value = Number(e.target.value);
+              {loadingFiche ? (
+                <div className="listState">
+                  <i className="bi bi-hourglass-split" />
+                  Chargement des fiches...
+                </div>
+              ) : (
+                <>
+                  <div className="table-responsive">
+                    <table className="fiche-table-fixed">
+                      <thead>
+                        <tr>
+                          {visibleColumns.map((col) => (
+                            <th key={col}>{COLUMN_LABELS[col] || col}</th>
+                          ))}
+                          <th>Action</th>
+                        </tr>
+                      </thead>
 
-                                        setDirtyFiches((prev) => ({
-                                          ...prev,
-                                          [row._id]: {
-                                            ...prev[row._id],
-                                            [key]: value,
-                                          },
-                                        }));
+                      <tbody>
+                        {fiches.map((row) => (
+                          <tr key={row._id}>
+                            {visibleColumns.map((key) => (
+                              <td
+                                key={key}
+                                onClick={() => {
+                                  if (key === "phone") return;
 
-                                        setEditingCell({
-                                          id: row._id,
-                                          field: key,
-                                          value,
-                                        });
-                                      }}
-                                    >
-                                      {key === "isAlreadyCalled" ? (
-                                        <>
-                                          <option value="0">Non appelé</option>
-                                          <option value="1">Appelé</option>
-                                        </>
-                                      ) : key === "isBlackList" ? (
-                                        <>
-                                          <option value="1">Whitelist</option>
-                                          <option value="2">Blacklist</option>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <option value="0">Non envoyé</option>
-                                          <option value="1">Envoyé</option>
-                                        </>
-                                      )}
-                                    </select>
-                                  ) : (
-                                    <input
-                                      style={{ width: "100%" }}
-                                      type={
-                                        key == "isAlreadyCalled"
-                                          ? "number"
-                                          : "text"
-                                      }
-                                      value={
-                                        dirtyFiches[row._id]?.[key] ??
-                                        editingCell?.value ??
-                                        row[key]
-                                      }
-                                      onChange={(e) => {
-                                        const value = e.target.value;
+                                  setEditingCell({
+                                    id: row._id,
+                                    field: key,
+                                    value: row[key],
+                                  });
+                                }}
+                                style={{
+                                  cursor:
+                                    key === "phone" ? "default" : "pointer",
+                                }}
+                              >
+                                {editingCell?.id === row._id &&
+                                editingCell?.field === key ? (
+                                  <>
+                                    {key === "isAlreadyCalled" ||
+                                    key === "isBlackList" ||
+                                    key === "emailEnvoye" ? (
+                                      <select
+                                        style={{
+                                          width: "100%",
+                                          minWidth: "120px",
+                                          padding: "6px 24px 6px 8px",
+                                          appearance: "auto",
+                                        }}
+                                        value={String(
+                                          dirtyFiches[row._id]?.[key] ??
+                                            row[key] ??
+                                            (key === "isBlackList" ? 1 : 0),
+                                        )}
+                                        onChange={(e) => {
+                                          const value = Number(e.target.value);
 
-                                        setDirtyFiches((prev) => ({
-                                          ...prev,
-                                          [row._id]: {
-                                            ...prev[row._id],
-                                            [key]: value,
-                                          },
-                                        }));
+                                          setDirtyFiches((prev) => ({
+                                            ...prev,
+                                            [row._id]: {
+                                              ...prev[row._id],
+                                              [key]: value,
+                                            },
+                                          }));
 
-                                        setEditingCell({
-                                          id: row._id,
-                                          field: key,
-                                          value,
-                                        });
-                                      }}
-                                    />
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  {key === "isAlreadyCalled"
-                                    ? (dirtyFiches[row._id]?.[key] ??
-                                        row[key]) == 1
-                                      ? "Appelé"
-                                      : "Non appelé"
-                                    : key === "isBlackList"
-                                      ? (dirtyFiches[row._id]?.[key] ??
+                                          setEditingCell({
+                                            id: row._id,
+                                            field: key,
+                                            value,
+                                          });
+                                        }}
+                                      >
+                                        {key === "isAlreadyCalled" ? (
+                                          <>
+                                            <option value="0">
+                                              Non appelé
+                                            </option>
+                                            <option value="1">Appelé</option>
+                                          </>
+                                        ) : key === "isBlackList" ? (
+                                          <>
+                                            <option value="1">Whitelist</option>
+                                            <option value="2">Blacklist</option>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <option value="0">
+                                              Non envoyé
+                                            </option>
+                                            <option value="1">Envoyé</option>
+                                          </>
+                                        )}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        style={{ width: "100%" }}
+                                        type={
+                                          key == "isAlreadyCalled"
+                                            ? "number"
+                                            : "text"
+                                        }
+                                        value={
+                                          dirtyFiches[row._id]?.[key] ??
+                                          editingCell?.value ??
+                                          row[key]
+                                        }
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+
+                                          setDirtyFiches((prev) => ({
+                                            ...prev,
+                                            [row._id]: {
+                                              ...prev[row._id],
+                                              [key]: value,
+                                            },
+                                          }));
+
+                                          setEditingCell({
+                                            id: row._id,
+                                            field: key,
+                                            value,
+                                          });
+                                        }}
+                                      />
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {key === "isAlreadyCalled" ? (
+                                      <span
+                                        className={`ficheStatusTag ${
+                                          (dirtyFiches[row._id]?.[key] ??
+                                            row[key]) == 1
+                                            ? "ficheStatusTag--called"
+                                            : "ficheStatusTag--notCalled"
+                                        }`}
+                                      >
+                                        {(dirtyFiches[row._id]?.[key] ??
+                                          row[key]) == 1
+                                          ? "Appelé"
+                                          : "Non appelé"}
+                                      </span>
+                                    ) : key === "isBlackList" ? (
+                                      <span
+                                        className={`ficheStatusTag ${
+                                          (dirtyFiches[row._id]?.[key] ??
+                                            row[key] ??
+                                            1) == 2
+                                            ? "ficheStatusTag--black"
+                                            : "ficheStatusTag--white"
+                                        }`}
+                                      >
+                                        {(dirtyFiches[row._id]?.[key] ??
                                           row[key] ??
                                           1) == 2
-                                        ? "Blacklist"
-                                        : "Whitelist"
-                                      : key === "emailEnvoye"
-                                        ? (dirtyFiches[row._id]?.[key] ??
+                                          ? "Blacklist"
+                                          : "Whitelist"}
+                                      </span>
+                                    ) : key === "emailEnvoye" ? (
+                                      <span
+                                        className={`ficheStatusTag ${
+                                          (dirtyFiches[row._id]?.[key] ??
                                             row[key] ??
                                             0) == 1
+                                            ? "ficheStatusTag--sent"
+                                            : "ficheStatusTag--notSent"
+                                        }`}
+                                      >
+                                        {(dirtyFiches[row._id]?.[key] ??
+                                          row[key] ??
+                                          0) == 1
                                           ? "Envoyé"
-                                          : "Non envoyé"
-                                        : (dirtyFiches[row._id]?.[key] ??
-                                          row[key])}
-                                </>
-                              )}
-                            </td>
-                          ))}
+                                          : "Non envoyé"}
+                                      </span>
+                                    ) : (
+                                      (dirtyFiches[row._id]?.[key] ?? row[key])
+                                    )}
+                                  </>
+                                )}
+                              </td>
+                            ))}
 
-                          <td>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() =>
-                                setDeleteFicheModal({
-                                  open: true,
-                                  fiche: row,
-                                })
-                              }
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div className="d-flex justify-content-between align-items-center mt-3">
+                            <td>
+                              <button
+                                className="listIconBtn"
+                                onClick={() =>
+                                  setDeleteFicheModal({
+                                    open: true,
+                                    fiche: row,
+                                  })
+                                }
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="listPagination">
                     <div>Total : {ficheTotalResults} fiches</div>
 
-                    <div className="d-flex align-items-center gap-2">
+                    <div className="listPagination__controls">
                       <button
-                        className="btn btn-secondary btn-sm"
+                        className="listPagBtn"
                         disabled={fichePage <= 1}
                         onClick={() =>
                           fetchFiches(
@@ -1199,7 +1098,7 @@ export default function ListsPage({ showToast }) {
                       </span>
 
                       <button
-                        className="btn btn-secondary btn-sm"
+                        className="listPagBtn"
                         disabled={fichePage >= ficheTotalPages}
                         onClick={() =>
                           fetchFiches(
@@ -1213,8 +1112,7 @@ export default function ListsPage({ showToast }) {
                       </button>
 
                       <select
-                        className="form-select form-select-sm"
-                        style={{ width: "90px" }}
+                        className="listSelect"
                         value={ficheLimit}
                         onChange={(e) => {
                           const newLimit = Number(e.target.value);
@@ -1229,146 +1127,454 @@ export default function ListsPage({ showToast }) {
                       </select>
                     </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
 
-      {modalOpen && (
-        <div className="compactStyles_overlay">
-          <div className="compactStyles_modal">
-            <div className="compactStyles_modalHeader">
-              <h2 className="compactStyles_modalTitle">Importer CSV</h2>
-
+      {/* ---------------------------------------------------------- MODALE AJOUT FICHE */}
+      {showAddForm && (
+        <div className="listModalOverlay" onClick={() => setShowAddForm(false)}>
+          <div
+            className="listModal listModal--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="listModal__header">
+              <div className="listModal__headerLeft">
+                <span className="listModal__badge">
+                  <i className="bi bi-person-plus" />
+                </span>
+                <div>
+                  <h2>Ajouter une fiche</h2>
+                  <p>{selectedList?.nomFiche}</p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => setModalOpen(false)}
-                className="compactStyles_closeButton"
+                className="listModal__close"
+                onClick={() => setShowAddForm(false)}
+                aria-label="Fermer"
               >
                 <i className="bi bi-x-lg" />
               </button>
+            </header>
+
+            <div className="listModal__body">
+              <div className="listFormGrid">
+                <div className="listFieldBlock">
+                  <label className="listLabel">Nom *</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Nom"
+                    value={newFiche.nom}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, nom: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Nom responsable</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Nom responsable"
+                    value={newFiche.nomResponsable}
+                    onChange={(e) =>
+                      setNewFiche({
+                        ...newFiche,
+                        nomResponsable: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Téléphone responsable</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Téléphone responsable"
+                    value={newFiche.phoneResponsable}
+                    onChange={(e) =>
+                      setNewFiche({
+                        ...newFiche,
+                        phoneResponsable: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Téléphone *</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Téléphone"
+                    value={newFiche.phone}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, phone: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Téléphone 2</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Téléphone 2"
+                    value={newFiche.phone2}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, phone2: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Email</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Email"
+                    value={newFiche.email}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, email: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Ville</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Ville"
+                    value={newFiche.ville}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, ville: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Habitation</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Habitation"
+                    value={newFiche.habitation}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, habitation: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Âge</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Âge"
+                    value={newFiche.age}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, age: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Effectif</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Effectif"
+                    value={newFiche.effectif}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, effectif: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Code postal</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Code postal"
+                    value={newFiche.codePostale}
+                    onChange={(e) =>
+                      setNewFiche({
+                        ...newFiche,
+                        codePostale: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Entreprise</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Entreprise"
+                    value={newFiche.entreprise}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, entreprise: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock">
+                  <label className="listLabel">Pays</label>
+                  <input
+                    className="listTextInput"
+                    placeholder="Pays"
+                    value={newFiche.pays}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, pays: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="listFieldBlock listFormGrid--full">
+                  <label className="listLabel">Commentaire</label>
+                  <textarea
+                    className="listTextarea"
+                    rows="3"
+                    placeholder="Commentaire"
+                    value={newFiche.commentaire}
+                    onChange={(e) =>
+                      setNewFiche({ ...newFiche, commentaire: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="compactStyles_fieldBlock">
-              <label className="compactStyles_label">Nom de la fiche *</label>
-              <input
-                type="text"
-                value={listName}
-                onChange={(e) => setListName(e.target.value)}
-                placeholder="Ex: Prospects Paris Avril"
-                className="compactStyles_textInput"
-              />
-            </div>
+            <footer className="listModal__footer">
+              <button
+                className="listBtnGhost"
+                onClick={() => setShowAddForm(false)}
+              >
+                Annuler
+              </button>
 
-            <div className="compactStyles_fieldBlock">
-              <label className="compactStyles_label">Fichier CSV</label>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFile}
-                className="compactStyles_fileInput"
-              />
+              <button
+                className="listBtnSubmit"
+                onClick={async () => {
+                  await addFiche(selectedList._id, newFiche);
+
+                  setNewFiche({
+                    nom: "",
+                    nomResponsable: "",
+                    phoneResponsable: "",
+                    phone: "",
+                    phone2: "",
+                    email: "",
+                    ville: "",
+                    habitation: "",
+                    age: "",
+                    effectif: "",
+                    codePostale: "",
+                    entreprise: "",
+                    pays: "",
+                    commentaire: "",
+                  });
+
+                  await fetchFiches(selectedList._id);
+                  await fetchLists();
+
+                  setShowAddForm(false);
+                }}
+              >
+                Enregistrer
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------------------------------- MODALE IMPORT CSV */}
+      {modalOpen && (
+        <div className="listModalOverlay" onClick={() => setModalOpen(false)}>
+          <div
+            className="listModal listModal--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="listModal__header">
+              <div className="listModal__headerLeft">
+                <span className="listModal__badge">
+                  <i className="bi bi-filetype-csv" />
+                </span>
+                <div>
+                  <h2>Importer un CSV</h2>
+                  <p>Créez une nouvelle liste de fiches</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="listModal__close"
+                aria-label="Fermer"
+              >
+                <i className="bi bi-x-lg" />
+              </button>
+            </header>
+
+            <div className="listModal__body">
+              <div className="listFieldBlock">
+                <label className="listLabel">Nom de la fiche *</label>
+                <input
+                  type="text"
+                  value={listName}
+                  onChange={(e) => setListName(e.target.value)}
+                  placeholder="Ex: Prospects Paris Avril"
+                  className="listTextInput"
+                />
+              </div>
+
+              <div className="listFieldBlock">
+                <label className="listLabel">Fichier CSV</label>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFile}
+                  className="listFileInput"
+                />
+                {csvData.length > 0 && (
+                  <span className="listImportPreview">
+                    <i className="bi bi-check-circle-fill" />
+                    {csvData.length} lignes détectées · {columns.length}{" "}
+                    colonnes
+                  </span>
+                )}
+              </div>
+
+              {columns.length > 0 && (
+                <>
+                  <h4 className="listMappingTitle">
+                    <i className="bi bi-diagram-3" />
+                    Mapping des colonnes
+                  </h4>
+
+                  <div className="listMappingGrid">
+                    {mappingFields.map((field) => (
+                      <div key={field.key} className="listMappingItem">
+                        <label className="listLabel">{field.label}</label>
+
+                        <select
+                          value={mapping[field.key]}
+                          onChange={(e) => {
+                            setMapping({
+                              ...mapping,
+                              [field.key]: e.target.value,
+                            });
+                          }}
+                          className="listSelect"
+                        >
+                          <option value="">Choisir une colonne</option>
+                          {columns.map((col) => (
+                            <option key={col} value={col}>
+                              {col}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {columns.length > 0 && (
-              <>
-                <h4 className="compactStyles_mappingTitle">
-                  Mapping des colonnes
-                </h4>
+              <footer className="listModal__footer">
+                <button
+                  className="listBtnGhost"
+                  onClick={() => setModalOpen(false)}
+                >
+                  Annuler
+                </button>
 
-                <div className="compactStyles_mappingGrid">
-                  {mappingFields.map((field) => (
-                    <div key={field.key} className="compactStyles_mappingItem">
-                      <label className="compactStyles_label">
-                        {field.label}
-                      </label>
-
-                      <select
-                        value={mapping[field.key]}
-                        onChange={(e) => {
-                          setMapping({
-                            ...mapping,
-                            [field.key]: e.target.value,
-                          });
-                        }}
-                        className="compactStyles_select"
-                      >
-                        <option value="">Choisir une colonne</option>
-                        {columns.map((col) => (
-                          <option key={col} value={col}>
-                            {col}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                </div>
-
-                {/*Ajout un loader pendant le traitement*/}
-                <div className="compactStyles_actionRow">
-                  <button
-                    onClick={handleCreate}
-                    className="compactStyles_createButton"
-                    disabled={loadingCreate}
-                  >
-                    {loadingCreate ? "Création..." : "Créer la liste"}
-                  </button>
-                </div>
-              </>
+                <button
+                  onClick={handleCreate}
+                  className="listBtnSubmit"
+                  disabled={loadingCreate}
+                >
+                  {loadingCreate ? (
+                    <>
+                      <span className="loadingSpinner" /> Création...
+                    </>
+                  ) : (
+                    "Créer la liste"
+                  )}
+                </button>
+              </footer>
             )}
           </div>
         </div>
       )}
 
+      {/* ---------------------------------------------------------- MODALE MODIFIER NOM */}
       {editList && (
-        <div className="modalOverlay">
-          <div className="insertFicheModal">
-            <div className="modalInsertFicheHeader">
-              <h2>Modifier le nom</h2>
-
-              <button className="closeBtn" onClick={() => setEditList(null)}>
+        <div className="listModalOverlay" onClick={() => setEditList(null)}>
+          <div className="listModal" onClick={(e) => e.stopPropagation()}>
+            <header className="listModal__header">
+              <div className="listModal__headerLeft">
+                <span className="listModal__badge">
+                  <i className="bi bi-pencil-square" />
+                </span>
+                <div>
+                  <h2>Modifier le nom</h2>
+                  <p>{editList?.nomFiche}</p>
+                </div>
+              </div>
+              <button
+                className="listModal__close"
+                onClick={() => setEditList(null)}
+                aria-label="Fermer"
+              >
                 <i className="bi bi-x-lg" />
               </button>
+            </header>
+
+            <div className="listModal__body">
+              <div className="listFieldBlock">
+                <label className="listLabel">Nom de la fiche</label>
+                <input
+                  className="listTextInput"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Nom de la fiche"
+                />
+              </div>
             </div>
 
-            <input
-              className="form-control"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Nom de la fiche"
-            />
-
-            <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
+            <footer className="listModal__footer">
               <button
-                className="btn btn-secondary"
+                className="listBtnGhost"
                 onClick={() => setEditList(null)}
               >
                 Annuler
               </button>
 
-              <button className="btn btn-primary" onClick={handleUpdateName}>
+              <button className="listBtnSubmit" onClick={handleUpdateName}>
                 Sauvegarder
               </button>
-            </div>
+            </footer>
           </div>
         </div>
       )}
 
+      {/* ---------------------------------------------------------- MODALE SUPPRIMER LISTE */}
       {deleteModal.open && (
-        <div className="deleteModalOverlay">
-          <div className="deleteModal">
+        <div className="listModalOverlay">
+          <div className="listDeleteModal">
+            <span className="listDeleteModal__icon">
+              <i className="bi bi-exclamation-triangle" />
+            </span>
             <h3>Supprimer la liste</h3>
 
             <p>
               Voulez-vous vraiment supprimer{" "}
               <strong>{deleteModal.list?.nomFiche || "cette liste"}</strong> ?
+              Cette action est irréversible.
             </p>
 
-            <div className="deleteActions">
+            <div className="listDeleteModal__actions">
               <button
-                className="btnGhost"
+                className="listBtnGhost"
                 onClick={() =>
                   setDeleteModal({
                     open: false,
@@ -1382,7 +1588,7 @@ export default function ListsPage({ showToast }) {
               </button>
 
               <button
-                className="btnDelete"
+                className="listBtnDanger"
                 onClick={confirmDelete}
                 disabled={deleteModal.loading}
               >
@@ -1393,16 +1599,20 @@ export default function ListsPage({ showToast }) {
         </div>
       )}
 
+      {/* ---------------------------------------------------------- MODALE SUPPRIMER FICHE */}
       {deleteFicheModal.open && (
-        <div className="deleteModalOverlay">
-          <div className="deleteModal">
+        <div className="listModalOverlay">
+          <div className="listDeleteModal">
+            <span className="listDeleteModal__icon">
+              <i className="bi bi-exclamation-triangle" />
+            </span>
             <h3>Confirmation suppression</h3>
 
             <p>Voulez-vous supprimer cette fiche ?</p>
 
-            <div className="deleteActions">
+            <div className="listDeleteModal__actions">
               <button
-                className="btnGhost"
+                className="listBtnGhost"
                 onClick={() =>
                   setDeleteFicheModal({ open: false, fiche: null })
                 }
@@ -1411,7 +1621,7 @@ export default function ListsPage({ showToast }) {
               </button>
 
               <button
-                className="btnDelete"
+                className="listBtnDanger"
                 onClick={async () => {
                   await deleteFiche(
                     selectedList._id,

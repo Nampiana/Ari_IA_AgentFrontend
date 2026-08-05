@@ -1,4 +1,5 @@
 import React from "react";
+import "../../assets/css/HistoriqueDetailModal.css";
 
 const getStatusLabel = (status) => {
   const value = Number(status);
@@ -11,19 +12,37 @@ const getStatusLabel = (status) => {
   return "INCONNU";
 };
 
+// Couleurs pilotées par les tokens --hist-* (index.css), cohérentes
+// avec les badges de qualification de HistoriquesPage.
+const getStatusStyle = (status) => {
+  const value = Number(status);
+
+  switch (value) {
+    case 2:
+      return { color: "var(--hist-success)", bg: "var(--hist-success-soft)" };
+    case 3:
+      return { color: "var(--hist-info)", bg: "var(--hist-info-soft)" };
+    case 4:
+      return { color: "var(--hist-warning)", bg: "var(--hist-warning-soft)" };
+    case 1:
+      return { color: "var(--hist-danger)", bg: "var(--hist-danger-soft)" };
+    default:
+      return { color: "var(--hist-gray)", bg: "var(--hist-gray-soft)" };
+  }
+};
+
 const buildRecordUrl = (pathRecord) => {
-  console.log("buildRecordUrl called with pathRecord:", pathRecord);
   if (!pathRecord) return "";
 
   if (pathRecord.startsWith("http://") || pathRecord.startsWith("https://")) {
     return pathRecord;
   }
 
-  const base = (process.env.REACT_APP_HOST_API || "http://localhost:4000/api/v1/")
+  const base = (
+    process.env.REACT_APP_HOST_API || "http://localhost:4000/api/v1/"
+  )
     .replace("/api/v1/", "")
-    .replace(/\/$/, ""); 
-
- /* const cleanPath = String(pathRecord).replace(/\\/g, "/").replace(/^\/+/, "");*/
+    .replace(/\/$/, "");
 
   return `${base}/files/${pathRecord}`;
 };
@@ -35,24 +54,40 @@ const isSale = (status) => {
 export default function HistoriqueDetailModal({ open, historique, onClose }) {
   if (!open || !historique) return null;
   const ai = historique.aiResponse || {};
-  console.log("AI Response:", historique);
   const recordUrl = buildRecordUrl(historique.pathRecord);
+  const statusStyle = getStatusStyle(historique.status);
 
   return (
     <div className="historiqueModalOverlay" onClick={onClose}>
       <div className="historiqueModal" onClick={(e) => e.stopPropagation()}>
         <div className="historiqueModalHeader">
           <div>
-            <h3>Détail de l’historique</h3>
-            <p>Statut : {getStatusLabel(historique.status)}</p>
+            <h3>Détail de l'appel</h3>
+            <span
+              className="historiqueModalStatusBadge"
+              style={{ color: statusStyle.color, background: statusStyle.bg }}
+            >
+              <i
+                className="bi bi-record-circle-fill"
+                style={{ fontSize: "9px" }}
+              />
+              {getStatusLabel(historique.status)}
+            </span>
           </div>
 
-          <button className="historiqueCloseBtn" onClick={onClose}>
+          <button
+            className="historiqueCloseBtn"
+            onClick={onClose}
+            aria-label="Fermer"
+          >
             <i className="bi bi-x-lg" />
           </button>
         </div>
 
         <div className="historiqueModalBody">
+          <p className="historiqueSectionLabel">
+            <i className="bi bi-person-vcard" /> Informations de l'appel
+          </p>
           <div className="historiqueDetailGrid">
             <div className="historiqueDetailItem">
               <span>Nom</span>
@@ -61,7 +96,9 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
 
             <div className="historiqueDetailItem">
               <span>Numéro appelé</span>
-              <strong>{historique.fiche?.phone || historique.calledNumber || "-"}</strong>
+              <strong>
+                {historique.fiche?.phone || historique.calledNumber || "-"}
+              </strong>
             </div>
 
             <div className="historiqueDetailItem">
@@ -70,7 +107,7 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
             </div>
 
             <div className="historiqueDetailItem">
-              <span>Compagne</span>
+              <span>Campagne</span>
               <strong>{historique.campagneId?.nomCompagne || "-"}</strong>
             </div>
 
@@ -86,12 +123,16 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
 
             <div className="historiqueDetailItem">
               <span>Durée</span>
-              <strong>{historique.billsec ?? historique.callDuration ?? 0} sec</strong>
+              <strong>
+                {historique.billsec ?? historique.callDuration ?? 0} sec
+              </strong>
             </div>
 
             <div className="historiqueDetailItem">
               <span>Archive</span>
-              <strong>{historique.archive === 1 ? "Archivé" : "Non archivé"}</strong>
+              <strong>
+                {historique.archive === 1 ? "Archivé" : "Non archivé"}
+              </strong>
             </div>
           </div>
 
@@ -158,10 +199,13 @@ export default function HistoriqueDetailModal({ open, historique, onClose }) {
             {recordUrl ? (
               <audio controls className="historiqueModalAudio">
                 <source src={recordUrl} />
-                Votre navigateur ne supporte pas l’audio.
+                Votre navigateur ne supporte pas l'audio.
               </audio>
             ) : (
-              <p>Aucun fichier audio disponible.</p>
+              <p>
+                <i className="bi bi-volume-mute" />
+                Aucun fichier audio disponible.
+              </p>
             )}
           </div>
         </div>

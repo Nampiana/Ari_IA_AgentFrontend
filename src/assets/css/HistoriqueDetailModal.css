@@ -1,0 +1,297 @@
+/* ================================================================
+   MODAL DÉTAIL HISTORIQUE — fiche d'appel IA
+   Thème bleu --hist-*, cohérent avec AgentFormModal (indigo)
+   ================================================================ */
+
+.historiqueModalOverlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(19, 27, 46, 0.5) 0%, rgba(47, 111, 237, 0.35) 100%);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1200;
+    animation: histFadeIn 0.18s ease-out;
+}
+
+@keyframes histFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.historiqueModal {
+    width: min(920px, 100%);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--hist-surface);
+    border: 1px solid var(--hist-border);
+    border-radius: var(--hist-r-xl);
+    box-shadow: var(--hist-shadow-pop);
+    overflow: hidden;
+    animation: histPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes histPopIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ---------------------------------------------------------------
+   HEADER
+   --------------------------------------------------------------- */
+
+.historiqueModalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 26px;
+    border-bottom: 1px solid var(--hist-border-soft);
+    flex-shrink: 0;
+}
+
+.historiqueModalHeader>div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.historiqueModalHeader>div:first-child::before {
+    content: "\F42E";
+    font-family: "bootstrap-icons";
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--hist-r-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--hist-accent) 0%, var(--hist-accent-dark) 100%);
+    box-shadow: 0 8px 18px -6px rgba(47, 111, 237, 0.5);
+}
+
+.historiqueModalHeader h3 {
+    margin: 0;
+    font-family: var(--hist-font-display);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--hist-ink);
+    letter-spacing: -0.01em;
+}
+
+.historiqueModalHeader p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--hist-ink-soft);
+}
+
+/* Badge de statut dans le header, coloré dynamiquement via style inline */
+.historiqueModalStatusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.historiqueCloseBtn {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: var(--hist-surface-soft);
+    color: var(--hist-ink-soft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.historiqueCloseBtn:hover {
+    background: var(--hist-danger-soft);
+    color: var(--hist-danger);
+    transform: rotate(90deg);
+}
+
+/* ---------------------------------------------------------------
+   BODY
+   --------------------------------------------------------------- */
+
+.historiqueModalBody {
+    padding: 24px 26px 26px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.historiqueModalBody::-webkit-scrollbar {
+    width: 6px;
+}
+
+.historiqueModalBody::-webkit-scrollbar-thumb {
+    background: var(--hist-border);
+    border-radius: 999px;
+}
+
+.historiqueSectionLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--hist-ink-soft);
+    margin: 0 0 10px;
+}
+
+.historiqueSectionLabel i {
+    color: var(--hist-accent);
+}
+
+.historiqueDetailGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.historiqueDetailItem {
+    background: var(--hist-surface-soft);
+    border: 1px solid var(--hist-border-soft);
+    border-radius: var(--hist-r-md);
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.historiqueDetailItem span {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--hist-ink-soft);
+}
+
+.historiqueDetailItem strong {
+    color: var(--hist-ink);
+    font-size: 14px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.historiqueDetailItem.full {
+    grid-column: 1 / -1;
+}
+
+/* ---------------------------------------------------------------
+   SECTIONS (réponse IA / enregistrement)
+   --------------------------------------------------------------- */
+
+.historiqueResponseBox,
+.historiqueRecordBox {
+    margin-top: 22px;
+    background: var(--hist-surface);
+    border: 1px solid var(--hist-border-soft);
+    border-radius: var(--hist-r-lg);
+    padding: 18px;
+}
+
+.historiqueResponseBox h4,
+.historiqueRecordBox h4 {
+    margin: 0 0 14px;
+    font-family: var(--hist-font-display);
+    color: var(--hist-ink);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.historiqueResponseBox h4::before {
+    content: "\F287";
+    font-family: "bootstrap-icons";
+    color: var(--hist-accent);
+    font-size: 14px;
+}
+
+.historiqueRecordBox h4::before {
+    content: "\F5A0";
+    font-family: "bootstrap-icons";
+    color: var(--hist-cost);
+    font-size: 14px;
+}
+
+.historiqueDescriptionOnly {
+    min-height: 80px;
+    background: var(--hist-surface-soft);
+    border: 1px solid var(--hist-border-soft);
+    border-radius: var(--hist-r-md);
+    padding: 14px 16px;
+    color: var(--hist-ink);
+    font-size: 13.5px;
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+.historiqueRecordBox p {
+    margin: 0;
+    color: var(--hist-ink-soft);
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.historiqueModalAudio {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 999px;
+}
+
+/* ---------------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+
+    .historiqueModalHeader,
+    .historiqueModalBody {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .historiqueDetailGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .historiqueDetailItem.full {
+        grid-column: auto;
+    }
+}

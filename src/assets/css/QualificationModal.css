@@ -1,318 +1,780 @@
-.qualificationOverlay {
+/* ================================================================
+   QUALIFICATIONS IA — modal de configuration (page /campagnes)
+   Construit exclusivement à partir des tokens --camp-* d'index.css :
+   violet "signal" = ce que l'IA détecte, teal "voice" = la voix/appel,
+   ambre = la position dans la séquence de qualification.
+   ================================================================ */
+
+.qk-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(23, 20, 31, 0.55);
+  backdrop-filter: blur(3px);
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: qkFadeIn 0.18s ease-out;
 }
 
-.qualificationModal {
-  width: min(1050px, 100%);
+.qk-modal {
+  width: min(1080px, 100%);
   max-height: 92vh;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+  background: var(--camp-surface);
+  border: 1px solid var(--camp-border);
+  border-radius: var(--camp-r-xl);
+  box-shadow: var(--camp-shadow-pop);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  font-family: var(--sans);
+  animation: qkRise 0.22s cubic-bezier(.2, .8, .2, 1);
 }
 
-.qualificationHeader {
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+@keyframes qkFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes qkRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- HEADER ---------- */
+
+.qk-header {
+  position: relative;
+  padding: 26px 28px 22px;
+  background: var(--camp-bg-grad);
+  border-bottom: 1px solid var(--camp-border-soft);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
 
-.qualificationHeader h3 {
-  margin: 0;
-  font-size: 22px;
-  color: #111827;
-}
-
-.qualificationHeader p {
-  margin: 6px 0 0;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.qualificationClose {
-  border: none;
-  background: #f3f4f6;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  cursor: pointer;
-  color: #374151;
-}
-
-.qualificationClose:hover {
-  background: #e5e7eb;
-}
-
-.qualificationBody {
-  padding: 22px 24px;
-  overflow-y: auto;
-}
-
-.qualificationForm {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 20px;
-}
-
-.qualificationFormTitle {
+.qk-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--camp-font-mono);
+  font-size: 11px;
   font-weight: 700;
-  color: #111827;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--camp-signal);
+  margin-bottom: 8px;
+}
+
+.qk-eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--camp-signal);
+  box-shadow: 0 0 0 4px var(--camp-signal-soft);
+}
+
+.qk-title {
+  margin: 0;
+  font-family: var(--camp-font-display);
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--camp-ink);
+  letter-spacing: -0.01em;
+}
+
+.qk-subtitle {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--camp-ink-soft);
+}
+
+.qk-subtitle strong {
+  color: var(--camp-ink);
+  font-weight: 600;
+}
+
+.qk-close {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--camp-border);
+  background: var(--camp-surface);
+  color: var(--camp-ink-soft);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.15s ease;
+}
+
+.qk-close:hover {
+  background: var(--camp-danger-soft);
+  border-color: var(--camp-danger-border);
+  color: var(--camp-danger);
+  transform: rotate(90deg);
+}
+
+/* ---------- BODY LAYOUT ---------- */
+
+.qk-body {
+  padding: 24px 28px 8px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+/* ---------- FORM CARD ---------- */
+
+.qk-formCard {
+  position: sticky;
+  top: 0;
+  background: var(--camp-surface-soft);
+  border: 1px solid var(--camp-border-soft);
+  border-radius: var(--camp-r-lg);
+  padding: 20px;
+}
+
+.qk-formTitle {
+  font-family: var(--camp-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--camp-ink-soft);
+  margin-bottom: 16px;
+}
+
+.qk-formTitle.is-editing {
+  color: var(--camp-warm-dark);
+}
+
+.qk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 14px;
 }
 
-.qualificationGridForm {
-  display: grid;
-  grid-template-columns: 1.1fr 1.6fr 0.8fr 0.6fr 0.7fr;
-  gap: 14px;
+.qk-field label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--camp-ink-soft);
 }
 
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.formGroup label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.formGroup input,
-.formGroup select {
-  height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
+.qk-field input,
+.qk-field select {
+  height: 40px;
+  border-radius: var(--camp-r-md);
+  border: 1px solid var(--camp-border);
+  background: var(--camp-surface);
   padding: 0 12px;
+  font-size: 13.5px;
+  color: var(--camp-ink);
   outline: none;
-  background: white;
-  color: #111827;
+  transition: all 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.formGroup input:focus,
-.formGroup select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+.qk-field input:focus,
+.qk-field select:focus {
+  border-color: var(--camp-signal-border);
+  box-shadow: 0 0 0 3px var(--camp-signal-soft);
 }
 
-.qualificationActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.btnPrimary {
-  border: none;
-  background: #2563eb;
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btnPrimary:hover {
-  background: #1d4ed8;
-}
-
-.btnPrimary:disabled {
+.qk-field input:disabled,
+.qk-field select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.btnGhost {
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #374151;
-  padding: 10px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
+.qk-codeField input {
+  font-family: var(--camp-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--camp-signal-dark);
 }
 
-.btnGhost:hover {
-  background: #f3f4f6;
+.qk-codePreview {
+  display: inline-flex;
+  align-self: flex-start;
+  font-family: var(--camp-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--camp-signal);
+  background: var(--camp-signal-soft);
+  border: 1px solid var(--camp-signal-border);
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-top: 2px;
 }
 
-.qualificationListBox {
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+.qk-fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* segmented Actif/Inactif control, replaces the plain <select> */
+.qk-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--camp-border);
+  border-radius: var(--camp-r-md);
   overflow: hidden;
+  background: var(--camp-surface);
 }
 
-.qualificationListHeader {
-  padding: 16px 18px;
-  border-bottom: 1px solid #e5e7eb;
+.qk-segment button {
+  border: none;
+  background: transparent;
+  padding: 9px 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--camp-ink-soft);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.qk-segment button.is-active[data-state="active"] {
+  background: var(--camp-live-soft);
+  color: var(--camp-live-dark);
+}
+
+.qk-segment button.is-active[data-state="inactive"] {
+  background: var(--camp-danger-soft);
+  color: var(--camp-danger-dark);
+}
+
+.qk-segment button:not(.is-active):hover {
+  background: var(--camp-surface-soft);
+}
+
+.qk-segment button::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.qk-formActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.qk-btn {
+  border: none;
+  border-radius: var(--camp-r-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+}
+
+.qk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.qk-btnGhost {
+  background: var(--camp-surface);
+  border: 1px solid var(--camp-border);
+  color: var(--camp-ink-soft);
+  flex: 0 0 auto;
+}
+
+.qk-btnGhost:hover:not(:disabled) {
+  background: var(--camp-surface-soft);
+  color: var(--camp-ink);
+}
+
+.qk-btnPrimary {
+  flex: 1 1 auto;
+  background: linear-gradient(135deg, var(--camp-signal) 0%, var(--camp-signal-dark) 100%);
+  color: #fff;
+  box-shadow: var(--camp-shadow-card);
+}
+
+.qk-btnPrimary:hover:not(:disabled) {
+  box-shadow: var(--camp-shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+/* ---------- LIST PANEL ---------- */
+
+.qk-listPanel {
+  min-width: 0;
+}
+
+.qk-listHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: #fff;
+  margin-bottom: 12px;
 }
 
-.qualificationListHeader h4 {
+.qk-listHeading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.qk-listHeading h4 {
   margin: 0;
-  font-size: 16px;
-  color: #111827;
+  font-family: var(--camp-font-display);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--camp-ink);
 }
 
-.btnDefaultQualifications {
-  border: none;
-  background: #16a34a;
-  color: white;
-  padding: 9px 13px;
-  border-radius: 10px;
+.qk-count {
+  font-family: var(--camp-font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--camp-voice-dark);
+  background: var(--camp-voice-soft);
+  border: 1px solid var(--camp-voice-border);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.qk-btnDefaults {
+  border: 1px solid var(--camp-voice-border);
+  background: var(--camp-voice-soft);
+  color: var(--camp-voice-dark);
+  border-radius: var(--camp-r-md);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 8px 12px;
   cursor: pointer;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
 }
 
-.btnDefaultQualifications:hover {
-  background: #15803d;
+.qk-btnDefaults:hover:not(:disabled) {
+  background: var(--camp-voice);
+  color: #fff;
 }
 
-.btnDefaultQualifications:disabled {
+.qk-btnDefaults:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.qualificationTableWrapper {
-  width: 100%;
-  overflow-x: auto;
-}
+/* rows */
 
-.qualificationTable {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.qualificationTable th,
-.qualificationTable td {
-  padding: 13px 16px;
-  text-align: left;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 14px;
-}
-
-.qualificationTable th {
-  background: #f9fafb;
-  color: #374151;
-  font-weight: 700;
-}
-
-.qualificationTable td {
-  color: #111827;
-}
-
-.qualificationCode {
-  display: inline-flex;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #3730a3;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.badgeActive {
-  display: inline-flex;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: #dcfce7;
-  color: #166534;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.badgeInactive {
-  display: inline-flex;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: #fee2e2;
-  color: #991b1b;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.tableActions {
+.qk-rows {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
 }
 
-.btnIconEdit,
-.btnIconDelete {
-  width: 34px;
-  height: 34px;
+.qk-row {
+  display: grid;
+  grid-template-columns: 30px auto 1fr auto auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--camp-surface);
+  border: 1px solid var(--camp-border-soft);
+  border-radius: var(--camp-r-md);
+  transition: all 0.15s ease;
+}
+
+.qk-row:hover {
+  border-color: var(--camp-border);
+  box-shadow: var(--camp-shadow-card);
+}
+
+.qk-row.is-selected {
+  border-color: var(--camp-signal-border);
+  background: var(--camp-signal-soft);
+}
+
+.qk-order {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--camp-warm-soft);
+  color: var(--camp-warm-dark);
+  border: 1px solid var(--camp-warm-border);
+  font-family: var(--camp-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qk-code {
+  font-family: var(--camp-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--camp-signal-dark);
+  background: var(--camp-signal-soft);
+  border: 1px solid var(--camp-signal-border);
+  border-radius: 8px;
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+
+.qk-label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qk-labelText {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--camp-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qk-labelHint {
+  font-size: 11px;
+  color: var(--camp-ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qk-value {
+  font-family: var(--camp-font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.qk-value--0 {
+  background: var(--camp-voice-soft);
+  color: var(--camp-voice-dark);
+}
+
+.qk-value--1 {
+  background: var(--camp-warm-soft);
+  color: var(--camp-warm-dark);
+}
+
+.qk-value--2 {
+  background: var(--camp-live-soft);
+  color: var(--camp-live-dark);
+}
+
+.qk-value--3 {
+  background: var(--camp-signal-soft);
+  color: var(--camp-signal-dark);
+}
+
+.qk-value--4 {
+  background: var(--camp-danger-soft);
+  color: var(--camp-danger-dark);
+}
+
+.qk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.qk-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.qk-status.is-active {
+  background: var(--camp-live-soft);
+  color: var(--camp-live-dark);
+}
+
+.qk-status.is-inactive {
+  background: var(--camp-stopped-soft);
+  color: var(--camp-stopped);
+}
+
+.qk-rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.qk-iconBtn {
+  width: 30px;
+  height: 30px;
   border-radius: 9px;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s ease;
 }
 
-.btnIconEdit {
-  background: #eff6ff;
-  color: #1d4ed8;
+.qk-iconBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.btnIconEdit:hover {
-  background: #dbeafe;
+.qk-iconEdit {
+  background: var(--camp-signal-soft);
+  color: var(--camp-signal-dark);
 }
 
-.btnIconDelete {
-  background: #fef2f2;
-  color: #dc2626;
+.qk-iconEdit:hover:not(:disabled) {
+  background: var(--camp-signal);
+  color: #fff;
 }
 
-.btnIconDelete:hover {
-  background: #fee2e2;
+.qk-iconDelete {
+  background: var(--camp-danger-soft);
+  color: var(--camp-danger-dark);
 }
 
-.qualificationEmpty {
-  padding: 30px;
+.qk-iconDelete:hover:not(:disabled) {
+  background: var(--camp-danger);
+  color: #fff;
+}
+
+/* ---------- EMPTY / LOADING ---------- */
+
+.qk-empty {
+  border: 1.5px dashed var(--camp-border);
+  border-radius: var(--camp-r-lg);
+  padding: 38px 20px;
   text-align: center;
-  color: #6b7280;
-  background: #fff;
+  color: var(--camp-ink-soft);
+  font-size: 13.5px;
+  background: var(--camp-surface-soft);
 }
 
-.qualificationFooter {
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
+.qk-empty strong {
+  display: block;
+  font-family: var(--camp-font-display);
+  font-size: 15px;
+  color: var(--camp-ink);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.qk-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qk-skeleton {
+  height: 52px;
+  border-radius: var(--camp-r-md);
+  background: linear-gradient(90deg, var(--camp-surface-soft) 25%, var(--camp-border-soft) 37%, var(--camp-surface-soft) 63%);
+  background-size: 400% 100%;
+  animation: qkShimmer 1.4s ease infinite;
+}
+
+@keyframes qkShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ---------- FOOTER ---------- */
+
+.qk-footer {
+  padding: 16px 28px;
+  border-top: 1px solid var(--camp-border-soft);
   display: flex;
   justify-content: flex-end;
-  background: #fff;
+  background: var(--camp-surface);
 }
 
-@media (max-width: 900px) {
-  .qualificationGridForm {
-    grid-template-columns: 1fr 1fr;
-  }
+/* QUALIFICATION */
+.qk-contextPanel {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--code-bg);
 }
 
-@media (max-width: 600px) {
-  .qualificationOverlay {
-    padding: 12px;
-  }
+.qk-contextHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
 
-  .qualificationGridForm {
+.qk-contextHeader h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.qk-contextHeader p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 520px;
+}
+
+.qk-contextGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.qk-contextField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qk-contextField label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.qk-contextField textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.qk-contextField textarea:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+@media (max-width: 760px) {
+  .qk-contextGrid {
     grid-template-columns: 1fr;
   }
 
-  .qualificationListHeader {
+  .qk-contextHeader {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+  }
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 860px) {
+  .qk-body {
+    grid-template-columns: 1fr;
+  }
+
+  .qk-formCard {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .qk-overlay {
+    padding: 10px;
+  }
+
+  .qk-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "code order"
+      "label label"
+      "value status"
+      "actions actions";
+    row-gap: 8px;
+  }
+
+  .qk-order {
+    grid-area: order;
+    justify-self: end;
+  }
+
+  .qk-code {
+    grid-area: code;
+  }
+
+  .qk-label {
+    grid-area: label;
+  }
+
+  .qk-value {
+    grid-area: value;
+    justify-self: start;
+  }
+
+  .qk-status {
+    grid-area: status;
+    justify-self: end;
+  }
+
+  .qk-rowActions {
+    grid-area: actions;
+    justify-content: flex-end;
+  }
+
+  .qk-fieldRow {
+    grid-template-columns: 1fr;
   }
 }

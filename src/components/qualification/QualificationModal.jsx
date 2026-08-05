@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useQualification from "../../hooks/useQualification";
+import useCompagne from "../../hooks/useCompagne";
 import "../../assets/css/QualificationModal.css";
 
 const defaultForm = {
@@ -10,11 +11,17 @@ const defaultForm = {
   active: 1,
 };
 
+const valueColorClass = (value) => {
+  const n = Math.abs(Number(value) || 0) % 5;
+  return `qk-value qk-value--${n}`;
+};
+
 export default function QualificationModal({
   open,
   onClose,
   compagne,
   showToast,
+  onCompagneUpdated,
 }) {
   const {
     getQualificationsByCompagne,
@@ -23,12 +30,20 @@ export default function QualificationModal({
     deleteQualification,
     createDefaultQualifications,
   } = useQualification();
+  const { updateCompagne } = useCompagne();
 
   const [qualifications, setQualifications] = useState([]);
   const [form, setForm] = useState(defaultForm);
   const [selectedQualification, setSelectedQualification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // --- contexte IA (analyse / qualification) rattaché à la campagne ---
+  const [contextForm, setContextForm] = useState({
+    contextIaAnalyse: "",
+    contextIaQualification: "",
+  });
+  const [savingContext, setSavingContext] = useState(false);
 
   const fetchQualifications = async () => {
     if (!compagne?._id) return;
@@ -54,6 +69,10 @@ export default function QualificationModal({
       fetchQualifications();
       setForm(defaultForm);
       setSelectedQualification(null);
+      setContextForm({
+        contextIaAnalyse: compagne.contextIaAnalyse || "",
+        contextIaQualification: compagne.contextIaQualification || "",
+      });
     }
   }, [open, compagne?._id]);
 
@@ -66,6 +85,47 @@ export default function QualificationModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleContextChange = (e) => {
+    const { name, value } = e.target;
+    setContextForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveContext = async () => {
+    if (!compagne?._id) {
+      showToast?.("Campagne introuvable", "danger");
+      return;
+    }
+
+    try {
+      setSavingContext(true);
+
+      const res = await updateCompagne(compagne._id, {
+        contextIaAnalyse: contextForm.contextIaAnalyse,
+        contextIaQualification: contextForm.contextIaQualification,
+      });
+
+      const updated = res?.data?.data;
+      onCompagneUpdated?.(updated);
+
+      showToast?.("Contexte IA enregistré avec succès", "success");
+    } catch (error) {
+      console.error("Erreur enregistrement contexte IA :", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Erreur lors de l'enregistrement du contexte IA";
+
+      showToast?.(message, "danger");
+    } finally {
+      setSavingContext(false);
+    }
+  };
+
+  const setActive = (value) => {
+    setForm((prev) => ({ ...prev, active: value }));
   };
 
   const resetForm = () => {
@@ -139,8 +199,6 @@ export default function QualificationModal({
       resetForm();
     } catch (error) {
       console.error("Erreur enregistrement qualification :", error);
-      console.log("STATUS :", error?.response?.status);
-      console.log("DATA :", error?.response?.data);
 
       const message =
         error?.response?.data?.message ||
@@ -155,7 +213,7 @@ export default function QualificationModal({
 
   const handleDelete = async (qualification) => {
     const confirmDelete = window.confirm(
-      `Supprimer la qualification ${qualification.code} ?`
+      `Supprimer la qualification ${qualification.code} ?`,
     );
 
     if (!confirmDelete) return;
@@ -209,105 +267,188 @@ export default function QualificationModal({
     }
   };
 
+  const sortedQualifications = qualifications
+    .slice()
+    .sort((a, b) => Number(a.ordre || 0) - Number(b.ordre || 0));
+
   return (
-    <div className="qualificationOverlay">
-      <div className="qualificationModal">
-        <div className="qualificationHeader">
+    <div
+      className="qk-overlay"
+    >
+      <div className="qk-modal">
+        {/* HEADER */}
+        <div className="qk-header">
           <div>
-            <h3>Qualifications</h3>
-            <p>
-              Campagne :{" "}
-              <strong>{compagne?.nomCompagne || "Campagne"}</strong>
+            <span className="qk-eyebrow">Configuration IA</span>
+            <h3 className="qk-title">Qualifications d'appel</h3>
+            <p className="qk-subtitle">
+              Ce que l'IA détecte pendant l'appel, campagne{" "}
+              <strong>{compagne?.nomCompagne || "sans nom"}</strong>
             </p>
           </div>
 
-          <button type="button" className="qualificationClose" onClick={onClose}>
+          <button
+            type="button"
+            className="qk-close"
+            onClick={onClose}
+            aria-label="Fermer"
+          >
             <i className="bi bi-x-lg" />
           </button>
         </div>
 
-        <div className="qualificationBody">
-          <form className="qualificationForm" onSubmit={handleSubmit}>
-            <div className="qualificationFormTitle">
-              {selectedQualification
-                ? "Modifier une qualification"
-                : "Ajouter une qualification"}
+        {/* CONTEXTE IA — analyse & qualification, propre à la campagne */}
+        <div className="qk-contextPanel">
+          <div className="qk-contextHeader">
+            <div>
+              <h4>Contexte IA</h4>
+              <p>
+                Instructions injectées à l'IA pour l'analyse et la qualification
+                automatique de cet appel.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="qk-btn qk-btnPrimary"
+              onClick={handleSaveContext}
+              disabled={savingContext}
+            >
+              {savingContext ? "Enregistrement..." : "Enregistrer le contexte"}
+            </button>
+          </div>
+
+          <div className="qk-contextGrid">
+            <div className="qk-contextField">
+              <label>Contexte d'analyse</label>
+              <textarea
+                name="contextIaAnalyse"
+                value={contextForm.contextIaAnalyse}
+                onChange={handleContextChange}
+                rows={6}
+                placeholder="Ex : Analyse la conversation et détermine si le client a exprimé un intérêt, une objection de prix, ou une demande de rappel..."
+                disabled={savingContext}
+              />
             </div>
 
-            <div className="qualificationGridForm">
-              <div className="formGroup">
-                <label>Code IA</label>
-                <input
-                  type="text"
-                  name="code"
-                  value={form.code}
-                  onChange={handleChange}
-                  placeholder="Ex: SALE"
-                  disabled={saving}
-                />
-              </div>
+            <div className="qk-contextField">
+              <label>Contexte de qualification</label>
+              <textarea
+                name="contextIaQualification"
+                value={contextForm.contextIaQualification}
+                onChange={handleContextChange}
+                rows={6}
+                placeholder="Ex : Choisis le code de qualification le plus adapté parmi la liste ci-dessous selon l'issue de l'appel..."
+                disabled={savingContext}
+              />
+            </div>
+          </div>
+        </div>
 
-              <div className="formGroup">
-                <label>Libellé</label>
-                <input
-                  type="text"
-                  name="label"
-                  value={form.label}
-                  onChange={handleChange}
-                  placeholder="Ex: Rendez-vous confirmé"
-                  disabled={saving}
-                />
-              </div>
+        <div className="qk-body">
+          {/* FORM */}
+          <form className="qk-formCard" onSubmit={handleSubmit}>
+            <div
+              className={`qk-formTitle ${selectedQualification ? "is-editing" : ""}`}
+            >
+              {selectedQualification ? "✎ Modifier le code" : "+ Nouveau code"}
+            </div>
 
-              <div className="formGroup">
+            <div className="qk-field qk-codeField">
+              <label>Code IA</label>
+              <input
+                type="text"
+                name="code"
+                value={form.code}
+                onChange={handleChange}
+                placeholder="Ex: SALE"
+                disabled={saving}
+                autoComplete="off"
+              />
+              {form.code.trim() && (
+                <span className="qk-codePreview">
+                  {form.code.trim().toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            <div className="qk-field">
+              <label>Libellé affiché</label>
+              <input
+                type="text"
+                name="label"
+                value={form.label}
+                onChange={handleChange}
+                placeholder="Ex: Rendez-vous confirmé"
+                disabled={saving}
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="qk-fieldRow">
+              <div className="qk-field">
                 <label>Valeur historique</label>
                 <input
                   type="number"
                   name="statusValue"
                   value={form.statusValue}
                   onChange={handleChange}
-                  placeholder="Ex: 2"
+                  placeholder="2"
                   disabled={saving}
                 />
               </div>
 
-              <div className="formGroup">
+              <div className="qk-field">
                 <label>Ordre</label>
                 <input
                   type="number"
                   name="ordre"
                   value={form.ordre}
                   onChange={handleChange}
-                  placeholder="Ex: 1"
+                  placeholder="1"
                   disabled={saving}
                 />
               </div>
+            </div>
 
-              <div className="formGroup">
-                <label>Statut</label>
-                <select
-                  name="active"
-                  value={form.active}
-                  onChange={handleChange}
+            <div className="qk-field">
+              <label>Statut</label>
+              <div className="qk-segment">
+                <button
+                  type="button"
+                  data-state="active"
+                  className={Number(form.active) === 1 ? "is-active" : ""}
+                  onClick={() => setActive(1)}
                   disabled={saving}
                 >
-                  <option value={1}>Actif</option>
-                  <option value={0}>Inactif</option>
-                </select>
+                  Actif
+                </button>
+                <button
+                  type="button"
+                  data-state="inactive"
+                  className={Number(form.active) === 0 ? "is-active" : ""}
+                  onClick={() => setActive(0)}
+                  disabled={saving}
+                >
+                  Inactif
+                </button>
               </div>
             </div>
 
-            <div className="qualificationActions">
+            <div className="qk-formActions">
               <button
                 type="button"
-                className="btnGhost"
+                className="qk-btn qk-btnGhost"
                 onClick={resetForm}
                 disabled={saving}
               >
                 Réinitialiser
               </button>
 
-              <button type="submit" className="btnPrimary" disabled={saving}>
+              <button
+                type="submit"
+                className="qk-btn qk-btnPrimary"
+                disabled={saving}
+              >
                 {saving
                   ? "Enregistrement..."
                   : selectedQualification
@@ -317,109 +458,101 @@ export default function QualificationModal({
             </div>
           </form>
 
-          <div className="qualificationListBox">
-            <div className="qualificationListHeader">
-              <h4>Liste des qualifications</h4>
+          {/* LIST */}
+          <div className="qk-listPanel">
+            <div className="qk-listHeader">
+              <div className="qk-listHeading">
+                <h4>Codes configurés</h4>
+                {!loading && (
+                  <span className="qk-count">{qualifications.length}</span>
+                )}
+              </div>
 
               <button
                 type="button"
-                className="btnDefaultQualifications"
+                className="qk-btnDefaults"
                 onClick={handleAddDefaults}
                 disabled={saving}
               >
-                <i className="bi bi-magic" /> Ajouter par défaut
+                <i className="bi bi-magic" /> Ajouter les codes par défaut
               </button>
             </div>
 
             {loading ? (
-              <div className="qualificationEmpty">
-                Chargement des qualifications...
+              <div className="qk-loading">
+                <div className="qk-skeleton" />
+                <div className="qk-skeleton" />
+                <div className="qk-skeleton" />
               </div>
-            ) : qualifications.length === 0 ? (
-              <div className="qualificationEmpty">
-                Aucune qualification pour cette campagne.
+            ) : sortedQualifications.length === 0 ? (
+              <div className="qk-empty">
+                <strong>Aucun code pour l'instant</strong>
+                Ajoutez un code pour indiquer à l'IA comment qualifier ses
+                appels, ou générez la liste par défaut.
               </div>
             ) : (
-              <div className="qualificationTableWrapper">
-                <table className="qualificationTable">
-                  <thead>
-                    <tr>
-                      <th>Code IA</th>
-                      <th>Libellé</th>
-                      <th>Valeur</th>
-                      <th>Ordre</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
+              <div className="qk-rows">
+                {sortedQualifications.map((qualification) => (
+                  <div
+                    key={qualification._id}
+                    className={`qk-row ${selectedQualification?._id === qualification._id ? "is-selected" : ""}`}
+                  >
+                    <span className="qk-order">{qualification.ordre || 0}</span>
 
-                  <tbody>
-                    {qualifications
-                      .slice()
-                      .sort(
-                        (a, b) =>
-                          Number(a.ordre || 0) - Number(b.ordre || 0)
-                      )
-                      .map((qualification) => (
-                        <tr key={qualification._id}>
-                          <td>
-                            <span className="qualificationCode">
-                              {qualification.code}
-                            </span>
-                          </td>
+                    <span className="qk-code">{qualification.code}</span>
 
-                          <td>{qualification.label}</td>
+                    <span className="qk-label">
+                      <span className="qk-labelText">
+                        {qualification.label}
+                      </span>
+                    </span>
 
-                          <td>{qualification.statusValue}</td>
+                    <span
+                      className={valueColorClass(qualification.statusValue)}
+                    >
+                      {qualification.statusValue}
+                    </span>
 
-                          <td>{qualification.ordre || 0}</td>
+                    <span
+                      className={`qk-status ${Number(qualification.active) === 1 ? "is-active" : "is-inactive"}`}
+                    >
+                      {Number(qualification.active) === 1 ? "Actif" : "Inactif"}
+                    </span>
 
-                          <td>
-                            <span
-                              className={
-                                Number(qualification.active) === 1
-                                  ? "badgeActive"
-                                  : "badgeInactive"
-                              }
-                            >
-                              {Number(qualification.active) === 1
-                                ? "Actif"
-                                : "Inactif"}
-                            </span>
-                          </td>
+                    <span className="qk-rowActions">
+                      <button
+                        type="button"
+                        className="qk-iconBtn qk-iconEdit"
+                        onClick={() => handleEdit(qualification)}
+                        disabled={saving}
+                        aria-label="Modifier"
+                      >
+                        <i className="bi bi-pencil-square" />
+                      </button>
 
-                          <td>
-                            <div className="tableActions">
-                              <button
-                                type="button"
-                                className="btnIconEdit"
-                                onClick={() => handleEdit(qualification)}
-                                disabled={saving}
-                              >
-                                <i className="bi bi-pencil-square" />
-                              </button>
-
-                              <button
-                                type="button"
-                                className="btnIconDelete"
-                                onClick={() => handleDelete(qualification)}
-                                disabled={saving}
-                              >
-                                <i className="bi bi-trash" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+                      <button
+                        type="button"
+                        className="qk-iconBtn qk-iconDelete"
+                        onClick={() => handleDelete(qualification)}
+                        disabled={saving}
+                        aria-label="Supprimer"
+                      >
+                        <i className="bi bi-trash" />
+                      </button>
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
 
-        <div className="qualificationFooter">
-          <button type="button" className="btnGhost" onClick={onClose}>
+        <div className="qk-footer">
+          <button
+            type="button"
+            className="qk-btn qk-btnGhost"
+            onClick={onClose}
+          >
             Fermer
           </button>
         </div>

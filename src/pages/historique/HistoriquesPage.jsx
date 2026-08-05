@@ -100,69 +100,75 @@ const hasActiveFilters = (
   timeStart !== "" ||
   timeEnd !== "";
 
-// ── Qualifications ────────────────────────────────────────────────────────────
-// Après la définition de status "1" (Pas intéressé) :
+// ── Qualifications — couleurs pilotées par les tokens --hist-* (index.css) ────
 const STATUS_DEFS = [
   {
     key: "2",
     label: "Réussi",
-    color: "#16a34a",
-    bg: "#dcfce7",
+    color: "var(--hist-success)",
+    bg: "var(--hist-success-soft)",
+    border: "var(--hist-success-border)",
     icon: "bi-check-circle-fill",
   },
   {
     key: "3",
     label: "Rappel",
-    color: "#2563eb",
-    bg: "#dbeafe",
+    color: "var(--hist-info)",
+    bg: "var(--hist-info-soft)",
+    border: "var(--hist-info-border)",
     icon: "bi-arrow-repeat",
   },
   {
     key: "4",
     label: "Occupé",
-    color: "#d97706",
-    bg: "#fef3c7",
+    color: "var(--hist-warning)",
+    bg: "var(--hist-warning-soft)",
+    border: "var(--hist-warning-border)",
     icon: "bi-telephone-x-fill",
   },
   {
     key: "5",
     label: "Répondeur",
-    color: "#7c3aed",
-    bg: "#ede9fe",
+    color: "var(--hist-purple)",
+    bg: "var(--hist-purple-soft)",
+    border: "var(--hist-purple-border)",
     icon: "bi-voicemail",
   },
   {
     key: "1",
     label: "Pas intéressé",
-    color: "#e90505fb",
-    bg: "#ee6d6d4d",
+    color: "var(--hist-danger)",
+    bg: "var(--hist-danger-soft)",
+    border: "var(--hist-danger-border)",
     icon: "bi-x-circle-fill",
   },
   {
     key: "6",
     label: "Serveur Vocal",
-    color: "#0891b2",
-    bg: "#cffafe",
+    color: "var(--hist-cyan)",
+    bg: "var(--hist-cyan-soft)",
+    border: "var(--hist-cyan-border)",
     icon: "bi-telephone-inbound-fill",
-  }, // ← nouveau
+  },
   {
     key: "7",
     label: "Répondeur Asterisk",
-    color: "#0891b2",
-    bg: "rgb(224 224 224)",
+    color: "var(--hist-gray)",
+    bg: "var(--hist-gray-soft)",
+    border: "var(--hist-gray-border)",
     icon: "bi-telephone-inbound-fill",
   },
   {
     key: "8",
     label: "Hors Cible",
-    color: "#242222",
-    bg: "#efccad",
+    color: "var(--hist-brown)",
+    bg: "var(--hist-brown-soft)",
+    border: "var(--hist-brown-border)",
     icon: "bi-telephone-inbound-fill",
   },
 ];
 
 // ── Normalise statusCounts — clés peuvent venir en number ou string ───────────
-// ⚡ FIX bug badges invisibles : on force toutes les clés en string
 const normalizeStatusCounts = (raw = {}) => {
   const result = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
   Object.entries(raw).forEach(([k, v]) => {
@@ -182,25 +188,25 @@ function StatusCountBadge({ def, count, active, onClick }) {
         display: "inline-flex",
         alignItems: "center",
         gap: "6px",
-        padding: "4px 10px",
+        padding: "5px 12px",
         borderRadius: "20px",
         border: `1.5px solid ${active ? def.color : "transparent"}`,
         background: def.bg,
         color: def.color,
-        fontWeight: active ? 700 : 500,
+        fontWeight: active ? 700 : 600,
         fontSize: "0.78rem",
         cursor: "pointer",
-        transition: "border-color 0.15s",
+        transition: "all 0.15s ease",
         whiteSpace: "nowrap",
-        boxShadow: active ? `0 0 0 2px ${def.color}33` : "none",
+        boxShadow: active ? `0 0 0 3px ${def.border}` : "none",
       }}
     >
       <i className={`bi ${def.icon}`} style={{ fontSize: "0.8rem" }} />
       <span>{def.label}</span>
       <span
         style={{
-          background: active ? def.color : "#e5e7eb",
-          color: active ? "#fff" : "#374151",
+          background: active ? def.color : "rgba(255,255,255,0.65)",
+          color: active ? "#fff" : def.color,
           borderRadius: "10px",
           padding: "1px 7px",
           fontWeight: 700,
@@ -217,8 +223,12 @@ function StatusCountBadge({ def, count, active, onClick }) {
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function HistoriquesPage({ showToast }) {
-  const { getHistoriques, archiveManyHistoriques, updateHistorique, toggleArchiveManyHistoriques } =
-    useHistoriqueIa();
+  const {
+    getHistoriques,
+    archiveManyHistoriques,
+    updateHistorique,
+    toggleArchiveManyHistoriques,
+  } = useHistoriqueIa();
 
   const [historiques, setHistoriques] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -248,12 +258,9 @@ export default function HistoriquesPage({ showToast }) {
   const [confirmArchive, setConfirmArchive] = useState(null);
   const [emailModalHistorique, setEmailModalHistorique] = useState(null);
 
-  // ⚡ Tri — "date_desc" par défaut (comportement original)
-  // Valeurs : "date_desc" | "date_asc" | "duration_desc" | "duration_asc"
   const [sortOrder, setSortOrder] = useState("date_desc");
   const [showEmailColumn, setShowEmailColumn] = useState(true);
 
-  // ⚡ statusCounts — toutes clés string dès l'init
   const [statusCounts, setStatusCounts] = useState({
     1: 0,
     2: 0,
@@ -268,7 +275,6 @@ export default function HistoriquesPage({ showToast }) {
   const { getAgents } = useAgent();
   const { getCompagnes } = useCompagne();
 
-  // Convertit sortOrder en paramètre backend
   const sortParam = () => {
     switch (sortOrder) {
       case "date_asc":
@@ -278,11 +284,10 @@ export default function HistoriquesPage({ showToast }) {
       case "duration_asc":
         return "callDuration";
       default:
-        return "-callDate"; // date_desc
+        return "-callDate";
     }
   };
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleStatusChange = async (id, newStatus) => {
     setPendingStatus((prev) => ({ ...prev, [id]: newStatus }));
     await updateHistorique(id, { status: newStatus });
@@ -301,7 +306,6 @@ export default function HistoriquesPage({ showToast }) {
     setCurrentPage(1);
   };
 
-  // ── Chargement initial des listes ─────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -335,7 +339,6 @@ export default function HistoriquesPage({ showToast }) {
     selectedTypeCall,
   ]);
 
-  // ── Fetch historiques ──────────────────────────────────────────────────────
   const fetchHistoriques = async (page = 1) => {
     try {
       setLoading(true);
@@ -349,7 +352,7 @@ export default function HistoriquesPage({ showToast }) {
       if (dateEnd) params.dateEnd = dateEnd;
       if (filtersArchive !== "all") params.archive = filtersArchive;
       if (selectedTypeCall !== "all") params.typeCall = selectedTypeCall;
-      if (timeStart) params.timeStart = timeStart; // heure France brute → back gère la conversion
+      if (timeStart) params.timeStart = timeStart;
       if (timeEnd) params.timeEnd = timeEnd;
       if (selectedEmailEnvoye !== "all") params.emailEnvoye = selectedEmailEnvoye;
 
@@ -359,7 +362,6 @@ export default function HistoriquesPage({ showToast }) {
       setTotalResults(res?.data?.totalResults || 0);
       setTotalCallDuration(res?.data?.totalDuration ?? 0);
       setTotalTelecomCost(res?.data?.totalTelecomCost ?? 0);
-      // ⚡ FIX : normaliser les clés avant de stocker
       setStatusCounts(normalizeStatusCounts(res?.data?.statusCounts));
     } catch {
       showToast?.("Erreur chargement historiques", "danger");
@@ -408,7 +410,6 @@ export default function HistoriquesPage({ showToast }) {
      selectedEmailEnvoye,
   ]);
 
-  // ── Sélection ─────────────────────────────────────────────────────────────
   const pageIds = useMemo(
     () => historiques?.map((i) => i._id) ?? [],
     [historiques],
@@ -496,7 +497,6 @@ export default function HistoriquesPage({ showToast }) {
     setSelectedEmailEnvoye("all"); 
   };
 
-  // ── Helpers UI ─────────────────────────────────────────────────────────────
   const filtersActive =
     hasActiveFilters(
       search,
@@ -560,323 +560,295 @@ export default function HistoriquesPage({ showToast }) {
     return pages;
   };
 
-  // Libellé et icône du tri actuel pour affichage dans le header de colonne
-  const sortMeta = {
-    date_desc: { label: "Date ↓", icon: "bi-calendar-arrow-down", col: "date" },
-    date_asc: { label: "Date ↑", icon: "bi-calendar-arrow-up", col: "date" },
-    duration_desc: {
-      label: "Durée ↓",
-      icon: "bi-sort-numeric-down-alt",
-      col: "duration",
-    },
-    duration_asc: {
-      label: "Durée ↑",
-      icon: "bi-sort-numeric-down",
-      col: "duration",
-    },
-  };
-
   // ── Rendu ──────────────────────────────────────────────────────────────────
   return (
     <div className="historiquesPage">
       <HeaderBar />
 
       <div className="historiquesContainer">
-        <div className="historiquesCard">
-          {/* ── En-tête ── */}
-          <div className="historiquesHeader">
-            <div>
-              <h1>Journal des appels</h1>
-              <p>Consultez l'historique détaillé des appels IA.</p>
+        {/* ── HERO (compact) ── */}
+        <div className="historiquesHeader">
+          <div>
+            <h1>Journal des appels</h1>
 
-              <div className="historiquesCounter">
-                <i className="bi bi-telephone-fill" />
-                <span>{getCounterLabel()}</span>
-              </div>
-              <div className="historiquesCounter">
-                <i className="bi bi-clock-history" />
-                <span>
-                  Durée totale : {formatTotalDuration(totalCallDuration)}
-                </span>
-              </div>
-              <div className="historiquesCounter">
-                <i className="bi bi-cash-coin" />
-                <span>
-                  Coût télécom estimé : {formatTelecomCost(totalTelecomCost)}
-                </span>
-              </div>
+            <span className="historiquesCounter">
+              <i className="bi bi-telephone-fill" />
+              {getCounterLabel()}
+            </span>
+            <span className="historiquesCounter">
+              <i className="bi bi-clock-history" />
+              {formatTotalDuration(totalCallDuration)}
+            </span>
+            <span className="historiquesCounter">
+              <i className="bi bi-cash-coin" />
+              {formatTelecomCost(totalTelecomCost)}
+            </span>
 
-              {/* ⚡ Badges qualification avec comptages ── */}
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "6px",
-                  marginTop: "10px",
-                }}
-              >
-                {STATUS_DEFS.map((def) => (
-                  <StatusCountBadge
-                    key={def.key}
-                    def={def}
-                    count={statusCounts[def.key] ?? 0}
-                    active={selectedStatus === def.key}
-                    onClick={() => handleStatusBadgeClick(def.key)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* ── Contrôles ── */}
-            <div className="historiquesActions">
-              {/* Rangée 1 : Recherche + boutons */}
-              <div className="historiquesActionsRow historiquesActionsRow--top">
-                <div className="historiquesSearch">
-                  <i className="bi bi-search" />
-                  <input
-                    type="text"
-                    placeholder="Rechercher un numéro, canal…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-
-                <div className="historiquesActionsGroup">
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    title="Rafraîchir la liste"
-                  >
-                    <i
-                      className={`bi bi-arrow-clockwise ${isRefreshing ? "spin" : ""}`}
-                    />
-                    {isRefreshing ? "Actualisation…" : "Actualiser"}
-                  </button>
-                  {selectedIds.size > 0 && (
-                    <button
-                      type="button"
-                      className={`btn btn-sm ${filtersArchive === "1" ? "btn-outline-secondary" : "btn-outline-primary"}`}
-                      onClick={() =>
-                        setConfirmArchive(filtersArchive === "1" ? 2 : 1)
-                      }
-                    >
-                      <i className="bi bi-archive" />
-                      {filtersArchive === "1"
-                        ? `Désarchiver (${selectedIds.size})`
-                        : `Archiver (${selectedIds.size})`}
-                    </button>
-                  )}
-
-                  {filtersActive && (
-                    <button
-                      type="button"
-                      className="historiquesResetBtn"
-                      onClick={resetFilters}
-                      title="Réinitialiser tous les filtres"
-                    >
-                      <i className="bi bi-x-circle" /> Réinitialiser
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Rangée 2 : Filtres + tri */}
-              <div className="historiquesActionsRow historiquesActionsRow--filters">
-                {/* Statut & Archive */}
-                <div className="historiquesFilterGroup">
-                  <span className="historiquesFilterLabel">
-                    <i className="bi bi-funnel" /> Filtres
-                  </span>
-                  <select
-                    className="historiquesFilterSelect"
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                  >
-                    <option value="all">Tous les statuts</option>
-                    <option value="2">RÉUSSI</option>
-                    <option value="3">RAPPEL</option>
-                    <option value="4">OCCUPÉ</option>
-                    <option value="5">RÉPONDEUR</option>
-                    <option value="1">PAS INTÉRESSÉ</option>
-                    <option value="6">SVI</option>
-                    <option value="7">AMD Répondeur</option>
-                    <option value="8">Hors Cible</option>
-                  </select>
-                  <select
-                    className="historiquesFilterSelect"
-                    value={filtersArchive}
-                    onChange={(e) => setFiltersArchive(e.target.value)}
-                  >
-                    <option value="all">Tous (archivés)</option>
-                    <option value="1">Archivés</option>
-                    <option value="2">Non archivés</option>
-                  </select>
-
-                  <select
-                    className="historiquesFilterSelect"
-                    value={selectedTypeCall}
-                    onChange={(e) => {
-                      setSelectedTypeCall(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <option value="all">Tous les appels</option>
-                    <option value="1">Appels sortants</option>
-                    <option value="2">Appels entrants</option>
-                  </select>
-                  <select
-                      className="historiquesFilterSelect"
-                      value={selectedEmailEnvoye}
-                      onChange={(e) => {
-                        setSelectedEmailEnvoye(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                    >
-                    <option value="all">Tous les Email</option>
-                    <option value="1">Email envoyé</option>
-                    <option value="0">Email non envoyé</option>
-                  </select>
-                </div>
-
-                <div className="historiquesFilterDivider" />
-
-                {/* Campagne & Agent */}
-                <div className="historiquesFilterGroup">
-                  <span className="historiquesFilterLabel">
-                    <i className="bi bi-diagram-3" /> Source
-                  </span>
-                  <select
-                    className="historiquesFilterSelect"
-                    value={selectedCampagne}
-                    onChange={(e) => setSelectedCampagne(e.target.value)}
-                  >
-                    <option value="all">Toutes les campagnes</option>
-                    {campagnes.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.nomCompagne}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="historiquesFilterSelect"
-                    value={selectedAgentIa}
-                    onChange={(e) => setSelectedAgentIa(e.target.value)}
-                  >
-                    <option value="all">Tous les agents IA</option>
-                    {agentIas.map((a) => (
-                      <option key={a._id} value={a._id}>
-                        {a.nomAgent}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="historiquesFilterDivider" />
-
-                {/* Dates */}
-                <div className="historiquesFilterGroup">
-                  <span className="historiquesFilterLabel">
-                    <i className="bi bi-calendar-range" /> Période
-                  </span>
-                  <div className="historiquesDateFilter">
-                    <input
-                      type="date"
-                      className="historiquesDateInput"
-                      value={dateStart}
-                      onChange={(e) => {
-                        const newDateStart = e.target.value;
-                        setDateStart(newDateStart);
-
-                        if (dateEnd && dateEnd < newDateStart) {
-                          setDateEnd("");
-                        }
-
-                        setCurrentPage(1);
-                      }}
-                    />
-
-                    <span className="historiquesDateSeparator">→</span>
-
-                    <input
-                      type="date"
-                      className="historiquesDateInput"
-                      value={dateEnd}
-                      min={dateStart}
-                      onChange={(e) => {
-                        setDateEnd(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="historiquesFilterDivider" />
-
-                {/* Heures */}
-                <div className="historiquesFilterGroup">
-                  <span className="historiquesFilterLabel">
-                    <i className="bi bi-clock" /> Heure
-                  </span>
-                  <div className="historiquesDateFilter">
-                    <input
-                      type="time"
-                      className="historiquesTimeInput"
-                      value={timeStart}
-                      onChange={(e) => setTimeStart(e.target.value)}
-                      placeholder="00:00"
-                    />
-                    <span className="historiquesDateSeparator">→</span>
-                    <input
-                      type="time"
-                      className="historiquesTimeInput"
-                      value={timeEnd}
-                      onChange={(e) => setTimeEnd(e.target.value)}
-                      placeholder="23:59"
-                    />
-                  </div>
-                </div>
-
-                <div className="historiquesFilterDivider" />
-
-                {/* ⚡ Tri — select explicite visible dans la barre de filtres */}
-                <div className="historiquesFilterGroup">
-                  <span className="historiquesFilterLabel">
-                    <i className="bi bi-arrow-down-up" /> Trier
-                  </span>
-                  <select
-                    className="historiquesFilterSelect"
-                    value={sortOrder}
-                    onChange={(e) => {
-                      setSortOrder(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    style={{
-                      fontWeight: sortOrder !== "date_desc" ? 600 : 400,
-                      color: sortOrder !== "date_desc" ? "#2563eb" : undefined,
-                    }}
-                  >
-                    <option value="date_desc">Date (plus récent)</option>
-                    <option value="date_asc">Date (plus ancien)</option>
-                    <option value="duration_desc">Durée (plus longue)</option>
-                    <option value="duration_asc">Durée (plus courte)</option>
-                  </select>
-                </div>
-                <div className="historiquesFilterDivider" />
-
-
-              </div>
+            {/* Badges qualification avec comptages — bande dédiée, sous le titre */}
+            <div className="historiquesQualifBar">
+              {STATUS_DEFS.map((def) => (
+                <StatusCountBadge
+                  key={def.key}
+                  def={def}
+                  count={statusCounts[def.key] ?? 0}
+                  active={selectedStatus === def.key}
+                  onClick={() => handleStatusBadgeClick(def.key)}
+                />
+              ))}
             </div>
           </div>
 
-          {/* ── Corps ── */}
+          {/* ── Contrôles ── */}
+          <div className="historiquesActions">
+            <div className="historiquesActionsRow historiquesActionsRow--top">
+              <div className="historiquesSearch">
+                <i className="bi bi-search" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un numéro, canal…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="historiquesActionsGroup">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  title="Rafraîchir la liste"
+                >
+                  <i
+                    className={`bi bi-arrow-clockwise ${isRefreshing ? "spin" : ""}`}
+                  />
+                  {isRefreshing ? "Actualisation…" : "Actualiser"}
+                </button>
+                {selectedIds.size > 0 && (
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${filtersArchive === "1" ? "btn-outline-secondary" : "btn-outline-primary"}`}
+                    onClick={() =>
+                      setConfirmArchive(filtersArchive === "1" ? 2 : 1)
+                    }
+                  >
+                    <i className="bi bi-archive" />
+                    {filtersArchive === "1"
+                      ? `Désarchiver (${selectedIds.size})`
+                      : `Archiver (${selectedIds.size})`}
+                  </button>
+                )}
+
+                {filtersActive && (
+                  <button
+                    type="button"
+                    className="historiquesResetBtn"
+                    onClick={resetFilters}
+                    title="Réinitialiser tous les filtres"
+                  >
+                    <i className="bi bi-x-circle" /> Réinitialiser
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── BARRE DE FILTRES ── */}
+        <div className="historiquesActionsRow historiquesActionsRow--filters">
+          {/* Statut & Archive */}
+          <div className="historiquesFilterGroup">
+            <span className="historiquesFilterLabel">
+              <i className="bi bi-funnel" /> Filtres
+            </span>
+            <select
+              className="historiquesFilterSelect"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <option value="all">Tous les statuts</option>
+              <option value="2">RÉUSSI</option>
+              <option value="3">RAPPEL</option>
+              <option value="4">OCCUPÉ</option>
+              <option value="5">RÉPONDEUR</option>
+              <option value="1">PAS INTÉRESSÉ</option>
+              <option value="6">SVI</option>
+              <option value="7">AMD Répondeur</option>
+              <option value="8">Hors Cible</option>
+            </select>
+            <select
+              className="historiquesFilterSelect"
+              value={filtersArchive}
+              onChange={(e) => setFiltersArchive(e.target.value)}
+            >
+              <option value="all">Tous (archivés)</option>
+              <option value="1">Archivés</option>
+              <option value="2">Non archivés</option>
+            </select>
+
+            <select
+              className="historiquesFilterSelect"
+              value={selectedTypeCall}
+              onChange={(e) => {
+                setSelectedTypeCall(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="all">Tous les appels</option>
+              <option value="1">Appels sortants</option>
+              <option value="2">Appels entrants</option>
+            </select>
+          </div>
+
+          <div className="historiquesFilterDivider" />
+
+          {/* Campagne & Agent */}
+          <div className="historiquesFilterGroup">
+            <span className="historiquesFilterLabel">
+              <i className="bi bi-diagram-3" /> Source
+            </span>
+            <select
+              className="historiquesFilterSelect"
+              value={selectedCampagne}
+              onChange={(e) => setSelectedCampagne(e.target.value)}
+            >
+              <option value="all">Toutes les campagnes</option>
+              {campagnes.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.nomCompagne}
+                </option>
+              ))}
+            </select>
+            <select
+              className="historiquesFilterSelect"
+              value={selectedAgentIa}
+              onChange={(e) => setSelectedAgentIa(e.target.value)}
+            >
+              <option value="all">Tous les agents IA</option>
+              {agentIas.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.nomAgent}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="historiquesFilterDivider" />
+
+          {/* Dates */}
+          <div className="historiquesFilterGroup">
+            <span className="historiquesFilterLabel">
+              <i className="bi bi-calendar-range" /> Période
+            </span>
+            <div className="historiquesDateFilter">
+              <input
+                type="date"
+                className="historiquesDateInput"
+                value={dateStart}
+                onChange={(e) => {
+                  const newDateStart = e.target.value;
+                  setDateStart(newDateStart);
+
+                  if (dateEnd && dateEnd < newDateStart) {
+                    setDateEnd("");
+                  }
+
+                  setCurrentPage(1);
+                }}
+              />
+
+              <span className="historiquesDateSeparator">→</span>
+
+              <input
+                type="date"
+                className="historiquesDateInput"
+                value={dateEnd}
+                min={dateStart}
+                onChange={(e) => {
+                  setDateEnd(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="historiquesFilterDivider" />
+
+          {/* Heures */}
+          <div className="historiquesFilterGroup">
+            <span className="historiquesFilterLabel">
+              <i className="bi bi-clock" /> Heure
+            </span>
+            <div className="historiquesDateFilter">
+              <input
+                type="time"
+                className="historiquesTimeInput"
+                value={timeStart}
+                onChange={(e) => setTimeStart(e.target.value)}
+                placeholder="00:00"
+              />
+              <span className="historiquesDateSeparator">→</span>
+              <input
+                type="time"
+                className="historiquesTimeInput"
+                value={timeEnd}
+                onChange={(e) => setTimeEnd(e.target.value)}
+                placeholder="23:59"
+              />
+            </div>
+          </div>
+
+          <div className="historiquesFilterDivider" />
+
+          {/* Tri */}
+          <div className="historiquesFilterGroup">
+            <span className="historiquesFilterLabel">
+              <i className="bi bi-arrow-down-up" /> Trier
+            </span>
+            <select
+              className="historiquesFilterSelect"
+              value={sortOrder}
+              onChange={(e) => {
+                setSortOrder(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="date_desc">Date (plus récent)</option>
+              <option value="date_asc">Date (plus ancien)</option>
+              <option value="duration_desc">Durée (plus longue)</option>
+              <option value="duration_asc">Durée (plus courte)</option>
+            </select>
+          </div>
+          <div className="historiquesFilterDivider" />
+
+          {/* Visibilité colonne Email */}
+          <div className="historiquesFilterGroup">
+            <span className="historiquesFilterLabel">
+              <i className="bi bi-envelope" /> Email
+            </span>
+            <select
+              className="historiquesFilterSelect"
+              value={showEmailColumn ? "show" : "hide"}
+              onChange={(e) => setShowEmailColumn(e.target.value === "show")}
+            >
+              <option value="show">Afficher email</option>
+              <option value="hide">Masquer email</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ── TABLE ── */}
+        <div className="historiquesTableCard">
           {loading ? (
             <div className="historiquesEmpty">
+              <i className="bi bi-hourglass-split" />
               Chargement des historiques...
             </div>
           ) : historiques.length === 0 ? (
-            <div className="historiquesEmpty">Aucun historique trouvé.</div>
+            <div className="historiquesEmpty">
+              <i className="bi bi-inbox" />
+              Aucun historique trouvé.
+            </div>
           ) : (
             <>
               {/* Barre de sélection */}
@@ -929,115 +901,9 @@ export default function HistoriquesPage({ showToast }) {
                       <th>Numéro appelé</th>
                       <th>Campagne</th>
                       <th>Agent IA</th>
-
-                      {/* ⚡ En-tête Date — cliquable pour basculer asc/desc */}
-                      <th>
-                        Date
-                        {/* <button
-                          type="button"
-                          onClick={() => {
-                            setSortOrder((p) =>
-                              p === "date_desc" ? "date_asc" : "date_desc",
-                            );
-                            setCurrentPage(1);
-                          }}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            padding: 0,
-                            cursor: "pointer",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontWeight:
-                              sortMeta[sortOrder].col === "date" ? 700 : 400,
-                            color:
-                              sortMeta[sortOrder].col === "date"
-                                ? "#2563eb"
-                                : "inherit",
-                            fontSize: "inherit",
-                          }}
-                        >
-                          Date
-                          <i
-                            className={`bi ${
-                              sortOrder === "date_asc"
-                                ? "bi-arrow-up"
-                                : sortOrder === "date_desc"
-                                  ? "bi-arrow-down"
-                                  : "bi-arrow-down"
-                            }`}
-                            style={{
-                              fontSize: "0.8rem",
-                              opacity:
-                                sortMeta[sortOrder].col === "date" ? 1 : 0.3,
-                              color:
-                                sortMeta[sortOrder].col === "date"
-                                  ? "#2563eb"
-                                  : "inherit",
-                            }}
-                          />
-                        </button> */}
-                      </th>
-
+                      <th>Date</th>
                       <th>Statut</th>
-
-                      {/* ⚡ En-tête Durée — cliquable pour basculer asc/desc */}
-                      <th>
-                        Audio / Durée
-                        {/* <button
-                          type="button"
-                          onClick={() => {
-                            setSortOrder((p) =>
-                              p === "duration_desc"
-                                ? "duration_asc"
-                                : "duration_desc",
-                            );
-                            setCurrentPage(1);
-                          }}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            padding: 0,
-                            cursor: "pointer",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontWeight:
-                              sortMeta[sortOrder].col === "duration"
-                                ? 700
-                                : 400,
-                            color:
-                              sortMeta[sortOrder].col === "duration"
-                                ? "#2563eb"
-                                : "inherit",
-                            fontSize: "inherit",
-                          }}
-                        >
-                          Audio / Durée
-                          <i
-                            className={`bi ${
-                              sortOrder === "duration_asc"
-                                ? "bi-sort-numeric-down"
-                                : sortOrder === "duration_desc"
-                                  ? "bi-sort-numeric-down-alt"
-                                  : "bi-sort-numeric-down-alt"
-                            }`}
-                            style={{
-                              fontSize: "0.85rem",
-                              opacity:
-                                sortMeta[sortOrder].col === "duration"
-                                  ? 1
-                                  : 0.3,
-                              color:
-                                sortMeta[sortOrder].col === "duration"
-                                  ? "#2563eb"
-                                  : "inherit",
-                            }}
-                          />
-                        </button> */}
-                      </th>
-
+                      <th>Audio / Durée</th>
                       <th>Rappels</th>
                       {showEmailColumn && <th>Email</th>}
                     </tr>
@@ -1073,12 +939,12 @@ export default function HistoriquesPage({ showToast }) {
                               {item.typeCall == 2 ? (
                                 <i
                                   className="bi bi-telephone-inbound-fill"
-                                  style={{ color: "rgb(108, 192, 112)" }}
+                                  style={{ color: "var(--hist-success)" }}
                                 />
                               ) : (
                                 <i
                                   className="bi bi-telephone-outbound-fill"
-                                  style={{ color: "rgb(0, 231, 235)" }}
+                                  style={{ color: "var(--hist-accent)" }}
                                 />
                               )}
                               <span style={{ marginLeft: "5px" }}>
@@ -1166,24 +1032,24 @@ export default function HistoriquesPage({ showToast }) {
                               <i className="bi bi-clock-history" /> Rappels
                             </button>
                           </td>
-                    {showEmailColumn && (
-                      <td onClick={(e) => e.stopPropagation()}>
-                        {item.emails?.length > 0 ? (
-                          <button
-                            className="scd-trigger-btn"
-                            onClick={() => setEmailModalHistorique(item)}
-                            title="Voir l'email envoyé"
-                          >
-                            <i className="bi bi-envelope-fill" /> Email
-                          </button>
-                        ) : (
-                          <span className="text-muted">
-                            <i className="bi bi-envelope-slash me-1" />
-                            Pas d'email
-                          </span>
-                        )}
-                      </td>
-                    )}
+                          {showEmailColumn && (
+                            <td onClick={(e) => e.stopPropagation()}>
+                              {item.emails?.length > 0 ? (
+                                <button
+                                  className="scd-trigger-btn"
+                                  onClick={() => setEmailModalHistorique(item)}
+                                  title="Voir l'email envoyé"
+                                >
+                                  <i className="bi bi-envelope-fill" /> Email
+                                </button>
+                              ) : (
+                                <span className="text-muted">
+                                  <i className="bi bi-envelope-slash me-1" />
+                                  Pas d'email
+                                </span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
