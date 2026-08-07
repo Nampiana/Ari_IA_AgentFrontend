@@ -15,30 +15,69 @@ import {
  * 2026-07-07T07:40:00.000Z affiché localement en 10:40
  * devient bien : 2026-07-07T10:40
  */
-function toDateTimeLocalValue(value) {
+function toDateTimeLocalValue(value, timeZone = "Europe/Paris") {
   if (!value) return "";
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
-  const pad = (n) => String(n).padStart(2, "0");
+  // Formate la date dans le fuseau cible (pas celui du navigateur)
+  const dtf = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hour = pad(date.getHours());
-  const minute = pad(date.getMinutes());
+  const parts = dtf.formatToParts(date).reduce((acc, p) => {
+    acc[p.type] = p.value;
+    return acc;
+  }, {});
 
-  return `${year}-${month}-${day}T${hour}:${minute}`;
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
 }
 
-/**
- * Transforme la valeur de datetime-local vers Date JS.
- * Le navigateur interprète correctement selon l'heure locale.
- */
-function fromDateTimeLocalValue(value) {
+function fromDateTimeLocalValue(value, timeZone = "Europe/Paris") {
   if (!value) return null;
-  return new Date(value);
+
+  // "value" = heure murale voulue DANS timeZone (ex: 10:40 à Madagascar)
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  // 1) on interprète naïvement ces chiffres comme si c'était de l'UTC
+  const naiveUTC = Date.UTC(year, month - 1, day, hour, minute, 0);
+
+  // 2) on regarde quelle heure ça donnerait dans "timeZone" à cet instant naïf
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const parts = dtf.formatToParts(new Date(naiveUTC)).reduce((acc, p) => {
+    acc[p.type] = p.value;
+    return acc;
+  }, {});
+  const asIfUTCInTz = Date.UTC(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour),
+    Number(parts.minute),
+    Number(parts.second),
+  );
+
+  // 3) l'écart entre les deux donne le décalage réel du fuseau à cet instant,
+  //    qu'on retire pour obtenir le vrai instant UTC correspondant à l'heure murale voulue
+  const offset = asIfUTCInTz - naiveUTC;
+  return new Date(naiveUTC - offset);
 }
 
 export function AudioBlock({ pathRecord, label }) {
@@ -118,7 +157,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
             type="datetime-local"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            min={toDateTimeLocalValue(new Date())}
+            min={toDateTimeLocalValue(new Date(), timeZone)}
             required
           />
         </div>
@@ -212,7 +251,9 @@ export function EditForm({ call, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setScheduledAt(toDateTimeLocalValue(call?.scheduledAt));
+    setScheduledAt(
+      toDateTimeLocalValue(call?.scheduledAt, call?.timeZone || "Europe/Paris"),
+    );
     setNotes(call?.notes || "");
     setStatus(call?.status || "pending");
     setTimeZone(call?.timeZone || "Europe/Paris");
@@ -225,7 +266,7 @@ export function EditForm({ call, onSave, onCancel }) {
 
     try {
       await onSave(call._id, {
-        scheduledAt: fromDateTimeLocalValue(scheduledAt),
+        scheduledAt: fromDateTimeLocalValue(scheduledAt, timeZone),
         notes,
         status,
         timeZone, // ← AJOUT
@@ -252,6 +293,17 @@ export function EditForm({ call, onSave, onCancel }) {
           {TIMEZONE_OPTIONS.map((tz) => (
             <option key={tz.value} value={tz.value}>
               {tz.flag} {tz.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="scd-edit-field">
+        <label>Statut</label>
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+            <option key={k} value={k}>
+              {v.label}
             </option>
           ))}
         </select>
