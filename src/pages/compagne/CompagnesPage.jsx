@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import useCompagne from "../../hooks/useCompagne";
 import useAgent from "../../hooks/useAgent";
 import HeaderBar from "../../components/agents/HeaderBar";
@@ -38,17 +38,62 @@ export default function CompagnesPage({ showToast }) {
     compagne: null,
   });
 
+  const [emailConfigModal, setEmailConfigModal] = useState({
+    open: false,
+    compagne: null,
+  });
+
+  // ── Filtres ──────────────────────────────────────────────────
+  const [filterCallType, setFilterCallType] = useState("all"); // "all" | "inbound" | "outbound"
+  const [filterRunning, setFilterRunning] = useState("all"); // "all" | "running" | "stopped"
+  const [selectedIds, setSelectedIds] = useState([]); // ids des campagnes ciblées
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleSelectedId = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const resetFilters = () => {
+    setFilterCallType("all");
+    setFilterRunning("all");
+    setSelectedIds([]);
+  };
+
+  const hasActiveFilters =
+    filterCallType !== "all" || filterRunning !== "all" || selectedIds.length > 0;
+
+  const filteredCompagnes = useMemo(() => {
+    return compagnes.filter((c) => {
+      if (filterCallType !== "all" && c.callType !== filterCallType) return false;
+
+      if (filterRunning === "running" && c.isRunning !== 1) return false;
+      if (filterRunning === "stopped" && c.isRunning === 1) return false;
+
+      if (selectedIds.length > 0 && !selectedIds.includes(c._id)) return false;
+
+      return true;
+    });
+  }, [compagnes, filterCallType, filterRunning, selectedIds]);
+
   const handleQualifications = (compagne) => {
     setQualificationModal({
       open: true,
       compagne,
     });
   };
-
-  const [emailConfigModal, setEmailConfigModal] = useState({
-    open: false,
-    compagne: null,
-  });
 
   const handleEmailConfig = (compagne) => {
     setEmailConfigModal({
@@ -302,27 +347,187 @@ export default function CompagnesPage({ showToast }) {
           </button>
         </section>
 
+        {/* ── SECTION FILTRES ─────────────────────────────────── */}
+        <section className="campFilters">
+          <div className="campFilterGroup">
+            <span className="campFilterGroup__label">Type d'appel</span>
+            <div className="campSegmented">
+              <button
+                type="button"
+                className={`campSegmented__btn ${
+                  filterCallType === "all" ? "is-active" : ""
+                }`}
+                onClick={() => setFilterCallType("all")}
+              >
+                Tous
+              </button>
+              <button
+                type="button"
+                className={`campSegmented__btn ${
+                  filterCallType === "inbound" ? "is-active" : ""
+                }`}
+                onClick={() => setFilterCallType("inbound")}
+              >
+                <i className="bi bi-telephone-inbound-fill" />
+                Entrant
+              </button>
+              <button
+                type="button"
+                className={`campSegmented__btn ${
+                  filterCallType === "outbound" ? "is-active" : ""
+                }`}
+                onClick={() => setFilterCallType("outbound")}
+              >
+                <i className="bi bi-telephone-outbound-fill" />
+                Sortant
+              </button>
+            </div>
+          </div>
+
+          <div className="campFilterGroup">
+            <span className="campFilterGroup__label">Statut</span>
+            <div className="campSegmented">
+              <button
+                type="button"
+                className={`campSegmented__btn ${
+                  filterRunning === "all" ? "is-active" : ""
+                }`}
+                onClick={() => setFilterRunning("all")}
+              >
+                Toutes
+              </button>
+              <button
+                type="button"
+                className={`campSegmented__btn campSegmented__btn--live ${
+                  filterRunning === "running" ? "is-active" : ""
+                }`}
+                onClick={() => setFilterRunning("running")}
+              >
+                <span className="campSegmented__dot" />
+                Lancer
+              </button>
+              <button
+                type="button"
+                className={`campSegmented__btn ${
+                  filterRunning === "stopped" ? "is-active" : ""
+                }`}
+                onClick={() => setFilterRunning("stopped")}
+              >
+                Arrêter
+              </button>
+            </div>
+          </div>
+
+          <div className="campFilterGroup campFilterGroup--picker" ref={pickerRef}>
+            <span className="campFilterGroup__label">Campagnes</span>
+            <button
+              type="button"
+              className={`campFilterSelectBtn ${
+                selectedIds.length > 0 ? "is-active" : ""
+              }`}
+              onClick={() => setPickerOpen((o) => !o)}
+            >
+              <i className="bi bi-funnel-fill" />
+              {selectedIds.length > 0
+                ? `${selectedIds.length} sélectionnée${
+                    selectedIds.length > 1 ? "s" : ""
+                  }`
+                : "Sélectionner..."}
+              <i
+                className={`bi bi-chevron-down campFilterSelectBtn__chevron ${
+                  pickerOpen ? "is-open" : ""
+                }`}
+              />
+            </button>
+
+            {pickerOpen && (
+              <div className="campFilterDropdown">
+                {compagnes.length === 0 ? (
+                  <div className="campFilterDropdown__empty">
+                    Aucune campagne
+                  </div>
+                ) : (
+                  compagnes.map((c) => (
+                    <label key={c._id} className="campFilterCheckItem">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(c._id)}
+                        onChange={() => toggleSelectedId(c._id)}
+                      />
+                      <span className="campFilterCheckItem__name">
+                        {c.nomCompagne}
+                      </span>
+                      <span
+                        className={`campFilterCheckItem__dot ${
+                          c.isRunning === 1 ? "is-live" : ""
+                        }`}
+                      />
+                    </label>
+                  ))
+                )}
+                {selectedIds.length > 0 && (
+                  <button
+                    type="button"
+                    className="campFilterDropdown__clear"
+                    onClick={() => setSelectedIds([])}
+                  >
+                    Effacer la sélection
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="campFilterReset"
+              onClick={resetFilters}
+            >
+              <i className="bi bi-x-circle-fill" />
+              Réinitialiser
+            </button>
+          )}
+
+        </section>
+        {/* ── FIN SECTION FILTRES ─────────────────────────────── */}
+
         {loading ? (
           <div className="campState">
             <i className="bi bi-hourglass-split" />
             Chargement des campagnes...
           </div>
-        ) : compagnes.length === 0 ? (
+        ) : filteredCompagnes.length === 0 ? (
           <div className="campState campState--empty">
             <i className="bi bi-inboxes" />
-            <p>Aucune campagne pour le moment.</p>
-            <button
-              type="button"
-              className="campBtnPrimary"
-              onClick={handleCreateClick}
-            >
-              <i className="bi bi-plus-lg" />
-              Créer une campagne
-            </button>
+            <p>
+              {compagnes.length === 0
+                ? "Aucune campagne pour le moment."
+                : "Aucune campagne ne correspond aux filtres."}
+            </p>
+            {compagnes.length === 0 ? (
+              <button
+                type="button"
+                className="campBtnPrimary"
+                onClick={handleCreateClick}
+              >
+                <i className="bi bi-plus-lg" />
+                Créer une campagne
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="campBtnPrimary"
+                onClick={resetFilters}
+              >
+                <i className="bi bi-x-circle" />
+                Réinitialiser les filtres
+              </button>
+            )}
           </div>
         ) : (
           <div className="campGridWrap">
-            {compagnes.map((compagne) => (
+            {filteredCompagnes.map((compagne) => (
               <CompagneCard
                 key={compagne._id}
                 compagne={compagne}
