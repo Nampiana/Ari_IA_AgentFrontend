@@ -10,9 +10,10 @@ export function buildRecordUrl(pathRecord) {
   return `${base}/files/${pathRecord}`;
 }
 
-export function formatDateTime(date) {
+export function formatDateTime(date, timeZone = "Europe/Paris") {
   if (!date) return "—";
   return new Date(date).toLocaleString("fr-FR", {
+    timeZone,
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -21,7 +22,7 @@ export function formatDateTime(date) {
   });
 }
 
-export function formatRelative(date) {
+export function formatRelative(date, timeZone) {
   if (!date) return "";
   const diff = new Date(date) - new Date();
   const abs = Math.abs(diff);

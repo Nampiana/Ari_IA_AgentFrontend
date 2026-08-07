@@ -109,7 +109,10 @@ export function AudioBlock({ pathRecord, label }) {
 }
 
 export function AddCallForm({ historique, onAdd, onCancel, saving }) {
-  const defaultDate = () => {
+  const initialTimeZone = historique?.timeZone || "Europe/Paris"; // ← AJOUT
+
+  const defaultDate = (timeZone = initialTimeZone) => {
+    // ← AJOUT paramètre
     const d = new Date(Date.now() + 3_600_000);
 
     if (d.getMinutes() < 30) {
@@ -122,24 +125,33 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
     d.setSeconds(0);
     d.setMilliseconds(0);
 
-    return toDateTimeLocalValue(d);
+    return toDateTimeLocalValue(d, timeZone); // ← AJOUT timeZone
   };
 
-  const [scheduledAt, setScheduledAt] = useState(defaultDate());
+  const [scheduledAt, setScheduledAt] = useState(() => defaultDate()); // utilise initialTimeZone au premier rendu
   const [reason, setReason] = useState("CALLBACK");
   const [notes, setNotes] = useState("");
-  const [timeZone, setTimeZone] = useState(
-    historique?.timeZone || "Europe/Paris",
-  ); // ← AJOUT, pré-rempli mais modifiable
+  const [timeZone, setTimeZone] = useState(initialTimeZone); // ← réutilise la même valeur, cohérent avec scheduledAt
+
+  // ← AJOUT : quand l'utilisateur change de fuseau, on garde la même heure "murale"
+  // saisie mais on recalcule l'affichage pour rester cohérent avec le nouveau fuseau,
+  // en repartant de l'instant réellement visé (calculé dans l'ancien fuseau).
+  const handleTimeZoneChange = (newTimeZone) => {
+    const currentInstant = fromDateTimeLocalValue(scheduledAt, timeZone);
+    if (currentInstant) {
+      setScheduledAt(toDateTimeLocalValue(currentInstant, newTimeZone));
+    }
+    setTimeZone(newTimeZone);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     onAdd({
-      scheduledAt: fromDateTimeLocalValue(scheduledAt),
+      scheduledAt: fromDateTimeLocalValue(scheduledAt, timeZone), // ← AJOUT timeZone, le vrai fix
       reason,
       notes: notes.trim() || undefined,
-      timeZone, // ← utilise désormais le choix de l'utilisateur
+      timeZone,
     });
   };
 
@@ -177,7 +189,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
           <label>Fuseau horaire</label>
           <select
             value={timeZone}
-            onChange={(e) => setTimeZone(e.target.value)}
+            onChange={(e) => handleTimeZoneChange(e.target.value)} // ← AJOUT
           >
             {TIMEZONE_OPTIONS.map((tz) => (
               <option key={tz.value} value={tz.value}>
