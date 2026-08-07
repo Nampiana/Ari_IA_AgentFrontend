@@ -88,6 +88,7 @@ const hasActiveFilters = (
   selectedTypeCall,
   timeStart,
   timeEnd,
+   selectedEmailEnvoye,
 ) =>
   search.trim() !== "" ||
   selectedStatus !== "all" ||
@@ -254,6 +255,7 @@ export default function HistoriquesPage({ showToast }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectedTypeCall, setSelectedTypeCall] = useState("all");
+  const [selectedEmailEnvoye, setSelectedEmailEnvoye] = useState("all");
   const [confirmArchive, setConfirmArchive] = useState(null);
   const [emailModalHistorique, setEmailModalHistorique] = useState(null);
 
@@ -353,6 +355,7 @@ export default function HistoriquesPage({ showToast }) {
       if (selectedTypeCall !== "all") params.typeCall = selectedTypeCall;
       if (timeStart) params.timeStart = timeStart;
       if (timeEnd) params.timeEnd = timeEnd;
+      if (selectedEmailEnvoye !== "all") params.emailEnvoye = selectedEmailEnvoye;
 
       const res = await getHistoriques(params);
       setHistoriques(res?.data?.data || []);
@@ -388,6 +391,7 @@ export default function HistoriquesPage({ showToast }) {
     timeEnd,
     filtersArchive,
     selectedTypeCall,
+     selectedEmailEnvoye,
     sortOrder,
   ]);
 
@@ -404,6 +408,7 @@ export default function HistoriquesPage({ showToast }) {
     timeEnd,
     filtersArchive,
     selectedTypeCall,
+     selectedEmailEnvoye,
   ]);
 
   const pageIds = useMemo(
@@ -490,6 +495,7 @@ export default function HistoriquesPage({ showToast }) {
     setFiltersArchive("all");
     setSortOrder("date_desc");
     setSelectedTypeCall("all");
+    setSelectedEmailEnvoye("all"); 
   };
 
   const filtersActive =
@@ -504,6 +510,7 @@ export default function HistoriquesPage({ showToast }) {
       selectedTypeCall,
       timeStart,
       timeEnd,
+        selectedEmailEnvoye,
     ) || sortOrder !== "date_desc";
 
   const getDurationValue = (item) =>
