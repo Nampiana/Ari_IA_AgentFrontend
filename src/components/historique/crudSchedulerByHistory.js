@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { buildRecordUrl } from "../../utils/buildFormat.js";
 import { REASON_CONFIG, STATUS_CONFIG } from "../../utils/configStatus.js";
 import { formatDateTime } from "../../utils/buildFormat.js";
+import {
+  TIMEZONE_OPTIONS,
+  getTimeZoneFlag,
+} from "../../utils/timezoneUtils.js";
 
 /**
  * Convertit une date JS/ISO vers le format attendu par input datetime-local
@@ -85,6 +89,9 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
   const [scheduledAt, setScheduledAt] = useState(defaultDate());
   const [reason, setReason] = useState("CALLBACK");
   const [notes, setNotes] = useState("");
+  const [timeZone, setTimeZone] = useState(
+    historique?.timeZone || "Europe/Paris",
+  ); // ← AJOUT, pré-rempli mais modifiable
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -93,6 +100,7 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
       scheduledAt: fromDateTimeLocalValue(scheduledAt),
       reason,
       notes: notes.trim() || undefined,
+      timeZone, // ← utilise désormais le choix de l'utilisateur
     });
   };
 
@@ -127,6 +135,20 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
         </div>
 
         <div className="scd-edit-field">
+          <label>Fuseau horaire</label>
+          <select
+            value={timeZone}
+            onChange={(e) => setTimeZone(e.target.value)}
+          >
+            {TIMEZONE_OPTIONS.map((tz) => (
+              <option key={tz.value} value={tz.value}>
+                {tz.flag} {tz.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="scd-edit-field">
           <label>
             Notes internes{" "}
             <span style={{ opacity: 0.5, fontWeight: 400 }}>(optionnel)</span>
@@ -144,7 +166,10 @@ export function AddCallForm({ historique, onAdd, onCancel, saving }) {
           <i className="bi bi-info-circle" />
           <span>
             Numéro : <strong>{historique?.calledNumber}</strong> · Ligne :{" "}
-            <strong>{historique?.callerNumber}</strong>
+            <strong>{historique?.callerNumber}</strong> · Heure saisie en{" "}
+            <strong>
+              {getTimeZoneFlag(timeZone)} {timeZone}
+            </strong>
           </span>
         </div>
 
@@ -183,12 +208,14 @@ export function EditForm({ call, onSave, onCancel }) {
   const [scheduledAt, setScheduledAt] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("pending");
+  const [timeZone, setTimeZone] = useState("Europe/Paris");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setScheduledAt(toDateTimeLocalValue(call?.scheduledAt));
     setNotes(call?.notes || "");
     setStatus(call?.status || "pending");
+    setTimeZone(call?.timeZone || "Europe/Paris");
   }, [call]);
 
   const handleSubmit = async (e) => {
@@ -201,12 +228,12 @@ export function EditForm({ call, onSave, onCancel }) {
         scheduledAt: fromDateTimeLocalValue(scheduledAt),
         notes,
         status,
+        timeZone, // ← AJOUT
       });
     } finally {
       setSaving(false);
     }
   };
-
   return (
     <form className="scd-edit-form" onSubmit={handleSubmit}>
       <div className="scd-edit-field">
@@ -220,11 +247,11 @@ export function EditForm({ call, onSave, onCancel }) {
       </div>
 
       <div className="scd-edit-field">
-        <label>Statut</label>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v.label}
+        <label>Fuseau horaire</label>
+        <select value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
+          {TIMEZONE_OPTIONS.map((tz) => (
+            <option key={tz.value} value={tz.value}>
+              {tz.flag} {tz.label}
             </option>
           ))}
         </select>
@@ -271,7 +298,7 @@ export function DeleteConfirm({ call, onConfirm, onCancel, deleting }) {
 
         <p>
           Supprimer ce rappel planifié le{" "}
-          <strong>{formatDateTime(call.scheduledAt)}</strong> ?
+          <strong>{formatDateTime(call.scheduledAt, call.timeZone)}</strong> ?
         </p>
 
         <p className="scd-delete-sub">Cette action est irréversible.</p>

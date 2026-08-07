@@ -5,6 +5,7 @@ import { formatDateTime } from "../../utils/buildFormat.js";
 import { AudioBlock, AddCallForm } from "./crudSchedulerByHistory";
 import { CallCard } from "./CallSchedulerCard.jsx";
 import "../../assets/css/ScheduledCallsDrawer.css";
+import { getTimeZoneFlag } from "../../utils/timezoneUtils.js";
 
 export default function ScheduledCallsDrawer({
   historique,
@@ -58,7 +59,7 @@ export default function ScheduledCallsDrawer({
     }
   };
 
-  const handleAdd = async ({ scheduledAt, reason, notes }) => {
+  const handleAdd = async ({ scheduledAt, reason, notes, timeZone }) => {
     setAdding(true);
     try {
       await createScheduledCall({
@@ -66,6 +67,7 @@ export default function ScheduledCallsDrawer({
         reason,
         scheduledAt,
         notes,
+        timeZone,
       });
       showToast?.("Rappel créé avec succès", "success");
       setShowAdd(false);
@@ -131,7 +133,8 @@ export default function ScheduledCallsDrawer({
               <div>
                 <h2>Rappels planifiés</h2>
                 <p className="scd-mono">
-                  {historique?.fiche?.nom || ""} {historique?.calledNumber || ""}
+                  {historique?.fiche?.nom || ""}{" "}
+                  {historique?.calledNumber || ""}
                 </p>
               </div>
             </div>
@@ -172,7 +175,13 @@ export default function ScheduledCallsDrawer({
                 <i className="bi bi-telephone-fill" />
                 <span>Appel d'origine</span>
                 <span className="scd-root-audio-date">
-                  {formatDateTime(historique?.callDate)}
+                  <span
+                    title={historique?.timeZone || "Europe/Paris"}
+                    style={{ marginRight: 4 }}
+                  >
+                    {getTimeZoneFlag(historique?.timeZone)}
+                  </span>
+                  {formatDateTime(historique?.callDate, historique?.timeZone)}
                 </span>
               </div>
               <AudioBlock pathRecord={rootAudio} />
@@ -242,7 +251,7 @@ export default function ScheduledCallsDrawer({
                   <div className="scd-item-header">
                     <span className="scd-item-index">#{idx + 1}</span>
                     <span className="scd-item-date">
-                      {formatDateTime(call.scheduledAt)}
+                      {formatDateTime(call.scheduledAt, call.timeZone)}
                     </span>
                   </div>
                   <CallCard

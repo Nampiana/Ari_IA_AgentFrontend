@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { AudioBlock, EditForm, DeleteConfirm } from "./crudSchedulerByHistory";
-import { REASON_CONFIG, STATUS_CONFIG, RESULT_CONFIG } from "../../utils/configStatus.js";
+import {
+  REASON_CONFIG,
+  STATUS_CONFIG,
+  RESULT_CONFIG,
+} from "../../utils/configStatus.js";
 import { formatDateTime, formatRelative } from "../../utils/buildFormat.js";
+import { getTimeZoneFlag } from "../../utils/timezoneUtils.js";
 
 export function CallCard({ call, onDelete, onUpdate }) {
   const [mode, setMode] = useState("view"); // view | edit | delete
@@ -137,9 +142,15 @@ export function CallCard({ call, onDelete, onUpdate }) {
             <div>
               <span className="scd-info-label">Planifié le</span>
               <span className="scd-info-value">
-                {formatDateTime(call.scheduledAt)}
+                <span
+                  title={call.timeZone || "Europe/Paris"}
+                  style={{ marginRight: 4 }}
+                >
+                  {getTimeZoneFlag(call.timeZone)}
+                </span>
+                {formatDateTime(call.scheduledAt, call.timeZone)}
                 <em className="scd-relative">
-                  {formatRelative(call.scheduledAt)}
+                  {formatRelative(call.scheduledAt, call.timeZone)}
                 </em>
               </span>
             </div>
@@ -202,7 +213,7 @@ export function CallCard({ call, onDelete, onUpdate }) {
       )}
 
       <div className="scd-card-footer">
-        Créé le {formatDateTime(call.createdAt)}
+        Créé le {formatDateTime(call.createdAt, call.timeZone)}
       </div>
     </div>
   );

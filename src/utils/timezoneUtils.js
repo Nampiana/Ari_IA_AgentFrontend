@@ -58,3 +58,24 @@ export const isWithinSchedule = (date, timeZone, allowedDays, tranches) => {
     validTranches.some((t) => hhmm >= t.startHour && hhmm <= t.endHour)
   );
 };
+
+export const TIMEZONE_OPTIONS = [
+  { value: "Indian/Antananarivo", label: "Madagascar", flag: "🇲🇬" },
+  { value: "Europe/Paris", label: "France / Belgique / Suisse", flag: "🇫🇷" },
+  // { value: "Europe/London", label: "Royaume-Uni", flag: "🇬🇧" },
+  // { value: "America/Montreal", label: "Canada (Est)", flag: "🇨🇦" },
+  // { value: "America/New_York", label: "États-Unis (Est)", flag: "🇺🇸" },
+  // { value: "Africa/Casablanca", label: "Maroc", flag: "🇲🇦" },
+  // { value: "Africa/Tunis", label: "Tunisie", flag: "🇹🇳" },
+  // { value: "Africa/Algiers", label: "Algérie", flag: "🇩🇿" },
+  // { value: "Indian/Reunion", label: "La Réunion", flag: "🇷🇪" },
+  // { value: "America/Guadeloupe", label: "Guadeloupe", flag: "🇬🇵" },
+  // { value: "America/Martinique", label: "Martinique", flag: "🇲🇶" },
+];
+
+const TIMEZONE_FLAGS = TIMEZONE_OPTIONS.reduce((acc, tz) => {
+  acc[tz.value] = tz.flag;
+  return acc;
+}, {});
+
+export const getTimeZoneFlag = (tz) => TIMEZONE_FLAGS[tz] || "🌐";

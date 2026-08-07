@@ -9,6 +9,7 @@ import { getStatusLabel } from "../../utils/statusUtils.js";
 import ScheduledCallsDrawer from "../../components/historique/ScheduledCallsDrawer.jsx";
 import EmailSentModal from "../../components/historique/Emailsentmodal.jsx";
 import "../../assets/css/HistoriquesPage.css";
+import { getTimeZoneFlag } from "../../utils/timezoneUtils.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -24,7 +25,7 @@ const getTodayDateInputValue = () => {
   return `${year}-${month}-${day}`;
 };
 
-const formatDate = (date) => {
+const formatDate = (date, timeZone = "Europe/Paris") => {
   if (!date) return "-";
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return "-";
@@ -32,13 +33,13 @@ const formatDate = (date) => {
     d.toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "short",
-      timeZone: "Europe/Paris", // ✅
+      timeZone,
     }) +
     " " +
     d.toLocaleTimeString("fr-FR", {
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Europe/Paris", // ✅
+      timeZone,
     })
   );
 };
@@ -984,7 +985,13 @@ export default function HistoriquesPage({ showToast }) {
 
                           <td>
                             <div className="fw-semibold">
-                              {formatDate(item.callDate)}
+                              <span
+                                title={item.timeZone || "Europe/Paris"}
+                                style={{ marginRight: 6 }}
+                              >
+                                {getTimeZoneFlag(item.timeZone)}
+                              </span>
+                              {formatDate(item.callDate, item.timeZone)}
                             </div>
                             <small className="text-muted">
                               <i className="bi bi-clock me-1" />
