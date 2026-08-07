@@ -6,6 +6,7 @@ import { AudioBlock, AddCallForm } from "./crudSchedulerByHistory";
 import { CallCard } from "./CallSchedulerCard.jsx";
 import "../../assets/css/ScheduledCallsDrawer.css";
 import { getTimeZoneFlag } from "../../utils/timezoneUtils.js";
+import LiveClocks from "./LiveClocks.jsx";
 
 export default function ScheduledCallsDrawer({
   historique,
@@ -138,6 +139,7 @@ export default function ScheduledCallsDrawer({
                 </p>
               </div>
             </div>
+            <LiveClocks />
             <div style={{ display: "flex", gap: 6 }}>
               {/* Bouton Ajouter */}
               <button

@@ -1142,6 +1142,45 @@
   border-color: #f7c1c1;
 }
 
+.scd-live-clocks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 12px;
+}
+
+.scd-live-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--camp-font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--camp-ink-soft, #6b6375);
+  background: var(--camp-surface-soft, #f4f2fa);
+  border: 1px solid var(--camp-border-soft, #eeecf5);
+  padding: 4px 9px;
+  border-radius: 999px;
+  min-width: 92px; /* ← AJOUT, stabilise la largeur avec les secondes qui changent */
+  justify-content: center;
+}
+
+.scd-live-clock-flag {
+  font-size: 13px;
+}
+
+@media (max-width: 620px) {
+  .scd-header-top {
+    flex-wrap: wrap;
+  }
+
+  .scd-live-clocks {
+    order: 3;
+    width: 100%;
+    margin: 8px 0 0;
+  }
+}
+
 /* ── Dark mode compléments ───────────────────── */
 @media (prefers-color-scheme: dark) {
   .scd-add-btn {
