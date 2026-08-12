@@ -22,6 +22,7 @@ deploy_projet:
     - cd "$SOURCE_PROJET"
     - git remote -v
     - git pull origin reunification
+    - npm install jszip
     - pm2 restart 18
 
   after_script:

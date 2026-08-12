@@ -10,6 +10,7 @@ import ScheduledCallsDrawer from "../../components/historique/ScheduledCallsDraw
 import EmailSentModal from "../../components/historique/Emailsentmodal.jsx";
 import "../../assets/css/HistoriquesPage.css";
 import { getTimeZoneFlag } from "../../utils/timezoneUtils.js";
+import JSZip from "jszip";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -88,7 +89,7 @@ const hasActiveFilters = (
   selectedTypeCall,
   timeStart,
   timeEnd,
-   selectedEmailEnvoye,
+  selectedEmailEnvoye,
 ) =>
   search.trim() !== "" ||
   selectedStatus !== "all" ||
@@ -273,6 +274,29 @@ export default function HistoriquesPage({ showToast }) {
     8: 0,
   });
 
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+  const DEFAULT_EXPORT_STATUS_KEYS = ["1", "2", "3", "4", "5", "6", "8"];
+
+  const [downloadStatuses, setDownloadStatuses] = useState(() =>
+    Object.fromEntries(
+      STATUS_DEFS.map((d) => [
+        d.key,
+        DEFAULT_EXPORT_STATUS_KEYS.includes(d.key),
+      ]),
+    ),
+  );
+  const [zipExporting, setZipExporting] = useState(false);
+  const [zipProgress, setZipProgress] = useState({
+    done: 0,
+    total: 0,
+    phase: "",
+  });
+
+  const sanitizeFolderName = (name) =>
+    String(name || "Sans campagne")
+      .trim()
+      .replace(/[\\/:*?"<>|]/g, "-") || "Sans campagne";
+
   const { getAgents } = useAgent();
   const { getCompagnes } = useCompagne();
 
@@ -355,7 +379,8 @@ export default function HistoriquesPage({ showToast }) {
       if (selectedTypeCall !== "all") params.typeCall = selectedTypeCall;
       if (timeStart) params.timeStart = timeStart;
       if (timeEnd) params.timeEnd = timeEnd;
-      if (selectedEmailEnvoye !== "all") params.emailEnvoye = selectedEmailEnvoye;
+      if (selectedEmailEnvoye !== "all")
+        params.emailEnvoye = selectedEmailEnvoye;
 
       const res = await getHistoriques(params);
       setHistoriques(res?.data?.data || []);
@@ -391,7 +416,7 @@ export default function HistoriquesPage({ showToast }) {
     timeEnd,
     filtersArchive,
     selectedTypeCall,
-     selectedEmailEnvoye,
+    selectedEmailEnvoye,
     sortOrder,
   ]);
 
@@ -408,7 +433,7 @@ export default function HistoriquesPage({ showToast }) {
     timeEnd,
     filtersArchive,
     selectedTypeCall,
-     selectedEmailEnvoye,
+    selectedEmailEnvoye,
   ]);
 
   const pageIds = useMemo(
@@ -495,7 +520,7 @@ export default function HistoriquesPage({ showToast }) {
     setFiltersArchive("all");
     setSortOrder("date_desc");
     setSelectedTypeCall("all");
-    setSelectedEmailEnvoye("all"); 
+    setSelectedEmailEnvoye("all");
   };
 
   const filtersActive =
@@ -510,7 +535,7 @@ export default function HistoriquesPage({ showToast }) {
       selectedTypeCall,
       timeStart,
       timeEnd,
-        selectedEmailEnvoye,
+      selectedEmailEnvoye,
     ) || sortOrder !== "date_desc";
 
   const getDurationValue = (item) =>
@@ -559,6 +584,145 @@ export default function HistoriquesPage({ showToast }) {
       pages.push(totalPages);
     }
     return pages;
+  };
+
+  const fetchAllHistoriquesForStatus = async (statusKey) => {
+    const results = [];
+    let page = 1;
+    const limit = 200;
+
+    while (true) {
+      const params = { page, limit, sort: sortParam(), status: statusKey };
+
+      if (search.trim()) params.search = search.trim();
+      if (selectedCampagne !== "all") params.campagneId = selectedCampagne;
+      if (selectedAgentIa !== "all") params.agentIaId = selectedAgentIa;
+      if (dateStart) params.dateStart = dateStart;
+      if (dateEnd) params.dateEnd = dateEnd;
+      if (filtersArchive !== "all") params.archive = filtersArchive;
+      if (selectedTypeCall !== "all") params.typeCall = selectedTypeCall;
+      if (timeStart) params.timeStart = timeStart;
+      if (timeEnd) params.timeEnd = timeEnd;
+      if (selectedEmailEnvoye !== "all")
+        params.emailEnvoye = selectedEmailEnvoye;
+
+      const res = await getHistoriques(params);
+      const data = res?.data?.data || [];
+      results.push(...data);
+
+      const total = res?.data?.totalPages || 1;
+      if (page >= total || data.length === 0) break;
+      page += 1;
+    }
+
+    return results;
+  };
+
+  const handleConfirmZipDownload = async () => {
+    const statusesToExport = STATUS_DEFS.filter((d) => downloadStatuses[d.key]);
+
+    if (statusesToExport.length === 0) {
+      showToast?.("Sélectionnez au moins une qualification", "warning");
+      return;
+    }
+
+    setZipExporting(true);
+    setZipProgress({ done: 0, total: 0, phase: "Récupération des appels..." });
+
+    try {
+      const zip = new JSZip();
+      const itemsWithAudio = [];
+
+      for (const def of statusesToExport) {
+        const items = await fetchAllHistoriquesForStatus(def.key);
+        items
+          .filter((i) => i.pathRecord)
+          .forEach((item) => {
+            const campagneFolder = sanitizeFolderName(
+              item.campagneId?.nomCompagne,
+            );
+            itemsWithAudio.push({
+              item,
+              folder: `${campagneFolder}/${def.label}`,
+            });
+          });
+      }
+
+      if (itemsWithAudio.length === 0) {
+        showToast?.(
+          "Aucun audio à télécharger pour cette sélection",
+          "warning",
+        );
+        return;
+      }
+
+      setZipProgress({
+        done: 0,
+        total: itemsWithAudio.length,
+        phase: "Téléchargement des audios...",
+      });
+
+      let done = 0;
+      let failed = 0;
+
+      for (const { item, folder } of itemsWithAudio) {
+        try {
+          const url = buildRecordUrl(item.pathRecord);
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+
+          const ext = (item.pathRecord.split(".").pop() || "wav").split("?")[0];
+          const safeNumber = (item.calledNumber || "numero").replace(
+            /[^\d+]/g,
+            "",
+          );
+          const safeDate = item.callDate
+            ? new Date(item.callDate)
+                .toISOString()
+                .slice(0, 19)
+                .replace(/[:T]/g, "-")
+            : "date-inconnue";
+
+          zip
+            .folder(folder)
+            .file(`${safeNumber}_${safeDate}_${item._id}.${ext}`, blob);
+        } catch (err) {
+          console.error("Erreur téléchargement audio :", item._id, err);
+          failed += 1;
+        } finally {
+          done += 1;
+          setZipProgress((prev) => ({ ...prev, done }));
+        }
+      }
+
+      setZipProgress((prev) => ({ ...prev, phase: "Compression du zip..." }));
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const zipUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = zipUrl;
+      a.download = `audios-historiques-${getTodayDateInputValue()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(zipUrl);
+
+      showToast?.(
+        failed > 0
+          ? `Zip généré avec ${failed} audio(s) en erreur`
+          : "Zip généré avec succès",
+        failed > 0 ? "warning" : "success",
+      );
+
+      setDownloadModalOpen(false);
+    } catch (error) {
+      console.error("Erreur génération zip :", error);
+      showToast?.("Erreur lors de la génération du zip", "danger");
+    } finally {
+      setZipExporting(false);
+      setZipProgress({ done: 0, total: 0, phase: "" });
+    }
   };
 
   // ── Rendu ──────────────────────────────────────────────────────────────────
@@ -624,6 +788,15 @@ export default function HistoriquesPage({ showToast }) {
                     className={`bi bi-arrow-clockwise ${isRefreshing ? "spin" : ""}`}
                   />
                   {isRefreshing ? "Actualisation…" : "Actualiser"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setDownloadModalOpen(true)}
+                  disabled={zipExporting}
+                  title="Télécharger les audios en zip"
+                >
+                  <i className="bi bi-file-earmark-zip" /> Télécharger audios
                 </button>
                 {selectedIds.size > 0 && (
                   <button
@@ -1177,6 +1350,108 @@ export default function HistoriquesPage({ showToast }) {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {downloadModalOpen && (
+        <div
+          className="hist-zip-overlay"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget && !zipExporting)
+              setDownloadModalOpen(false);
+          }}
+        >
+          <div className="hist-zip-modal">
+            <div className="hist-zip-header">
+              <h3>
+                <i className="bi bi-file-earmark-zip" /> Télécharger les audios
+              </h3>
+              {!zipExporting && (
+                <button
+                  type="button"
+                  className="hist-zip-close"
+                  onClick={() => setDownloadModalOpen(false)}
+                >
+                  <i className="bi bi-x-lg" />
+                </button>
+              )}
+            </div>
+
+            {!zipExporting ? (
+              <>
+                <p className="hist-zip-desc">
+                  Choisissez les qualifications à inclure. Les audios sont
+                  téléchargés depuis votre navigateur et rangés dans un zip par
+                  dossier — rien n'est généré côté serveur.
+                </p>
+
+                <div className="hist-zip-checklist">
+                  {STATUS_DEFS.map((def) => (
+                    <label key={def.key} className="hist-zip-checkItem">
+                      <input
+                        type="checkbox"
+                        checked={!!downloadStatuses[def.key]}
+                        onChange={(e) =>
+                          setDownloadStatuses((prev) => ({
+                            ...prev,
+                            [def.key]: e.target.checked,
+                          }))
+                        }
+                      />
+                      <span
+                        className="hist-zip-checkDot"
+                        style={{ background: def.color }}
+                      />
+                      {def.label}
+                      <span className="hist-zip-checkCount">
+                        {statusCounts[def.key] ?? 0}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="hist-zip-actions">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setDownloadModalOpen(false)}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleConfirmZipDownload}
+                  >
+                    <i className="bi bi-download" /> Lancer le téléchargement
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="hist-zip-progress">
+                <div className="hist-zip-spinner" />
+                <p>{zipProgress.phase}</p>
+                {zipProgress.total > 0 && (
+                  <>
+                    <div className="hist-zip-progressBar">
+                      <div
+                        className="hist-zip-progressBar__fill"
+                        style={{
+                          width: `${Math.round((zipProgress.done / zipProgress.total) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="hist-zip-progressLabel">
+                      {zipProgress.done} / {zipProgress.total} audios
+                    </span>
+                  </>
+                )}
+                <p className="hist-zip-warning">
+                  Ne fermez pas cette fenêtre pendant le téléchargement.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

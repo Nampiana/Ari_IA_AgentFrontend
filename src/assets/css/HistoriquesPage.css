@@ -755,3 +755,147 @@ audio {
   color: var(--hist-ink-soft);
   border-color: var(--hist-border);
 }
+
+/* EXPORT ZIP */
+.hist-zip-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.hist-zip-modal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-primary);
+  padding: 22px 24px;
+}
+
+.hist-zip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.hist-zip-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hist-zip-close {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.hist-zip-desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.hist-zip-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.hist-zip-checkItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.hist-zip-checkDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hist-zip-checkCount {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.hist-zip-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.hist-zip-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 10px 0 4px;
+}
+
+.hist-zip-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--border);
+  border-top-color: var(--hist-accent, #3454d1);
+  border-radius: 50%;
+  animation: histZipSpin 0.7s linear infinite;
+}
+
+@keyframes histZipSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hist-zip-progressBar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.hist-zip-progressBar__fill {
+  height: 100%;
+  background: var(--hist-accent, #3454d1);
+  transition: width 0.2s ease;
+}
+
+.hist-zip-progressLabel {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.hist-zip-warning {
+  font-size: 12px;
+  color: var(--hist-warning, #b8730f);
+  font-weight: 600;
+  margin: 4px 0 0;
+}
